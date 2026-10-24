@@ -39,6 +39,7 @@ jobs:
       # problems become annotations of the pull request (readable without the full log)
       - name: Clippy
         shell: bash
+        env: {CARGO_TERM_COLOR: never}
         run: |
           set -o pipefail
           cargo clippy --workspace --all-targets --locked --message-format=short -- -D warnings 2>&1 \
@@ -46,6 +47,7 @@ jobs:
                      -e 's/^(error.*|.*panicked at.*)$/::error::\1/'
       - name: Test
         shell: bash
+        env: {CARGO_TERM_COLOR: never}
         run: |
           set -o pipefail
           cargo test --workspace --locked 2>&1 \
