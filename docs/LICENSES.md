@@ -35,6 +35,7 @@ The full tree is checked by `cargo deny` on every pull request (`deny.toml`).
 | cap | MIT OR Apache-2.0 | memory limit of the parsing worker |
 | psl | MIT OR Apache-2.0 | public suffix list: which hosts belong to one site |
 | tantivy 0.27 (without default features: memory-mapped files, Snowball stemmers, LZ4; no zstd) | MIT; Snowball stemmers (frostem) BSD-3-Clause | full-text search |
+| getrandom | MIT OR Apache-2.0 | the random password of the database inside the desktop app |
 
 ## Prototype v0.1 (Python)
 

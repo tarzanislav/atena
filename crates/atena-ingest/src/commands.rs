@@ -2,26 +2,14 @@
 
 use std::sync::Arc;
 
-use atena_assess::{Assessment, Assessor, Item, MAX_ITEMS, Target, parse_input};
+use atena_assess::{Assessor, Item, parse_input};
 use atena_core::Taxonomy;
 use atena_core::safety::for_terminal;
 use atena_core::source::load_sources;
-use atena_crawl::{Config, Fetcher, ServiceClient};
-use atena_ingest::import::{decision, to_import};
-use atena_ingest::share::{HEADER, list_id, read_list, write_list};
+use atena_crawl::{Config, Fetcher};
+use atena_ingest::import::{Choice, Proposed, confirm as confirm_one, propose};
+use atena_ingest::share::{HEADER, Received, handed_over, pending, receive, write_list};
 use atena_store::{ImportOutcome, ImportState, Store, Via};
-use url::Url;
-
-/// The shared register all installations read.
-pub const DEFAULT_SHARED_REGISTER: &str =
-    "https://raw.githubusercontent.com/tarzanislav/atena/main/data/sources.yaml";
-
-fn env_or(name: &str, default: &str) -> String {
-    std::env::var(name)
-        .ok()
-        .filter(|v| !v.trim().is_empty())
-        .unwrap_or_else(|| default.to_string())
-}
 
 /// Imported addresses are kept for sharing unless `ATENA_SHARE` is `0`, `off`, `no` or `false`.
 fn sharing_enabled() -> bool {
@@ -35,15 +23,11 @@ fn sharing_enabled() -> bool {
     )
 }
 
-fn service() -> Result<ServiceClient, String> {
-    ServiceClient::new(&Config::default()).map_err(|e| e.to_string())
-}
-
 fn assessor() -> Result<Assessor, String> {
     Ok(Assessor::new(Arc::new(
         Fetcher::new(Config::default()).map_err(|e| e.to_string())?,
     ))
-    .with_parser(crate::parser()))
+    .with_parser(atena_ingest::parser()))
 }
 
 /// The person deciding: `--by` or `ATENA_EDITOR`.
@@ -51,18 +35,6 @@ fn person(by: Option<String>) -> Result<String, String> {
     by.or_else(|| std::env::var("ATENA_EDITOR").ok())
         .filter(|b| !b.trim().is_empty())
         .ok_or_else(|| "say who decides: --by NAME or ATENA_EDITOR".to_string())
-}
-
-/// The line an item is shared as: its address or DOI and its country.
-fn share_line(a: &Assessment) -> String {
-    let target = match &a.target {
-        Target::Url(u) => u.to_string(),
-        Target::Doi(doi) => doi.clone(),
-    };
-    match &a.country {
-        Some(c) => format!("{target} {c}"),
-        None => target,
-    }
 }
 
 fn short(outcome: &ImportOutcome) -> String {
@@ -75,6 +47,34 @@ fn short(outcome: &ImportOutcome) -> String {
     }
 }
 
+fn print_proposed(proposed: &[Proposed]) {
+    println!(
+        "{:<5} {:<13} {:<20} {:<7} {:<12} {:<9}  address",
+        "line", "id", "result", "country", "proposal", "terms"
+    );
+    for p in proposed {
+        let a = &p.assessment;
+        let Some((id, outcome)) = &p.stored else {
+            println!(
+                "{:<5} {:<13} {:<20} {:<7} {:<12} {:<9}  {}",
+                a.line, "–", "page about people", "", "", "", a.url
+            );
+            continue;
+        };
+        println!(
+            "{:<5} {:<13} {:<20} {:<7} {:<12} {:<9}  {}",
+            a.line,
+            id,
+            short(outcome),
+            a.country.as_deref().unwrap_or("?"),
+            a.proposal.licence,
+            a.proposal.terms,
+            a.url
+        );
+        println!("      {}", for_terminal(&a.proposal.rights.finding));
+    }
+}
+
 /// Assesses and stores items; returns the lines worth sharing.
 async fn assess_and_store(
     store: &Store,
@@ -82,40 +82,11 @@ async fn assess_and_store(
     via: Via,
     concurrency: usize,
 ) -> Result<Vec<String>, String> {
-    let assessments = assessor()?.assess_all(items, concurrency).await;
-    let mut shareable = Vec::new();
-    println!(
-        "{:<5} {:<13} {:<20} {:<7} {:<12} {:<9}  address",
-        "line", "id", "result", "country", "proposal", "terms"
-    );
-    for a in &assessments {
-        let Some((source, auto)) = to_import(a, via) else {
-            println!(
-                "{:<5} {:<13} {:<20} {:<7} {:<12} {:<9}  {}",
-                a.line, "–", "page about people", "", "", "", a.url
-            );
-            continue;
-        };
-        let outcome = store
-            .import_source(&source, &auto)
-            .await
-            .map_err(|e| e.to_string())?;
-        println!(
-            "{:<5} {:<13} {:<20} {:<7} {:<12} {:<9}  {}",
-            a.line,
-            source.id,
-            short(&outcome),
-            a.country.as_deref().unwrap_or("?"),
-            auto.licence,
-            auto.terms,
-            source.url
-        );
-        println!("      {}", for_terminal(&auto.finding));
-        if matches!(outcome, ImportOutcome::New | ImportOutcome::Reassessed) {
-            shareable.push(share_line(a));
-        }
-    }
-    Ok(shareable)
+    let proposed = propose(store, &assessor()?, items, via, concurrency)
+        .await
+        .map_err(|e| e.to_string())?;
+    print_proposed(&proposed);
+    Ok(proposed.iter().filter_map(Proposed::share_line).collect())
 }
 
 /// `share FILE` – writes every list waiting to be shared into one list file and marks them
@@ -127,28 +98,18 @@ pub async fn share(store: &Store, args: &[String]) -> Result<(), String> {
     if std::path::Path::new(path).exists() {
         return Err(format!("{path} exists; choose a new file"));
     }
-    let pending = store.outbox_pending().await.map_err(|e| e.to_string())?;
-    let lines: Vec<String> = pending
-        .iter()
-        .filter_map(|m| read_list(&m.body))
-        .flatten()
-        .collect();
-    if lines.is_empty() {
+    let Some(waiting) = pending(store).await.map_err(|e| e.to_string())? else {
         println!("No proposals are waiting to be shared.");
         return Ok(());
-    }
-    let list = write_list(lines.iter().map(String::as_str));
-    std::fs::write(path, &list).map_err(|e| format!("{path}: {e}"))?;
-    for message in &pending {
-        store
-            .outbox_sent(message.id)
-            .await
-            .map_err(|e| e.to_string())?;
-    }
+    };
+    std::fs::write(path, &waiting.list).map_err(|e| format!("{path}: {e}"))?;
+    handed_over(store, &waiting.entries)
+        .await
+        .map_err(|e| e.to_string())?;
     println!(
         "{} addresses written to {path} – addresses and country codes only. Hand the file to the \
          ATENA editor as you choose; ATENA itself sends nothing anywhere.",
-        list.lines().count() - 1
+        waiting.addresses
     );
     Ok(())
 }
@@ -272,42 +233,21 @@ pub async fn confirm(store: &Store, args: &[String]) -> Result<(), String> {
     if ids.is_empty() {
         return Err("name the sources to confirm (see: atena-ingest imports)".into());
     }
-    let all = store.imported(None).await.map_err(|e| e.to_string())?;
+    let choice = Choice {
+        licence,
+        terms,
+        country,
+    };
     for id in &ids {
-        let source = all
-            .iter()
-            .find(|s| &s.id == id)
-            .ok_or_else(|| format!("{id}: no such imported source"))?;
-        let proposal = source.proposal.as_ref();
-        let pick = |given: &Option<String>, proposed: Option<String>, current: &str| {
-            given
-                .clone()
-                .or(proposed)
-                .unwrap_or_else(|| current.to_string())
-        };
-        let country = pick(
-            &country,
-            proposal.and_then(|p| p.country.clone()),
-            &source.country,
-        );
-        let licence = pick(
-            &licence,
-            proposal.map(|p| p.licence.clone()),
-            &source.licence,
-        );
-        let terms = pick(&terms, proposal.map(|p| p.terms.clone()), &source.terms);
-        let page = proposal.map_or(source.url.clone(), |p| p.rights_page.clone());
-        let (record, crawl) = decision(&by, &country, &licence, &terms, &page, &reason)
-            .map_err(|e| format!("{id}: {e}"))?;
-        store
-            .confirm_import(id, &record, crawl)
+        let done = confirm_one(store, id, &choice, &by, &reason)
             .await
             .map_err(|e| e.to_string())?;
         println!(
-            "{id}: confirmed as {} / {} ({country}); {}",
-            record.licence,
-            record.terms,
-            if crawl {
+            "{id}: confirmed as {} / {} ({}); {}",
+            done.licence,
+            done.terms,
+            done.country,
+            if done.crawl {
                 "it will be crawled"
             } else {
                 "it is not crawled"
@@ -351,38 +291,29 @@ pub async fn proposals(store: &Store, args: &[String]) -> Result<(), String> {
     if args.is_empty() {
         return Err("proposals needs one or more list files".into());
     }
+    let assessor = assessor()?;
     for path in args {
         let text = std::fs::read_to_string(path).map_err(|e| format!("{path}: {e}"))?;
-        let Some(lines) = read_list(&text) else {
-            eprintln!("{path}: not an ATENA list (the first line must be {HEADER})");
-            continue;
-        };
-        let id = list_id(&lines);
-        if !store
-            .inbox_known(std::slice::from_ref(&id))
+        match receive(store, &assessor, &text, 4)
             .await
             .map_err(|e| e.to_string())?
-            .is_empty()
         {
-            println!("{path}: read before ({id})");
-            continue;
-        }
-        println!("\n{path}: {} lines", lines.len());
-        let mut accepted = 0;
-        // an import takes at most MAX_ITEMS lines at a time
-        for chunk in lines.chunks(MAX_ITEMS) {
-            let parsed = parse_input(&chunk.join("\n"));
-            for r in &parsed.rejected {
-                eprintln!("{:?}: {}", r.reason, for_terminal(&r.text));
+            Received::NotAList => {
+                eprintln!("{path}: not an ATENA list (the first line must be {HEADER})");
             }
-            assess_and_store(store, &parsed.items, Via::Shared, 4).await?;
-            accepted += parsed.items.len();
+            Received::ReadBefore(id) => println!("{path}: read before ({id})"),
+            Received::Read {
+                id,
+                proposed,
+                rejected,
+            } => {
+                println!("\n{path} ({id}): {} addresses", proposed.len());
+                for r in &rejected {
+                    eprintln!("{:?}: {}", r.reason, for_terminal(&r.text));
+                }
+                print_proposed(&proposed);
+            }
         }
-        let count = i32::try_from(accepted).unwrap_or(i32::MAX);
-        store
-            .inbox_add(&id, &lines.join("\n"), count)
-            .await
-            .map_err(|e| e.to_string())?;
     }
     Ok(())
 }
@@ -517,20 +448,4 @@ fn default_language(country: &str) -> &'static str {
         "RU" => "ru",
         _ => "en",
     }
-}
-
-/// The shared register as text, from `ATENA_SHARED_REGISTER` or the ATENA repository.
-pub async fn shared_register(url: Option<&str>) -> Result<String, String> {
-    let text = url
-        .map(str::to_string)
-        .unwrap_or_else(|| env_or("ATENA_SHARED_REGISTER", DEFAULT_SHARED_REGISTER));
-    let url = Url::parse(&text).map_err(|e| format!("{text}: {e}"))?;
-    // the register decides licences and terms: it travels encrypted or not at all
-    if url.scheme() != "https" {
-        return Err(format!(
-            "{url}: the shared register is read over https only"
-        ));
-    }
-    let body = service()?.get(&url, &[]).await.map_err(|e| e.to_string())?;
-    String::from_utf8(body.to_vec()).map_err(|_| format!("{url}: not UTF-8 text"))
 }

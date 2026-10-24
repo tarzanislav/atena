@@ -330,6 +330,17 @@ impl Store {
             .collect()
     }
 
+    /// Gives back every host lease. Only for a database that a single installation uses (the
+    /// desktop app), after it ended without giving its leases back.
+    pub async fn release_all_hosts(&self) -> Result<u64> {
+        Ok(sqlx::query(
+            "UPDATE host SET lease_until = NULL, leased_by = NULL WHERE lease_until IS NOT NULL",
+        )
+        .execute(&self.pool)
+        .await?
+        .rows_affected())
+    }
+
     /// Due endpoints of a host, earliest first.
     pub async fn due_endpoints(&self, host_id: i64, limit: i64) -> Result<Vec<Endpoint>> {
         let rows = sqlx::query(&format!(

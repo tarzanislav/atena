@@ -49,7 +49,8 @@ every installation:    atena-ingest sync --shared  (only on this explicit comman
   assessments, nothing about who imported them. Pages about people and addresses the register
   already lists are left out. `ATENA_SHARE=0` or `import --no-share` keeps imports to the installation.
 * **A list file** starts with the line `ATENA-NAVRHY 1`, then one address per line – plain text anyone
-  can read before handing it over.
+  can read before handing it over. The desktop app shows the same list for copying and the editor
+  pastes received lists into it ([DESKTOP.md](DESKTOP.md)).
 * **The editor** reads list files with `atena-ingest proposals FILE…`, skips lists read before,
   **assesses every address again** (a received assessment would prove nothing) and stores them as
   proposals `via shared`. After `confirm`, `atena-ingest publish` appends the entry with its rights

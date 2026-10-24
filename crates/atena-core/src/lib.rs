@@ -15,7 +15,7 @@ pub mod text;
 pub mod version;
 
 pub use classify::{Suggestion, suggest};
-pub use legality::{CONNECTIONS, PRINCIPLE, Permission, SourceFacts, permission};
+pub use legality::{CONNECTIONS, PRINCIPLE, Permission, Restriction, SourceFacts, permission};
 pub use source::{Licence, Source, Terms, load_sources};
 pub use taxonomy::{Concept, MissingLabel, Taxonomy};
 pub use version::{Change, ChangeKind, compare};

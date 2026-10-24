@@ -229,7 +229,7 @@ impl Pipeline {
         let allowed = permitted(ep, false);
         if !allowed.crawl {
             check.outcome = "not_permitted".into();
-            check.detail = Some(allowed.reasons.join("; "));
+            check.detail = Some(allowed.explain());
             self.store.record_check(ep.id, &check).await?;
             return Ok(Outcome {
                 outcome: check.outcome,
@@ -636,7 +636,7 @@ impl Pipeline {
                 if keep_text {
                     String::new()
                 } else {
-                    format!("; metadata only: {}", permission.reasons.join("; "))
+                    format!("; metadata only: {}", permission.explain())
                 }
             )),
         ))

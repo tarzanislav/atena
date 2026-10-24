@@ -3,17 +3,14 @@
 
 use std::io::IsTerminal;
 use std::path::PathBuf;
-use std::time::Duration;
+use std::sync::Arc;
 
 use atena_core::Taxonomy;
 use atena_core::safety::for_terminal;
 use atena_search::{DEFAULT_BATCH, Results, SearchIndex, SearchRequest, Snippet, rebuild, update};
 use atena_store::Store;
-use tokio::sync::watch;
+use tokio::sync::{Notify, watch};
 use tokio::task::JoinHandle;
-
-/// How often the running crawler brings the index up to date.
-const INDEX_EVERY: Duration = Duration::from_secs(60);
 /// Hits per page by default.
 const DEFAULT_LIMIT: usize = 10;
 
@@ -62,40 +59,22 @@ pub async fn index(store: &Store, args: &[String]) -> Result<(), String> {
     Ok(())
 }
 
-/// Brings the index up to date every minute and once more after `stop`; failures are logged and
-/// the crawler goes on. Await the handle to let the last update finish.
-pub fn keep_index_fresh(store: Store, mut stop: watch::Receiver<bool>) -> Option<JoinHandle<()>> {
+/// Keeps the index fresh while the crawler runs (see [`atena_ingest::indexing::keep_fresh`]);
+/// `None` when the index cannot be opened. Await the handle to let the last update finish.
+pub fn keep_index_fresh(store: Store, stop: watch::Receiver<bool>) -> Option<JoinHandle<()>> {
     let path = index_path();
-    let index = match SearchIndex::open(&path) {
-        Ok(index) => index,
+    match SearchIndex::open(&path) {
+        Ok(index) => Some(atena_ingest::indexing::keep_fresh(
+            store,
+            Arc::new(index),
+            Arc::new(Notify::new()),
+            stop,
+        )),
         Err(e) => {
             tracing::warn!("search index not updated while crawling: {e}");
-            return None;
+            None
         }
-    };
-    Some(tokio::spawn(async move {
-        loop {
-            match update(&store, &index, DEFAULT_BATCH).await {
-                Ok(r) if r.indexed + r.left_out > 0 => {
-                    tracing::info!(
-                        indexed = r.indexed,
-                        left_out = r.left_out,
-                        "search index updated"
-                    );
-                }
-                Ok(_) => {}
-                Err(e) => tracing::warn!("updating the search index: {e}"),
-            }
-            tokio::select! {
-                _ = tokio::time::sleep(INDEX_EVERY) => {}
-                _ = stop.changed() => break,
-            }
-        }
-        // what the last checks queued
-        if let Err(e) = update(&store, &index, DEFAULT_BATCH).await {
-            tracing::warn!("updating the search index: {e}");
-        }
-    }))
+    }
 }
 
 /// `search WORDS... [--lang LL] [--label SCHEME/CONCEPT]... [--country CC] [--limit N] [--page N]

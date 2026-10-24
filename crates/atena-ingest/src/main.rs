@@ -6,15 +6,14 @@ mod searching;
 
 use std::process::ExitCode;
 use std::sync::Arc;
-use std::time::Duration;
 
 use atena_core::Taxonomy;
 use atena_core::legality::{SourceFacts, permission};
 use atena_core::safety::for_terminal;
 use atena_core::source::{BUNDLED_SOURCES, load_sources};
 use atena_crawl::{Config, Fetched, Fetcher, Validators};
-use atena_extract::Parser;
-use atena_ingest::{Pipeline, PipelineConfig, WorkerConfig, register_entries, run};
+use atena_ingest::register::fetch_shared;
+use atena_ingest::{Pipeline, PipelineConfig, WorkerConfig, parser, run};
 use atena_store::Store;
 use tokio::sync::watch;
 use tracing::Level;
@@ -115,7 +114,7 @@ fn legality_report(path: Option<&str>) -> Result<(), String> {
             yes(p.crawl),
             yes(p.store_text),
             yes(p.show_full_text),
-            p.reasons.join("; ")
+            p.explain()
         );
     }
     println!(
@@ -128,42 +127,34 @@ fn legality_report(path: Option<&str>) -> Result<(), String> {
 async fn sync(args: &[String]) -> Result<(), String> {
     let sources = match args.first().map(String::as_str) {
         Some("--shared") => {
-            let text = commands::shared_register(args.get(1).map(String::as_str)).await?;
+            let address = args
+                .get(1)
+                .cloned()
+                .or_else(|| std::env::var("ATENA_SHARED_REGISTER").ok())
+                .filter(|a| !a.trim().is_empty());
             let taxonomy = Taxonomy::bundled().map_err(|e| e.to_string())?;
-            load_sources(&text, &taxonomy).map_err(|e| format!("shared register: {e}"))?
+            fetch_shared(address.as_deref(), &taxonomy)
+                .await
+                .map_err(|e| format!("shared register: {e}"))?
         }
         path => register(path)?,
     };
     let store = connect(2).await?;
-    let report = store
-        .sync_register(&register_entries(&sources))
+    let summary = atena_ingest::register::sync(&store, &sources)
         .await
         .map_err(|e| e.to_string())?;
-    // the legality principle applies retroactively: what a source may no longer keep is removed
-    let (mut purged, mut restricted) = (0, 0);
-    for source in &sources {
-        let allowed = permission(SourceFacts::from(source), false);
-        if !allowed.crawl {
-            purged += store
-                .purge_source(&source.id)
-                .await
-                .map_err(|e| e.to_string())?;
-        } else if !allowed.store_text {
-            restricted += store
-                .restrict_source(&source.id)
-                .await
-                .map_err(|e| e.to_string())?;
-        }
-    }
+    let report = summary.report;
     println!(
         "{} sources ({} removed, {} imports taken over), {} endpoints added, {} disabled; legality: \
-         {purged} documents of sources that may not be crawled removed, texts of {restricted} \
-         versions reduced to metadata",
+         {} documents of sources that may not be crawled removed, texts of {} versions reduced to \
+         metadata",
         report.sources,
         report.removed,
         report.merged,
         report.endpoints_added,
-        report.endpoints_disabled
+        report.endpoints_disabled,
+        summary.purged,
+        summary.restricted
     );
     Ok(())
 }
@@ -427,40 +418,12 @@ async fn forget(args: &[String]) -> Result<(), String> {
 #[global_allocator]
 static ALLOCATOR: cap::Cap<std::alloc::System> = cap::Cap::new(std::alloc::System, usize::MAX);
 
-/// The limited child process that parses one document (see `atena_extract::Parser`).
-fn parse_worker(limit: Option<&str>) -> ExitCode {
-    let limit = limit
-        .and_then(|l| l.parse().ok())
-        .unwrap_or(atena_extract::MEMORY_LIMIT);
-    if ALLOCATOR.set_limit(limit).is_err() {
-        return ExitCode::FAILURE;
-    }
-    match atena_extract::serve() {
-        Ok(()) => ExitCode::SUCCESS,
-        Err(_) => ExitCode::FAILURE,
-    }
-}
-
-/// Documents are parsed in a limited child process of this program.
-pub(crate) fn parser() -> Parser {
-    match std::env::current_exe() {
-        Ok(program) => Parser::isolated(program, PARSE_TIME),
-        Err(e) => {
-            tracing::warn!("parsing in this process, without a memory limit: {e}");
-            Parser::InProcess {
-                time_limit: PARSE_TIME,
-            }
-        }
-    }
-}
-
-/// Longest time for parsing one document.
-const PARSE_TIME: Duration = Duration::from_secs(60);
-
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
     if args.first().map(String::as_str) == Some(atena_extract::WORKER_ARG) {
-        return parse_worker(args.get(1).map(String::as_str));
+        return atena_extract::worker_main(args.get(1).map(String::as_str), |limit| {
+            ALLOCATOR.set_limit(limit).is_ok()
+        });
     }
     match tokio::runtime::Builder::new_multi_thread()
         .enable_all()

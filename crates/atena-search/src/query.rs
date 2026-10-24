@@ -27,7 +27,7 @@ use tantivy::query::{
 };
 use tantivy::schema::{Facet, IndexRecordOption, Value};
 use tantivy::snippet::SnippetGenerator;
-use tantivy::{DateTime, DocId, Score, Searcher, SegmentReader, TantivyDocument, Term};
+use tantivy::{DateTime, DocId, Order, Score, Searcher, SegmentReader, TantivyDocument, Term};
 
 use crate::analysis::group_of;
 use crate::index::{SearchIndex, facet};
@@ -338,6 +338,33 @@ impl SearchIndex {
             facets: facet_counts(&counts, &namespaces),
             all_words,
         })
+    }
+
+    /// The newest documents – by publication date, otherwise by the last change of their text –
+    /// that match `filters` (all documents without filters): an overview without words.
+    pub fn newest(
+        &self,
+        taxonomy: &Taxonomy,
+        filters: &[String],
+        limit: usize,
+    ) -> Result<Vec<Hit>> {
+        if filters.len() > MAX_FILTERS {
+            return Err(SearchError::TooManyFilters(MAX_FILTERS));
+        }
+        let filters = self.filters(taxonomy, filters)?;
+        let query = Self::filtered(Box::new(AllQuery), &filters);
+        let searcher = self.reader.searcher();
+        let top = TopDocs::with_limit(limit.clamp(1, MAX_LIMIT))
+            .order_by_fast_field::<DateTime>("dated", Order::Desc);
+        let mut generators = HashMap::new();
+        searcher
+            .search(&*query, &top)?
+            .into_iter()
+            .map(|(_, address)| {
+                let doc: TantivyDocument = searcher.doc(address)?;
+                self.hit(&searcher, &*query, &mut generators, 0.0, &doc)
+            })
+            .collect()
     }
 
     fn hit(

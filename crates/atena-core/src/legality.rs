@@ -305,12 +305,82 @@ pub struct Permission {
     pub show_full_text: bool,
     /// Offer a full translation.
     pub translate: bool,
-    /// Why something is not allowed, for logs and reviewers.
-    pub reasons: Vec<&'static str>,
+    /// Why something is not allowed.
+    pub reasons: Vec<Restriction>,
+}
+
+/// Why the legality principle withholds something: a code for user interfaces (which translate
+/// it) and a sentence for logs and reviewers.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum Restriction {
+    /// The source's country has no legal profile.
+    NoProfile,
+    /// The terms of use forbid automated access.
+    TermsForbid,
+    /// Copyrighted content whose terms of use are not verified.
+    TermsNotVerified,
+    /// Copyrighted content of a country that allows mining only for non-commercial research.
+    ResearchOnly,
+    /// Copyrighted content of a country without a text and data mining exception.
+    NoMiningException,
+    /// The publisher reserved text and data mining.
+    MiningReserved,
+    /// The source country's data protection law does not allow keeping texts abroad.
+    PrivacyLaw,
+}
+
+impl Restriction {
+    /// The code (kebab-case), as serialised.
+    pub fn code(self) -> &'static str {
+        match self {
+            Self::NoProfile => "no-profile",
+            Self::TermsForbid => "terms-forbid",
+            Self::TermsNotVerified => "terms-not-verified",
+            Self::ResearchOnly => "research-only",
+            Self::NoMiningException => "no-mining-exception",
+            Self::MiningReserved => "mining-reserved",
+            Self::PrivacyLaw => "privacy-law",
+        }
+    }
+
+    /// The sentence for logs and reviewers.
+    pub fn describe(self) -> &'static str {
+        match self {
+            Self::NoProfile => "no legal profile for the source's country",
+            Self::TermsForbid => "the terms of use forbid automated access",
+            Self::TermsNotVerified => "copyrighted content: the terms of use are not verified",
+            Self::ResearchOnly => {
+                "copyrighted content: the source country allows mining only for non-commercial research"
+            }
+            Self::NoMiningException => {
+                "copyrighted content: the source country has no text and data mining exception"
+            }
+            Self::MiningReserved => "the publisher reserved text and data mining",
+            Self::PrivacyLaw => {
+                "the source country's data protection law does not allow keeping texts abroad"
+            }
+        }
+    }
+}
+
+impl std::fmt::Display for Restriction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.describe())
+    }
 }
 
 impl Permission {
-    fn nothing(reason: &'static str) -> Self {
+    /// The reasons as one sentence for logs.
+    pub fn explain(&self) -> String {
+        self.reasons
+            .iter()
+            .map(|r| r.describe())
+            .collect::<Vec<_>>()
+            .join("; ")
+    }
+
+    fn nothing(reason: Restriction) -> Self {
         Self {
             crawl: false,
             store_text: false,
@@ -330,10 +400,10 @@ impl Permission {
 pub fn permission(source: SourceFacts<'_>, tdm_reserved: bool) -> Permission {
     let here = profile(OPERATOR_COUNTRY).expect("the operator's country has a profile");
     let Some(there) = profile(source.country) else {
-        return Permission::nothing("no legal profile for the source's country");
+        return Permission::nothing(Restriction::NoProfile);
     };
     if source.terms == Terms::Forbidden {
-        return Permission::nothing("the terms of use forbid automated access");
+        return Permission::nothing(Restriction::TermsForbid);
     }
     let mut reasons = Vec::new();
     // a reservation in the terms of use counts like a machine-readable one
@@ -352,18 +422,17 @@ pub fn permission(source: SourceFacts<'_>, tdm_reserved: bool) -> Permission {
         && source.terms == Terms::Allowed;
     if !reusable && !minable && !(reserved && there.mining == Mining::Allowed) {
         reasons.push(match there.mining {
-            Mining::Allowed => "copyrighted content: the terms of use are not verified",
-            Mining::ResearchOnly => "copyrighted content: the source country allows mining only for non-commercial research",
-            Mining::NotAllowed => "copyrighted content: the source country has no text and data mining exception",
+            Mining::Allowed => Restriction::TermsNotVerified,
+            Mining::ResearchOnly => Restriction::ResearchOnly,
+            Mining::NotAllowed => Restriction::NoMiningException,
         });
     }
     if reserved {
-        reasons.push("the publisher reserved text and data mining");
+        reasons.push(Restriction::MiningReserved);
     }
     let strict_privacy = there.personal_data == PersonalData::Strict;
     if strict_privacy {
-        reasons
-            .push("the source country's data protection law does not allow keeping texts abroad");
+        reasons.push(Restriction::PrivacyLaw);
     }
     let store_text = (reusable || minable) && !reserved && !strict_privacy;
     let show_full_text = store_text && reusable;

@@ -53,7 +53,7 @@ impl ImportState {
         }
     }
 
-    fn parse(text: &str) -> Self {
+    pub(crate) fn parse(text: &str) -> Self {
         match text {
             "confirmed" => Self::Confirmed,
             "rejected" => Self::Rejected,

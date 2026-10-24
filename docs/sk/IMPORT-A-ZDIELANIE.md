@@ -55,7 +55,9 @@ každá inštalácia:    atena-ingest sync --shared  (len na tento výslovný pr
   - Stránky o ľuďoch a adresy, ktoré register už obsahuje, sa vynechajú.
   - `ATENA_SHARE=0` alebo `import --no-share` nechá importy len v danej inštalácii.
 - **Súbor so zoznamom** začína riadkom `ATENA-NAVRHY 1`, za ním je na každom riadku jedna adresa.
-  Je to obyčajný text, ktorý si každý môže pred odovzdaním prečítať.
+  Je to obyčajný text, ktorý si každý môže pred odovzdaním prečítať. Aplikácia pre počítač ukáže
+  rovnaký zoznam na skopírovanie a redaktor do nej prijaté zoznamy vkladá
+  ([APLIKACIA.md](APLIKACIA.md)).
 - **Redaktor:** príkaz `atena-ingest proposals SÚBOR…`
   - prečíta súbory so zoznamami a preskočí tie, ktoré už prečítal,
   - **každú adresu znova sám vyhodnotí**, lebo prijaté vyhodnotenie by nič nedokazovalo,

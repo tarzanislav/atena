@@ -36,10 +36,22 @@ jobs:
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
       - name: Format
         run: cargo fmt --all --check
+      # problems become annotations of the pull request (readable without the full log)
       - name: Clippy
-        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+        shell: bash
+        env: {CARGO_TERM_COLOR: never}
+        run: |
+          set -o pipefail
+          cargo clippy --workspace --all-targets --locked --message-format=short -- -D warnings 2>&1 \
+            | sed -E -e 's/^([^: ]+):([0-9]+):([0-9]+): (error|warning)(\[[^]]*\])?: (.*)$/::error file=\1,line=\2,col=\3::\6 \5/' \
+                     -e 's/^(error.*|.*panicked at.*)$/::error::\1/'
       - name: Test
-        run: cargo test --workspace --locked
+        shell: bash
+        env: {CARGO_TERM_COLOR: never}
+        run: |
+          set -o pipefail
+          cargo test --workspace --locked 2>&1 \
+            | sed -E "s/^thread '([^']*)'.* panicked at ([^:]+):([0-9]+):([0-9]+):$/::error file=\2,line=\3,col=\4::test \1 panicked/"
 
   database:
     name: Database (PostgreSQL 17)
@@ -60,6 +72,10 @@ jobs:
           rustup toolchain install stable --profile minimal
           rustup default stable
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - name: PostgreSQL programs for the database inside the desktop app
+        run: |
+          bin=$(ls -d /usr/lib/postgresql/*/bin 2>/dev/null | sort -V | tail -n 1)
+          if [ -n "$bin" ]; then echo "ATENA_TEST_PG_BIN=$bin" >> "$GITHUB_ENV"; fi
       - name: Tests that need PostgreSQL
         env: {ATENA_TEST_DATABASE_URL: "postgres://postgres:test@localhost:5432/postgres"}
         run: cargo test --workspace --locked

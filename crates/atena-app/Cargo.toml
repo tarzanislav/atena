@@ -1,0 +1,34 @@
+[package]
+name = "atena-app"
+description = "ATENA application backend: the database inside the app and the operations the user interface calls"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish.workspace = true
+
+[dependencies]
+atena-assess = { path = "../atena-assess" }
+atena-core = { path = "../atena-core" }
+atena-crawl = { path = "../atena-crawl" }
+atena-extract = { path = "../atena-extract" }
+atena-ingest = { path = "../atena-ingest" }
+atena-search = { path = "../atena-search" }
+atena-store = { path = "../atena-store" }
+getrandom = "0.4.3"
+jiff = { version = "0.2.38", features = ["serde"] }
+serde.workspace = true
+serde_json.workspace = true
+sqlx = { version = "0.8.6", default-features = false, features = ["postgres", "runtime-tokio"] }
+thiserror.workspace = true
+tokio = { version = "1.54.1", features = ["macros", "process", "rt-multi-thread", "sync", "time"] }
+tracing = "0.1.44"
+url = "2.5.8"
+
+[dev-dependencies]
+atena-store = { path = "../atena-store", features = ["testing"] }
+
+[lints]
+workspace = true
