@@ -47,7 +47,8 @@ informácie o vzdelávaní, nie o ľuďoch, preto si osobných údajov necháva 
 
 | Opatrenie | Kde v programe |
 |---|---|
-| **E-mailové adresy a telefónne čísla sa odstránia** z textov, názvov, popisov a textov odkazov ešte pred uložením, aj v zakrytom tvare ako `meno(at)skola.sk` | `atena-ingest/src/privacy.rs` |
+| **E-mailové adresy, telefónne čísla a rodné čísla sa odstránia** z textov, názvov, popisov a textov odkazov ešte pred uložením – aj s medzinárodnými doménami, v zakrytom tvare (`meno (at) skola (dot) sk`), ruské a čínske čísla a každé číslo za označením ako `tel.`, `mobil`, `телефон` či `电话` | `atena-ingest/src/privacy.rs` |
+| **Verejný register nemenuje nikoho**: rozhodnutie zapísané do `data/sources.yaml` uvádza „decided by the ATENA editor“ (rozhodol redaktor ATENY); meno redaktora zostáva len v jeho inštalácii | `atena-ingest publish` |
 | **Pôvodné súbory sa neukladajú vôbec** – ani webové stránky, ani PDF, ani kancelárske dokumenty; len upravený text a odtlačok originálu | spracovanie, migrácia 0007 |
 | **Žiadne programy ani aktívny obsah**: programy, maskované súbory, PDF s JavaScriptom, spúšťacími akciami alebo vloženými súbormi a kancelárske dokumenty s makrami, ActiveX, objektmi OLE alebo vzdialenými šablónami sa odmietnu celé – nič z nich sa neuloží | `atena-extract/src/danger.rs` |
 | **Stránky o ľuďoch sa nesledujú**: fotogalérie, zoznamy zamestnancov, kontakty, profily, prihlasovanie | `urls::is_personal_page` |

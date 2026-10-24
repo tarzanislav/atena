@@ -243,10 +243,12 @@ fn hash_from(bytes: Option<Vec<u8>>) -> Result<Option<Hash>> {
         .transpose()
 }
 
-/// Removes everything a reservation forbids keeping: texts, links and automatic suggestions.
+/// Removes everything a reservation forbids keeping: texts, descriptions, links and automatic
+/// suggestions.
 async fn forget_content(tx: &mut Transaction<'_, Postgres>, document_id: i64) -> Result<()> {
     sqlx::query(
-        "UPDATE document_version SET body = NULL WHERE document_id = $1 AND body IS NOT NULL",
+        "UPDATE document_version SET body = NULL, description = NULL
+         WHERE document_id = $1 AND (body IS NOT NULL OR description IS NOT NULL)",
     )
     .bind(document_id)
     .execute(&mut **tx)

@@ -468,10 +468,10 @@ pub async fn publish(store: &Store, args: &[String]) -> Result<(), String> {
     entry.push_str(&format!(
         "  rights:\n    checked: {checked}\n    page: {}\n    finding: {}\n",
         yaml_string(&decided.rights_page),
+        // the public register names no person – not even the editor (pillar 2)
         yaml_string(&format!(
-            "{} (decided by {})",
-            decided.finding,
-            decided.by_person.unwrap_or_default()
+            "{} (decided by the ATENA editor)",
+            decided.finding
         ))
     ));
     let current = std::fs::read_to_string(&path).map_err(|e| format!("{path}: {e}"))?;
