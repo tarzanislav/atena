@@ -11,10 +11,10 @@ use std::time::{Duration, Instant};
 use atena_core::legality::{self, Permission, SourceFacts};
 use atena_core::{ChangeKind, Licence, Taxonomy, Terms, compare, suggest};
 use atena_crawl::{FetchError, Fetched, Fetcher, Page, Validators, parse_feed, parse_sitemap};
-use atena_extract::{Document, ExtractError, Format, LanguageSource, extract};
+use atena_extract::{Document, ExtractError, Format, LanguageSource, extract, video_url};
 use atena_store::{
-    Capture, Check, Endpoint, EndpointKind, LabelSuggestion, NewEndpoint, NewVersion, Origin,
-    Rights, Store, StoreError, hash, parse_hex,
+    Capture, Check, DocumentLink, Endpoint, EndpointKind, LabelSuggestion, NewEndpoint, NewVersion,
+    Origin, Rights, Store, StoreError, hash, parse_hex,
 };
 use url::Url;
 
@@ -418,6 +418,7 @@ impl Pipeline {
         doc.title.iter_mut().for_each(&mut clean);
         doc.description.iter_mut().for_each(&mut clean);
         doc.links.iter_mut().for_each(|l| clean(&mut l.text));
+        doc.videos.iter_mut().for_each(|v| clean(&mut v.title));
         // a web page's "author" is usually its webmaster; authors are kept for documents only
         if matches!(doc.format, Format::Html | Format::Text) {
             doc.authors.clear();
@@ -501,10 +502,18 @@ impl Pipeline {
             evidence: s.evidence,
         })
         .collect();
-        let links: Vec<(String, String)> = if keep_text {
-            doc.links
+        // links and videos are part of the content: kept only where its text may be kept;
+        // videos are recorded, never fetched (ATENA does not visit YouTube or Vimeo)
+        let links: Vec<DocumentLink> = if keep_text {
+            doc.videos
                 .iter()
-                .map(|l| (normalize(&l.url).to_string(), l.text.clone()))
+                .map(|v| DocumentLink::video(v.url.as_str(), v.title.clone()))
+                .chain(
+                    doc.links
+                        .iter()
+                        .filter(|l| video_url(&l.url).is_none())
+                        .map(|l| DocumentLink::link(normalize(&l.url).to_string(), l.text.clone())),
+                )
                 .collect()
         } else {
             Vec::new()
@@ -546,6 +555,8 @@ impl Pipeline {
                 .links
                 .iter()
                 .filter(|l| !l.nofollow)
+                // never a video service, even if it were on the publisher's own host
+                .filter(|l| video_url(&l.url).is_none())
                 .filter(|l| follow(&page_url, &normalize(&l.url)).is_some())
                 .filter_map(|l| self.new_endpoint(ep, &l.url, EndpointKind::Page, Origin::Link))
                 .take(MAX_LINKS_PER_PAGE)

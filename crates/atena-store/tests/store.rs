@@ -5,8 +5,8 @@ use std::time::Duration;
 
 use atena_store::testing::TestDb;
 use atena_store::{
-    Capture, Check, EndpointKind, LabelDecision, LabelSuggestion, NewEndpoint, NewVersion, Origin,
-    RegisterSource, Rights, SourceRecord, Store, hash,
+    Capture, Check, DocumentLink, EndpointKind, LabelDecision, LabelSuggestion, LinkKind,
+    NewEndpoint, NewVersion, Origin, RegisterSource, Rights, SourceRecord, Store, hash,
 };
 use jiff::Timestamp;
 
@@ -294,10 +294,15 @@ async fn versions_labels_and_editor_decisions() {
             .unwrap()
     );
 
-    let links = vec![(
-        "https://sk01.example.sk/ziadost.pdf".to_string(),
-        "žiadosť".to_string(),
-    )];
+    let links = vec![
+        DocumentLink::link("https://sk01.example.sk/ziadost.pdf", "žiadosť"),
+        DocumentLink::video(
+            "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            "Prehliadka školy",
+        ),
+        // the same video as an ordinary link is recorded once, as a video
+        DocumentLink::link("https://www.youtube.com/watch?v=dQw4w9WgXcQ", "video"),
+    ];
     let first = s
         .save_version(
             &capture(ep, "Zápis bude 15. apríla.", Rights::default()),
@@ -311,6 +316,11 @@ async fn versions_labels_and_editor_decisions() {
         .await
         .unwrap();
     assert_eq!(first.version_no, 1);
+    let stored = s.links(first.document_id).await.unwrap();
+    assert_eq!(stored.len(), 2);
+    assert_eq!(stored[0].kind, LinkKind::Video);
+    assert_eq!(stored[0].text, "Prehliadka školy");
+    assert_eq!(stored[1], links[0]);
     let current = s.current_document(ep).await.unwrap().unwrap();
     assert_eq!(current.body.as_deref(), Some("Zápis bude 15. apríla."));
     assert_eq!(
@@ -424,7 +434,7 @@ async fn a_tdm_reservation_removes_kept_text() {
     .await
     .unwrap();
     let ep: i64 = scalar_i64(s, "SELECT id FROM endpoint").await;
-    let links = vec![("https://sk01.example.sk/a.pdf".to_string(), "a".to_string())];
+    let links = vec![DocumentLink::link("https://sk01.example.sk/a.pdf", "a")];
     let first = s
         .save_version(
             &capture(ep, "Text 1", Rights::default()),
@@ -580,7 +590,7 @@ async fn erasure_removes_everything_and_blocks_the_url() {
     s.save_version(
         &o,
         &version("initial", "Oznamy"),
-        &[(page.to_string(), "Ján Novák".to_string())],
+        &[DocumentLink::link(page.to_string(), "Ján Novák")],
         &[],
     )
     .await
@@ -696,7 +706,7 @@ async fn sources_can_be_restricted_to_metadata_or_purged() {
         .save_version(
             &c,
             &v,
-            &[("https://sk01.example.sk/a.pdf".into(), "a".into())],
+            &[DocumentLink::link("https://sk01.example.sk/a.pdf", "a")],
             &[suggestion("topic", "ai")],
         )
         .await

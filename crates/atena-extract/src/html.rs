@@ -21,6 +21,7 @@ use scraper::{ElementRef, Html, Node};
 use url::Url;
 
 use crate::meta::parse_date;
+use crate::video::{MAX_VIDEOS, Video, video_url};
 
 /// Text this long in `<main>` or `<article>` makes it the content.
 const SEMANTIC_MIN: usize = 140;
@@ -236,6 +237,7 @@ pub(crate) struct HtmlParts {
     pub canonical: Option<Url>,
     pub feeds: Vec<Url>,
     pub links: Vec<Link>,
+    pub videos: Vec<Video>,
     pub robots: Vec<String>,
     pub tdm_reservation: Option<String>,
     pub tdm_policy: Option<String>,
@@ -600,6 +602,50 @@ fn non_empty(text: String) -> Option<String> {
     (!text.is_empty()).then_some(text)
 }
 
+/// Longest video title kept, in characters.
+const MAX_VIDEO_TITLE: usize = 300;
+
+/// Videos the page links to or embeds, anywhere in the document: `<a href>` and the players of
+/// `<iframe src>` (also lazily loaded ones, `data-src`). One entry per video, in document order.
+fn find_videos<'a>(elements: impl Iterator<Item = ElementRef<'a>>, base: &Url) -> Vec<Video> {
+    let mut videos: Vec<Video> = Vec::new();
+    for e in elements {
+        let v = e.value();
+        let (target, title) = match v.name() {
+            "a" => (
+                v.attr("href"),
+                non_empty(element_text(&e)).or_else(|| v.attr("title").map(collapse)),
+            ),
+            "iframe" => (
+                v.attr("src")
+                    .filter(|s| !s.trim().is_empty() && !s.starts_with("about:"))
+                    .or(v.attr("data-src")),
+                v.attr("title").map(collapse),
+            ),
+            _ => continue,
+        };
+        let Some(url) = target
+            .and_then(|t| base.join(t.trim()).ok())
+            .and_then(|u| video_url(&u))
+        else {
+            continue;
+        };
+        let title: String = title
+            .unwrap_or_default()
+            .chars()
+            .take(MAX_VIDEO_TITLE)
+            .collect();
+        if let Some(known) = videos.iter_mut().find(|known| known.url == url) {
+            if known.title.is_empty() {
+                known.title = title;
+            }
+        } else if videos.len() < MAX_VIDEOS {
+            videos.push(Video { url, title });
+        }
+    }
+    videos
+}
+
 /// Parses an HTML page fetched from `url`.
 pub(crate) fn extract_html(html: &str, url: &Url) -> HtmlParts {
     let doc = Html::parse_document(limit_nesting(html));
@@ -676,6 +722,7 @@ pub(crate) fn extract_html(html: &str, url: &Url) -> HtmlParts {
     let measures = measure(&doc);
     let root = content_root(&doc, &measures);
     let (text, links) = render(root, &base);
+    let videos = find_videos(elements(), &base);
 
     let title = meta(&["og:title", "dc.title", "dcterms.title"])
         .or_else(|| {
@@ -734,6 +781,7 @@ pub(crate) fn extract_html(html: &str, url: &Url) -> HtmlParts {
         canonical,
         feeds,
         links,
+        videos,
         robots,
         tdm_reservation: meta(&["tdm-reservation"]),
         tdm_policy: meta(&["tdm-policy"]),
@@ -809,6 +857,41 @@ mod tests {
         assert_eq!(p.authors, ["Mgr. Jana Nová"]);
         assert_eq!(p.declared_language.as_deref(), Some("en"));
         assert_eq!(p.description.as_deref(), Some("Informácie o zápise"));
+    }
+
+    #[test]
+    fn videos_from_players_and_links_anywhere_in_the_page() {
+        let page = r#"<html><body>
+            <nav><a href="https://www.youtube.com/@skola">Náš kanál</a></nav>
+            <main><h1>Deň otvorených dverí</h1>
+            <p>Pozrite si video o našej škole a o tom, ako prebieha vyučovanie v prvom ročníku.</p>
+            <iframe title="Prehliadka školy" src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?rel=0"></iframe>
+            <iframe src="about:blank" data-src="https://player.vimeo.com/video/76979871"></iframe>
+            <p><a href="https://youtu.be/dQw4w9WgXcQ">Tá istá prehliadka</a></p></main>
+            <footer><a href="https://www.youtube.com/watch?v=aaaaaaaaaaa">Záznam z akadémie</a></footer>
+            </body></html>"#;
+        let p = extract_html(page, &url());
+        let found: Vec<(&str, &str)> = p
+            .videos
+            .iter()
+            .map(|v| (v.url.as_str(), v.title.as_str()))
+            .collect();
+        assert_eq!(
+            found,
+            [
+                (
+                    "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                    "Prehliadka školy"
+                ),
+                ("https://vimeo.com/76979871", ""),
+                (
+                    "https://www.youtube.com/watch?v=aaaaaaaaaaa",
+                    "Záznam z akadémie"
+                ),
+            ]
+        );
+        // a channel is not a video, and players never add text
+        assert!(!p.text.contains("Prehliadka"));
     }
 
     #[test]

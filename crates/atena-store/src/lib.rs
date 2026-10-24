@@ -20,8 +20,8 @@ use sqlx::postgres::{PgConnectOptions, PgPool, PgPoolOptions};
 
 pub use blob::{BlobCompression, BlobStore, Hash, StoredBlob, hash, hex, parse_hex};
 pub use documents::{
-    Capture, CurrentDocument, Label, LabelDecision, LabelSuggestion, NewVersion, Rights,
-    SavedVersion, VersionSummary,
+    Capture, CurrentDocument, DocumentLink, Label, LabelDecision, LabelSuggestion, LinkKind,
+    NewVersion, Rights, SavedVersion, VersionSummary,
 };
 pub use erasure::ErasureReport;
 pub use register::{RegisterSource, SourceRecord, SyncReport};

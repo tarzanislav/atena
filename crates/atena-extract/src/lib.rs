@@ -15,6 +15,7 @@ mod lang;
 mod meta;
 mod office;
 mod pdf;
+mod video;
 
 use jiff::Timestamp;
 use url::Url;
@@ -22,6 +23,7 @@ use url::Url;
 pub use html::{Link, MAX_LINKS};
 pub use lang::{Language, LanguageSource, detect as detect_language};
 pub use office::MAX_PART_BYTES;
+pub use video::{MAX_VIDEOS, Video, video_url};
 
 /// Longest text kept from one document, in characters.
 pub const MAX_TEXT_CHARS: usize = 2_000_000;
@@ -68,6 +70,8 @@ pub struct Document {
     pub canonical: Option<Url>,
     /// Links in the main content of a web page.
     pub links: Vec<Link>,
+    /// Videos (YouTube, Vimeo) the page links to or embeds anywhere – never fetched.
+    pub videos: Vec<Video>,
     /// RSS/Atom feeds announced by a web page.
     pub feeds: Vec<Url>,
     /// Contents of `<meta name="robots">` and `<meta name="atena">` (apply with `IndexRules::add_list`).
@@ -192,6 +196,7 @@ pub fn extract(
         modified: None,
         canonical: None,
         links: Vec::new(),
+        videos: Vec::new(),
         feeds: Vec::new(),
         robots: Vec::new(),
         tdm_reservation: None,
@@ -211,6 +216,7 @@ pub fn extract(
             doc.modified = p.modified;
             doc.canonical = p.canonical;
             doc.links = p.links;
+            doc.videos = p.videos;
             doc.feeds = p.feeds;
             doc.robots = p.robots;
             doc.tdm_reservation = tdm_value(p.tdm_reservation.as_deref());

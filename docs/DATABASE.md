@@ -16,7 +16,7 @@ store**. The database is the source of truth; search indexes are derived from it
 | `blob` | original files stored in the file store, by BLAKE3 hash |
 | `document` | one per page endpoint: current title, language, status, the publisher's rules, current version |
 | `document_version` | a new row only when the **text** changes: change kind, paragraphs added/removed, number/date changes, text, metadata |
-| `document_link` | links in the current version (attachments, subpages) |
+| `document_link` | links in the current version (attachments, subpages) and videos (`kind = 'video'`: YouTube and Vimeo videos the page links to or embeds – recorded, never fetched) |
 | `document_label` | classification: automatic suggestions with evidence, and editors' decisions |
 | `blocked_url` | URLs (or prefixes) that are never fetched again – erasure requests |
 | `erasure_log` | what an erasure removed and why, without the removed content |

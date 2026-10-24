@@ -25,6 +25,8 @@ fn school_page(date: &str) -> String {
         <p>Ďalšie informácie nájdete v <a href="/skola/oznamy/zapis.html">ozname riaditeľa</a>, v <a href="/skola/dokumenty/kriteria.txt">kritériách prijatia</a>
         a v <a href="/skola/vyhrada.html">podmienkach používania</a>. Pozri aj <a href="https://www.example.com/x.pdf">externý dokument</a>
         a <a href="/skola/zmazane.html">starý oznam</a>.</p>
+        <iframe title="Prehliadka školy – riaditel@zs-prikladna.sk" src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"></iframe>
+        <p>Video si pozrite aj <a href="https://youtu.be/dQw4w9WgXcQ">na YouTube</a>.</p>
         <p>Kontakt: riaditel@zs-prikladna.sk, tel. 0905 123 456. <a href="/skola/zamestnanci/">Zamestnanci</a>,
         <a href="/skola/fotogaleria/vylet.html">fotogaléria</a>.</p></main></body></html>"#
     )
@@ -211,7 +213,22 @@ async fn register_to_versions_and_classification() {
             &format!("SELECT count(*) FROM document_link WHERE document_id = {skola}")
         )
         .await,
-        7
+        8
+    );
+    // the embedded and linked video is recorded once, cleaned of personal data, and never fetched
+    let videos: Vec<(String, String)> = sqlx::query_as(
+        "SELECT url, text FROM document_link WHERE document_id = $1 AND kind = 'video'",
+    )
+    .bind(skola)
+    .fetch_all(store.pool())
+    .await
+    .unwrap();
+    assert_eq!(
+        videos,
+        [(
+            "https://www.youtube.com/watch?v=dQw4w9WgXcQ".to_string(),
+            "Prehliadka školy – [email]".to_string()
+        )]
     );
     let body = store.version_body(history[0].id).await.unwrap().unwrap();
     assert!(body.contains("Kontakt: [email], tel. [phone]."), "{body}");
