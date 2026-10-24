@@ -24,7 +24,8 @@ USAGE:
     atena-ingest migrate              apply database migrations
     atena-ingest sync [REGISTER | --shared [URL]]
                                       load the source register (default: the bundled data/sources.yaml;
-                                      --shared: the shared register of the ATENA repository)
+                                      --shared: download the shared register of the ATENA repository –
+                                      only on this explicit command)
     atena-ingest run [--once] [--concurrency N]
                                       check due endpoints; --once stops when nothing is due
     atena-ingest fetch URL            fetch and extract one URL and print a summary (no database)
@@ -41,9 +42,9 @@ USAGE:
                                       a person's decision (default: the proposal); crawled if allowed
     atena-ingest reject ID... [--by NAME] --reason TEXT
                                       reject imported sources and remove what was collected
-    atena-ingest share                send lists of proposals still waiting to be shared
-    atena-ingest proposals [--no-relay] [--no-github] [--close]
-                                      editor: read the lists other installations shared and assess them
+    atena-ingest share FILE           write the proposals waiting to be shared into a list file for the
+                                      editor; ATENA itself sends nothing anywhere
+    atena-ingest proposals FILE...    editor: read list files from other installations and assess them
     atena-ingest publish ID --id NEW_ID --authority A1…E [--priority P0…P3] [--languages sk,en]
                          [--name TEXT] [--register PATH]
                                       editor: add a confirmed import to the register file
@@ -64,11 +65,9 @@ ENVIRONMENT:
     ATENA_INDEX          directory of the search index (default: ./atena-index)
     ATENA_WORKER         name of this worker in host leases (default: host name and process ID)
     ATENA_LOG            error, warn, info (default) or debug
-    ATENA_SHARE          0 turns sharing of imported addresses off (default: on)
-    ATENA_RELAY          ntfy topic the lists travel through (default: the ATENA topic on ntfy.sh)
+    ATENA_SHARE          0 keeps imported addresses to this installation (default: kept for sharing)
     ATENA_EDITOR         name recorded with confirmations and rejections (or --by)
     ATENA_SHARED_REGISTER  address of the shared register (default: data/sources.yaml on GitHub)
-    ATENA_GITHUB_TOKEN   editor only: closes processed proposal issues (proposals --close)
 ";
 
 async fn connect(max_connections: u32) -> Result<Store, String> {
@@ -195,10 +194,6 @@ async fn work(args: &[String]) -> Result<(), String> {
     )
     .await?;
     let fetcher = Fetcher::new(Config::default()).map_err(|e| e.to_string())?;
-    // lists of proposals that could not be shared before are tried again
-    if let Err(e) = commands::share_pending(&store).await {
-        tracing::warn!("sharing proposals: {e}");
-    }
     let taxonomy = Taxonomy::bundled().map_err(|e| e.to_string())?;
     // the search index follows what the checks store
     let (indexed_tx, indexed_rx) = watch::channel(false);
@@ -456,9 +451,7 @@ async fn main() -> ExitCode {
                 "imports" => commands::list(&store, &args[1..]).await,
                 "confirm" => commands::confirm(&store, &args[1..]).await,
                 "reject" => commands::reject(&store, &args[1..]).await,
-                "share" => commands::share_pending(&store)
-                    .await
-                    .map(|n| println!("{n} lists shared")),
+                "share" => commands::share(&store, &args[1..]).await,
                 "proposals" => commands::proposals(&store, &args[1..]).await,
                 _ => commands::publish(&store, &args[1..]).await,
             },

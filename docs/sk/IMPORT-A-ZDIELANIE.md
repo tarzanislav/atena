@@ -6,7 +6,7 @@ Používatelia ktorejkoľvek inštalácie ATENY môžu navrhovať zdroje, jeden 
 webové stránky a weby, kanály a mapy stránok, dokumenty, rozhrania OAI-PMH a DOI. Každý návrh prejde
 zásadou zákonnosti ([ZASADA-ZAKONNOSTI.md](ZASADA-ZAKONNOSTI.md)) rovnako ako samotný register.
 Návrhy všetkých inštalácií sa môžu zbehnúť na jednom mieste, v spoločnom registri v repozitári
-ATENA, a to bez vlastného servera.
+ATENA, a to bez akejkoľvek tretej strany.
 
 ## V jednej inštalácii
 ```
@@ -34,41 +34,41 @@ atena-ingest reject  U-1a2b3c4d5e --by "Meno" --reason "nejde o vzdelávanie"
 zablokuje.
 
 ## Medzi inštaláciami: spoločná databáza
+ATENA nikomu neposiela nič o svojich používateľoch a nepoužíva služby tretích strán
+(`atena_core::legality::CONNECTIONS`, [ZASADA-ZAKONNOSTI.md](ZASADA-ZAKONNOSTI.md)). Návrhy preto
+putujú ako súbory, ktoré odovzdávajú sami ľudia:
 ```
-inštalácia ──(len adresy)──> sprostredkovateľ: téma na ntfy.sh ──(každých 30 min)──> issues na GitHube
-                               (drží 12 hodín)                 workflow Actions     (štítok navrh-zdrojov)
-                                      │                                                    │
-                                      └────────────────> inštalácia redaktora <────────────┘
-                                          atena-ingest proposals: každú adresu sama znova vyhodnotí,
-                                          uloží ako návrh, redaktor rozhodne
-                                                     │
-                 atena-ingest publish → data/sources.yaml → pull request → spoločný register
-                                                     │
-                 každá inštalácia: atena-ingest sync --shared
+inštalácia: atena-ingest import …          adresy sa odložia na odoslanie
+            atena-ingest share navrhy.txt  … a zapíšu sa do súboru so zoznamom
+                     │
+                     │  používateľ odovzdá súbor redaktorovi, ako sám uzná za vhodné
+                     ▼
+redaktor:   atena-ingest proposals navrhy.txt   každú adresu sám znova vyhodnotí, uloží ako návrh
+            atena-ingest confirm … / reject …   rozhodne
+            atena-ingest publish U-… --id SK25 --authority C1
+                                                 → data/sources.yaml → pull request → spoločný register
+                     │
+každá inštalácia:    atena-ingest sync --shared  (len na tento výslovný príkaz)
 ```
-- **Čo sa posiela:** riadky, ktoré používateľ importoval, teda adresy, DOI a kódy krajín.
-  - Neposielajú sa vyhodnotenia ani to, kto ich poslal.
-  - Neposielajú sa stránky o ľuďoch ani adresy, ktoré register už obsahuje.
-  - Zdieľanie je predvolene zapnuté a vypína ho `ATENA_SHARE=0`.
-- **Sprostredkovateľ:** téma na verejnom serveri [ntfy.sh](https://docs.ntfy.sh/faq/). Je bezplatný a
-  bez účtov a správy po 12 hodinách zmaže. Jedna správa má najviac 4 096 bajtov, dlhšie zoznamy sa
-  rozdelia. Cez `ATENA_RELAY` sa dá nastaviť iný server, napríklad server ntfy v EÚ. Téma je
-  verejná, lebo zoznamy nie sú tajné.
-- **Uchovanie:** workflow `.github/workflows/proposals.yml` každých 30 minút skopíruje nové zoznamy do
-  issues, najviac 50 naraz. Obsah je v ohraničenom bloku, takže z neho GitHub nič nevykreslí.
-- **Redaktor:** príkaz `atena-ingest proposals`
-  - prečíta sprostredkovateľa aj otvorené issues a preskočí zoznamy, ktoré už prijal,
+- **Čo obsahuje zoznam:** riadky, ktoré používateľ importoval, teda adresy, DOI a kódy krajín.
+  - Neobsahuje vyhodnotenia ani nič o tom, kto adresy importoval.
+  - Stránky o ľuďoch a adresy, ktoré register už obsahuje, sa vynechajú.
+  - `ATENA_SHARE=0` alebo `import --no-share` nechá importy len v danej inštalácii.
+- **Súbor so zoznamom** začína riadkom `ATENA-NAVRHY 1`, za ním je na každom riadku jedna adresa.
+  Je to obyčajný text, ktorý si každý môže pred odovzdaním prečítať.
+- **Redaktor:** príkaz `atena-ingest proposals SÚBOR…`
+  - prečíta súbory so zoznamami a preskočí tie, ktoré už prečítal,
   - **každú adresu znova sám vyhodnotí**, lebo prijaté vyhodnotenie by nič nedokazovalo,
   - uloží ich ako návrhy `via shared`.
 
-  Voľba `--close` spracované issues zavrie (s `ATENA_GITHUB_TOKEN`). Po `confirm` príkaz
-  `atena-ingest publish U-… --id SK25 --authority C1` pridá záznam aj so záznamom o overení do
+  Po `confirm` príkaz `atena-ingest publish` pridá záznam aj so záznamom o overení do
   `data/sources.yaml`. Pull request a jeho CI register skontrolujú ako obvykle.
-- **Všetci:** `atena-ingest sync --shared` načíta spoločný register z repozitára. Importy, ktoré
-  register medzičasom obsahuje, prevezme (`merged`).
+- **Všetci:** `atena-ingest sync --shared` stiahne spoločný register z repozitára, a to len vtedy, keď
+  to používateľ výslovne zadá. Importy, ktoré register medzičasom obsahuje, prevezme (`merged`).
+- **Neskôr:** keď bude mať prevádzkovateľ vlastný server v EÚ, ktorý IP adresy neukladá, inštalácie
+  budú zoznamy posielať priamo tam.
 
 ## Ochrana osobných údajov
-Zoznamy obsahujú adresy vzdelávacích stránok a kódy krajín. Sprostredkovateľ (ntfy.sh, prevádzkovaný
-v USA) vidí IP adresu odosielateľa, ako každá webová služba, a správy drží 12 hodín. Issues sú verejné.
-Nič ďalšie o používateľovi sa neposiela. Prevádzkovateľ inštalácie zdieľanie uvedie v informáciách o
-spracúvaní osobných údajov a môže ho vypnúť.
+Zoznam obsahuje adresy vzdelávacích stránok a kódy krajín, nič o používateľovi. ATENA ho sama nikam
+neposiela; ako sa dostane k redaktorovi, rozhodne používateľ. Stiahnutie spoločného registra na
+príkaz sa spojí s GitHubom rovnako ako stiahnutie samotnej ATENY.

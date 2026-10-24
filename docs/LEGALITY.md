@@ -12,6 +12,20 @@ This principle, set by the project author, stands above every other rule of the 
 written into its core: `crates/atena-core/src/legality.rs`. Every decision about what may be fetched,
 kept and shown goes through `legality::permission`; there is no other path.
 
+## Security beside legality: whom ATENA connects to
+> **ATENA sends nothing about its users to anyone. By itself it connects only to the sources it draws
+> from – as an anonymous visitor that runs no scripts, loads no images and keeps no cookies, so no
+> tracking or advertising service learns of it – and to the operator's own server, which stores no IP
+> addresses. No third-party services stand in between: no relays, no analytics, no fonts or
+> libraries from other servers. Anything else happens only on a user's explicit command.**
+
+The project author set security as a priority equal to legality (24 Oct 2026). Every server sees the
+address of whoever connects to it – an answer needs somewhere to go – so the rule decides whom ATENA
+connects to and what it sends. It is written into the core as `legality::CONNECTIONS`. Proposals of
+sources therefore travel as files people hand over themselves
+([IMPORT-AND-SHARING.md](IMPORT-AND-SHARING.md)); the user interface will carry its fonts and icons
+itself.
+
 ## How it works
 1. **Every country has a legal profile** (text and data mining, official texts, data protection).
    The register refuses a source from a country without one.

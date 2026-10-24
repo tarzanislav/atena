@@ -22,7 +22,7 @@ cargo run --release -p atena-ingest -- fetch https://www.minedu.sk/  # one URL, 
 cargo run --release -p atena-ingest -- legality  # what the legality principle allows per source
 cargo run --release -p atena-ingest -- assess navrhy.txt [--json]
                                                  # propose licence and terms for addresses, one per line
-cargo run --release -p atena-ingest -- import navrhy.txt   # store as proposals (and share them)
+cargo run --release -p atena-ingest -- import navrhy.txt   # store as proposals (and keep them for sharing)
 cargo run --release -p atena-ingest -- confirm ID --by NAME --reason TEXT
 cargo run --release -p atena-ingest -- sync --shared       # load the shared register
                                                  # more: docs/IMPORT-AND-SHARING.md

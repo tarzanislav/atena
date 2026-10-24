@@ -148,7 +148,7 @@ pub struct ImportedSource {
 /// A list received from another installation.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InboxMessage {
-    /// The relay's message ID.
+    /// ID of the list.
     pub message_id: String,
     /// The lines.
     pub body: String,

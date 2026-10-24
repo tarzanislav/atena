@@ -12,6 +12,21 @@ Túto zásadu určil autor projektu. Je nadradená všetkým ostatným pravidlá
 priamo v jadre: v module `crates/atena-core/src/legality.rs`. Každé rozhodnutie o tom, čo sa smie
 stiahnuť, uložiť a zobraziť, ide cez funkciu `permission`. Iná cesta v programe neexistuje.
 
+## Bezpečnosť popri zákonnosti: s kým sa ATENA spája
+> **ATENA nikomu neposiela nič o svojich používateľoch. Sama od seba sa spája len so zdrojmi, z ktorých
+> čerpá – ako anonymný návštevník, ktorý nespúšťa skripty, nenačítava obrázky a neukladá cookies, takže
+> sa o nej nedozvie žiadna sledovacia ani reklamná služba – a s vlastným serverom prevádzkovateľa,
+> ktorý IP adresy neukladá. Medzi tým nie sú žiadne služby tretích strán: žiadni sprostredkovatelia,
+> žiadna analytika, žiadne písma ani knižnice z cudzích serverov. Čokoľvek iné sa stane len na
+> výslovný príkaz používateľa.**
+
+Autor projektu určil bezpečnosť ako prioritu rovnocennú so zákonnosťou (24. 10. 2026). IP adresu
+vidí každý server, s ktorým sa ktokoľvek spojí, lebo odpoveď sa musí mať kam vrátiť. Pravidlo preto
+určuje, s kým sa ATENA spája a čo posiela. V jadre je zapísané ako `legality::CONNECTIONS`. Návrhy
+zdrojov preto putujú ako súbory, ktoré odovzdávajú sami ľudia
+([IMPORT-A-ZDIELANIE.md](IMPORT-A-ZDIELANIE.md)), a rozhranie bude mať písma a ikony vo vlastnom
+balíku.
+
 ## Ako zásada funguje
 1. **Každá krajina má právny profil.** Zdroj z krajiny bez profilu nemožno zapísať do registra.
    Profil určuje, či tamojšie právo dovoľuje vyťažovať texty a dáta (TDM), či sú úradné texty voľné

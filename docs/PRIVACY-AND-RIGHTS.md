@@ -50,7 +50,8 @@ personal data as possible:
 | **Storage limitation**: the check log is deleted after 90 days | worker |
 | No images, no cookies, no tracking of visitors of the sites | crawler |
 | **Search** never finds a document marked `noindex` or of a source ATENA may not collect; snippets only where the text may be shown, and only such texts are stored in the index; an erased document leaves the index with the next update ([SEARCH.md](SEARCH.md)) | `atena_search::searchable`, `search_queue` |
-| **Sharing of proposals** sends only the imported addresses and country codes – no assessments, no user data; pages about people are never sent or stored; `ATENA_SHARE=0` turns it off ([IMPORT-AND-SHARING.md](IMPORT-AND-SHARING.md)) | `atena-ingest/src/share.rs` |
+| **No third parties**: ATENA sends nothing about its users to anyone; by itself it connects only to its sources (as an anonymous visitor) and to the operator's own server, which stores no IP addresses – no relays, analytics, or fonts and libraries from other servers | `atena_core::legality::CONNECTIONS` |
+| **Sharing of proposals** travels as list files the users hand over themselves – only the imported addresses and country codes, no assessments, no user data; pages about people are never written into a list; `ATENA_SHARE=0` keeps imports to the installation ([IMPORT-AND-SHARING.md](IMPORT-AND-SHARING.md)) | `atena-ingest/src/share.rs` |
 
 Names inside texts (e.g. "the head teacher Mgr. J. Novák") are not removed automatically; they are
 part of the published official information. A person who objects can have a document or a whole

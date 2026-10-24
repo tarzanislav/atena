@@ -1,6 +1,7 @@
-//! Requests that are not crawling: ATENA talking to services it uses itself – the relay that
-//! carries proposals between installations, the shared register, the GitHub API. robots.txt is a
-//! rule for crawlers and does not apply; the address checks and the limits do.
+//! Requests that are not crawling: made only on a user's explicit command (downloading the shared
+//! register) or to the operator's own server – never to third-party services
+//! (`atena_core::legality::CONNECTIONS`). robots.txt is a rule for crawlers and does not apply; the
+//! address checks and the limits do.
 
 use std::sync::Arc;
 use std::time::Duration;

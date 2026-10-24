@@ -33,6 +33,19 @@ misuse data or breach data protection – in Slovakia, in the European Union or 
 Both the law of the place where ATENA runs and the law of each source's country apply; the stricter \
 always wins. Where it is not certain that something is allowed, ATENA does not do it.";
 
+/// Whom ATENA connects to – security first, beside legality (the author's rule of 24 Oct 2026).
+///
+/// Every server sees the address of whoever connects to it; what can be decided is whom ATENA
+/// connects to and what it sends. The crawler is the anonymous visitor described here (it runs no
+/// scripts, loads no images and keeps no cookies); the only other requests are made on a user's
+/// explicit command, such as downloading the shared register.
+pub const CONNECTIONS: &str = "ATENA sends nothing about its users to anyone. By itself it connects \
+only to the sources it draws from – as an anonymous visitor that runs no scripts, loads no images \
+and keeps no cookies, so no tracking or advertising service learns of it – and to the operator's \
+own server, which stores no IP addresses. No third-party services stand in between: no relays, no \
+analytics, no fonts or libraries from other servers. Anything else happens only on a user's \
+explicit command.";
+
 /// Country of the operator; its law applies to everything ATENA does (Slovakia: EU law).
 pub const OPERATOR_COUNTRY: &str = "SK";
 
