@@ -215,8 +215,9 @@ async fn fetch_one(url: &str) -> Result<(), String> {
         }
     );
     println!(
-        "Links:        {}   Feeds: {}",
+        "Links:        {}   Videos: {}   Feeds: {}",
         doc.links.len(),
+        doc.videos.len(),
         doc.feeds.len()
     );
     let preview: String = doc.text.chars().take(600).collect();

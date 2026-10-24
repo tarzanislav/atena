@@ -16,7 +16,7 @@ dajú kedykoľvek prepočítať. Všetky príkazy SQL sú v module `atena-store`
 | `blob` | pôvodné súbory v úložisku podľa odtlačku BLAKE3 |
 | `document` | dokument zo stránky alebo súboru: aktuálny názov, jazyk, stav, pravidlá vydavateľa |
 | `document_version` | nový riadok len vtedy, keď sa zmení **text**: druh zmeny, pridané a odobraté odseky, zmena čísel a dátumov |
-| `document_link` | odkazy v aktuálnej verzii (prílohy, podstránky) |
+| `document_link` | odkazy v aktuálnej verzii (prílohy, podstránky) a videá (`kind = 'video'`: videá na YouTube a Vimeo, na ktoré stránka odkazuje alebo ktoré vkladá – zapíšu sa, nikdy sa neotvárajú) |
 | `document_label` | zaradenie: návrhy s dôvodom a rozhodnutia redaktora |
 | `blocked_url` | adresy (alebo celé sekcie), ktoré sa už nikdy nestiahnu – žiadosti o výmaz |
 | `erasure_log` | čo výmaz odstránil a prečo, bez odstráneného obsahu |

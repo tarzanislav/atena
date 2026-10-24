@@ -68,3 +68,8 @@ Ich stránky sa smú sťahovať, ak to robots.txt ATENE dovolí, ale ukladajú s
 
 Odkazy na videá ATENA berie z vlastných stránok inštitúcií a na YouTube nechodí. Rozhodol o tom autor
 projektu 24. 10. 2026.
+- Odkazy aj vložené prehrávače YouTube a Vimeo sa zapíšu ako jedna stála adresa na každé video
+  (`document_link.kind = 'video'`).
+- Zapisujú sa len pri zdrojoch, ktorých text si ATENA smie ponechať, lebo aj zisťovať, čo stránka
+  obsahuje, je vyťažovanie.
+- Zberač tieto adresy nikdy neotvára ani po nich ďalej nesleduje odkazy.

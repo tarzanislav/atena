@@ -87,6 +87,63 @@ pub struct NewVersion {
     pub canonical_url: Option<String>,
 }
 
+/// What a link of a document points to.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LinkKind {
+    /// An ordinary link in the content.
+    Link,
+    /// A video on YouTube or Vimeo, linked or embedded – recorded, never fetched.
+    Video,
+}
+
+impl LinkKind {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::Link => "link",
+            Self::Video => "video",
+        }
+    }
+
+    fn parse(text: &str) -> Self {
+        if text == "video" {
+            Self::Video
+        } else {
+            Self::Link
+        }
+    }
+}
+
+/// A link of a document: its address, its text (for videos the player's title) and kind.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DocumentLink {
+    /// Absolute URL.
+    pub url: String,
+    /// Link text or title, privacy-cleaned by the caller.
+    pub text: String,
+    /// Link or video.
+    pub kind: LinkKind,
+}
+
+impl DocumentLink {
+    /// An ordinary link.
+    pub fn link(url: impl Into<String>, text: impl Into<String>) -> Self {
+        Self {
+            url: url.into(),
+            text: text.into(),
+            kind: LinkKind::Link,
+        }
+    }
+
+    /// A video.
+    pub fn video(url: impl Into<String>, title: impl Into<String>) -> Self {
+        Self {
+            url: url.into(),
+            text: title.into(),
+            kind: LinkKind::Video,
+        }
+    }
+}
+
 /// An automatic classification suggestion.
 #[derive(Debug, Clone, PartialEq)]
 pub struct LabelSuggestion {
@@ -206,6 +263,26 @@ async fn forget_content(tx: &mut Transaction<'_, Postgres>, document_id: i64) ->
 }
 
 impl Store {
+    /// The links of a document (videos first), as last saved.
+    pub async fn links(&self, document_id: i64) -> Result<Vec<DocumentLink>> {
+        let rows = sqlx::query(
+            "SELECT url, text, kind FROM document_link WHERE document_id = $1
+             ORDER BY kind = 'link', url",
+        )
+        .bind(document_id)
+        .fetch_all(&self.pool)
+        .await?;
+        rows.iter()
+            .map(|r| {
+                Ok(DocumentLink {
+                    url: r.try_get("url")?,
+                    text: r.try_get::<Option<String>, _>("text")?.unwrap_or_default(),
+                    kind: LinkKind::parse(r.try_get("kind")?),
+                })
+            })
+            .collect()
+    }
+
     /// The document of an endpoint, if it has one.
     pub async fn current_document(&self, endpoint_id: i64) -> Result<Option<CurrentDocument>> {
         let row = sqlx::query(
@@ -271,7 +348,7 @@ impl Store {
         &self,
         capture: &Capture,
         version: &NewVersion,
-        links: &[(String, String)],
+        links: &[DocumentLink],
         suggestions: &[LabelSuggestion],
     ) -> Result<SavedVersion> {
         let mut tx = self.pool.begin().await?;
@@ -369,14 +446,20 @@ impl Store {
                 .bind(document_id)
                 .execute(&mut *tx)
                 .await?;
+            // a video that is also an ordinary link is recorded once, as a video
+            let mut ordered: Vec<&DocumentLink> = links.iter().collect();
+            ordered.sort_by_key(|l| l.kind != LinkKind::Video);
             sqlx::query(
-                "INSERT INTO document_link (document_id, url, text)
-                 SELECT $1, u.url, u.text FROM unnest($2::text[], $3::text[]) AS u(url, text)
+                "INSERT INTO document_link (document_id, url, text, kind)
+                 SELECT $1, u.url, u.text, u.kind
+                 FROM unnest($2::text[], $3::text[], $4::text[]) WITH ORDINALITY AS u(url, text, kind, n)
+                 ORDER BY u.n
                  ON CONFLICT DO NOTHING",
             )
             .bind(document_id)
-            .bind(links.iter().map(|(u, _)| u.as_str()).collect::<Vec<_>>())
-            .bind(links.iter().map(|(_, t)| t.as_str()).collect::<Vec<_>>())
+            .bind(ordered.iter().map(|l| l.url.as_str()).collect::<Vec<_>>())
+            .bind(ordered.iter().map(|l| l.text.as_str()).collect::<Vec<_>>())
+            .bind(ordered.iter().map(|l| l.kind.as_str()).collect::<Vec<_>>())
             .execute(&mut *tx)
             .await?;
         }

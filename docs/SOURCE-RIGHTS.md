@@ -56,4 +56,6 @@ Nemzeti Köznevelési Portál (HU01–HU03), edu.gov.ru (RU01, RU02), waldorf.sk
 pages may still be fetched where robots.txt lets ATENA in; only metadata is kept.
 
 Video links are taken from institutions' own pages; ATENA never visits YouTube (decision of the
-project author, 24 Oct 2026).
+project author, 24 Oct 2026). Links and embedded players of YouTube and Vimeo are recorded with one
+canonical address per video (`document_link.kind = 'video'`) where the page's text may be kept –
+listing what a page contains is mining too – and are never fetched or followed.
