@@ -6,12 +6,14 @@ mod searching;
 
 use std::process::ExitCode;
 use std::sync::Arc;
+use std::time::Duration;
 
 use atena_core::Taxonomy;
 use atena_core::legality::{SourceFacts, permission};
 use atena_core::safety::for_terminal;
 use atena_core::source::{BUNDLED_SOURCES, load_sources};
 use atena_crawl::{Config, Fetched, Fetcher, Validators};
+use atena_extract::Parser;
 use atena_ingest::{Pipeline, PipelineConfig, WorkerConfig, register_entries, run};
 use atena_store::Store;
 use tokio::sync::watch;
@@ -201,7 +203,10 @@ async fn work(args: &[String]) -> Result<(), String> {
         store,
         Arc::new(fetcher),
         Arc::new(taxonomy),
-        PipelineConfig::default(),
+        PipelineConfig {
+            parser: parser(),
+            ..PipelineConfig::default()
+        },
     ));
     let (stop_tx, stop_rx) = watch::channel(false);
     tokio::spawn(async move {
@@ -239,7 +244,9 @@ async fn fetch_one(url: &str) -> Result<(), String> {
         Fetched::Page(page) => page,
         Fetched::NotModified { url } => return Err(format!("{url}: not modified")),
     };
-    let doc = atena_extract::extract(&page.body, page.content_type.as_deref(), &page.url)
+    let doc = parser()
+        .extract(page.body.clone(), page.content_type.as_deref(), &page.url)
+        .await
         .map_err(|e| e.to_string())?;
     println!("URL:          {}", page.url);
     println!(
@@ -340,6 +347,7 @@ async fn assess(args: &[String]) -> Result<(), String> {
     }
     let fetcher = Arc::new(Fetcher::new(Config::default()).map_err(|e| e.to_string())?);
     let assessments = atena_assess::Assessor::new(fetcher)
+        .with_parser(parser())
         .assess_all(&parsed.items, concurrency)
         .await;
     if json {
@@ -414,8 +422,59 @@ async fn forget(args: &[String]) -> Result<(), String> {
     Ok(())
 }
 
-#[tokio::main]
-async fn main() -> ExitCode {
+/// Every allocation of this program is counted, so that a parsing worker can be held to its
+/// memory limit (`atena_extract::Parser`): beyond it, the worker stops and nothing is kept.
+#[global_allocator]
+static ALLOCATOR: cap::Cap<std::alloc::System> = cap::Cap::new(std::alloc::System, usize::MAX);
+
+/// The limited child process that parses one document (see `atena_extract::Parser`).
+fn parse_worker(limit: Option<&str>) -> ExitCode {
+    let limit = limit
+        .and_then(|l| l.parse().ok())
+        .unwrap_or(atena_extract::MEMORY_LIMIT);
+    if ALLOCATOR.set_limit(limit).is_err() {
+        return ExitCode::FAILURE;
+    }
+    match atena_extract::serve() {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(_) => ExitCode::FAILURE,
+    }
+}
+
+/// Documents are parsed in a limited child process of this program.
+pub(crate) fn parser() -> Parser {
+    match std::env::current_exe() {
+        Ok(program) => Parser::isolated(program, PARSE_TIME),
+        Err(e) => {
+            tracing::warn!("parsing in this process, without a memory limit: {e}");
+            Parser::InProcess {
+                time_limit: PARSE_TIME,
+            }
+        }
+    }
+}
+
+/// Longest time for parsing one document.
+const PARSE_TIME: Duration = Duration::from_secs(60);
+
+fn main() -> ExitCode {
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    if args.first().map(String::as_str) == Some(atena_extract::WORKER_ARG) {
+        return parse_worker(args.get(1).map(String::as_str));
+    }
+    match tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()
+    {
+        Ok(runtime) => runtime.block_on(command(args)),
+        Err(e) => {
+            eprintln!("error: {e}");
+            ExitCode::FAILURE
+        }
+    }
+}
+
+async fn command(args: Vec<String>) -> ExitCode {
     let level = match std::env::var("ATENA_LOG").as_deref() {
         Ok("error") => Level::ERROR,
         Ok("warn") => Level::WARN,
@@ -427,7 +486,6 @@ async fn main() -> ExitCode {
         .with_writer(std::io::stderr)
         .with_ansi(std::io::IsTerminal::is_terminal(&std::io::stderr()))
         .init();
-    let args: Vec<String> = std::env::args().skip(1).collect();
     let result = match args.first().map(String::as_str) {
         Some("migrate") => connect(2).await.map(|_| println!("database is up to date")),
         Some("sync") => sync(&args[1..]).await,

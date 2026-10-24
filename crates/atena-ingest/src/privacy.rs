@@ -65,16 +65,24 @@ fn redact_emails(text: &str) -> (String, usize) {
     let mut count = 0;
     let mut copied = 0;
     let mut search = 0;
+    // the next position of every sign, looked up again only once the search has passed it, so the
+    // text is read a fixed number of times however many `@` it holds (a page of thousands of `@`
+    // must not take minutes)
+    let mut next: Vec<Option<usize>> = AT_SIGNS.iter().map(|s| haystack.find(s)).collect();
     while search < text.len() {
-        let next = AT_SIGNS
+        for (position, sign) in next.iter_mut().zip(AT_SIGNS) {
+            if position.is_some_and(|p| p < search) {
+                *position = haystack[search..].find(sign).map(|p| search + p);
+            }
+        }
+        let Some((at, sign_len)) = next
             .iter()
-            .filter_map(|sign| {
-                haystack[search..]
-                    .find(sign)
-                    .map(|at| (search + at, sign.len()))
-            })
-            .min();
-        let Some((at, sign_len)) = next else { break };
+            .zip(AT_SIGNS)
+            .filter_map(|(p, sign)| p.map(|p| (p, sign.len())))
+            .min()
+        else {
+            break;
+        };
         let local_end = text[..at].trim_end_matches(' ').len();
         let local_start = text[..local_end]
             .char_indices()
@@ -177,6 +185,19 @@ mod tests {
 
     fn r(text: &str) -> String {
         redact(text).text
+    }
+
+    #[test]
+    fn thousands_of_at_signs_take_no_time() {
+        let hostile = "a@".repeat(200_000) + "riaditel@skola.sk";
+        let started = std::time::Instant::now();
+        let out = redact(&hostile);
+        assert_eq!(out.emails, 1);
+        assert!(
+            started.elapsed() < std::time::Duration::from_secs(5),
+            "{:?}",
+            started.elapsed()
+        );
     }
 
     #[test]

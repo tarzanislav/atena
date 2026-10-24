@@ -9,7 +9,7 @@ use url::Url;
 pub const MAX_VIDEOS: usize = 50;
 
 /// A video a page links to or embeds.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Video {
     /// Canonical address: `https://www.youtube.com/watch?v=…` or `https://vimeo.com/…`.
     pub url: Url,

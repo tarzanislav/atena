@@ -74,6 +74,11 @@ resource (after decompression), only the content types it can process. It sends 
   actions, embedded files, rich media or XFA forms; Word documents with macros, ActiveX, OLE objects or
   remote templates; OpenDocument texts with macros or scripts. Nothing of such a file is kept and its
   address is not tried again. Original files are never kept at all ([DATABASE.md](DATABASE.md)).
+* **Parsing in a separate, limited process** (`atena_extract::Parser`). Pages and documents are parsed
+  by a child process that may use at most 768 MB and 60 seconds; a hostile file (a decompression bomb,
+  a parser trap) can only end that child. Such a document counts as too demanding (`too_demanding`):
+  nothing of it is kept and its address is not tried again. Comparing versions is limited to
+  2 seconds, removing contact details reads a text a fixed number of times.
 * **A failure never turns into a loop.** When the database cannot store a result, the check counts as
   failed and the address waits at least an hour, like after any other failure.
 

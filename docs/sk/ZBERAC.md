@@ -75,6 +75,11 @@ Z jedného zdroja najviac 50 MiB po rozbalení a len typy obsahu, ktoré vie spr
   vloženými súbormi, multimédiami alebo formulármi XFA; dokumenty Word s makrami, ActiveX, objektmi OLE
   alebo vzdialenými šablónami; dokumenty OpenDocument s makrami alebo skriptmi. Z takého súboru sa nič
   neuloží a jeho adresa sa už neskúša. Pôvodné súbory sa neukladajú vôbec ([DATABAZA.md](DATABAZA.md)).
+* **Spracovanie v samostatnom, obmedzenom procese** (`atena_extract::Parser`). Stránky a dokumenty
+  spracúva podriadený proces, ktorý smie použiť najviac 768 MB pamäte a 60 sekúnd. Zákerný súbor
+  (dekompresná bomba, pasca na parser) tak môže ukončiť len tento proces. Taký dokument sa považuje za
+  príliš náročný (`too_demanding`): nič z neho sa neuloží a jeho adresa sa už neskúša. Porovnanie verzií
+  má limit 2 sekundy a odstránenie kontaktných údajov prečíta text len pevne daný počet ráz.
 * **Z chyby sa nikdy nestane slučka.** Keď databáza výsledok uložiť nevie, kontrola sa počíta za
   neúspešnú a adresa počká aspoň hodinu, ako po každej inej chybe.
 

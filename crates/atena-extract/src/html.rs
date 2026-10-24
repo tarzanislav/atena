@@ -214,7 +214,7 @@ const INLINE_TAGS: [&str; 18] = [
 ];
 
 /// A link found in the content.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Link {
     /// Absolute `http(s)` URL without fragment.
     pub url: Url,

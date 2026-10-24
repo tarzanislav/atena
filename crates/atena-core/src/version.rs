@@ -2,6 +2,8 @@
 //!
 //! Numbers and dates decide deadlines and obligations, so any change in them is substantive.
 
+use std::time::Duration;
+
 use similar::{ChangeTag, TextDiff};
 
 use crate::text::{fingerprint, paragraphs};
@@ -59,9 +61,21 @@ fn numbers(paras: &[String]) -> Vec<String> {
     out
 }
 
+/// Longest time a comparison may take; after it the diff approximates (a hostile or enormous text
+/// must not hold the crawler).
+const DIFF_TIME: Duration = Duration::from_secs(2);
+/// Changed text longer than this (in bytes) is not compared character by character: so much
+/// changed text is a substantive change anyway.
+const CHAR_DIFF_BYTES: usize = 40_000;
+
 /// Characters inserted or deleted between two texts, so a one-word edit inside a paragraph stays small.
 fn changed_chars(old: &str, new: &str) -> usize {
-    TextDiff::from_chars(old, new)
+    if old.len() + new.len() > CHAR_DIFF_BYTES {
+        return old.chars().count().max(new.chars().count());
+    }
+    TextDiff::configure()
+        .timeout(DIFF_TIME)
+        .diff_chars(old, new)
         .iter_all_changes()
         .filter(|c| c.tag() != ChangeTag::Equal)
         .count()
@@ -87,7 +101,7 @@ pub fn compare(old: Option<&str>, new: &str) -> Change {
     }
     let (a, b) = (paragraphs(old), paragraphs(new));
     let (a, b) = (as_strs(&a), as_strs(&b));
-    let diff = TextDiff::configure().diff_slices(&a, &b);
+    let diff = TextDiff::configure().timeout(DIFF_TIME).diff_slices(&a, &b);
     let (mut added, mut removed) = (Vec::new(), Vec::new());
     for change in diff.iter_all_changes() {
         match change.tag() {
@@ -128,7 +142,7 @@ pub enum DiffLine {
 pub fn diff_lines(old: &str, new: &str, context: usize) -> Vec<DiffLine> {
     let (a, b) = (paragraphs(old), paragraphs(new));
     let (a, b) = (as_strs(&a), as_strs(&b));
-    let diff = TextDiff::configure().diff_slices(&a, &b);
+    let diff = TextDiff::configure().timeout(DIFF_TIME).diff_slices(&a, &b);
     let mut out = Vec::new();
     for (i, group) in diff.grouped_ops(context).iter().enumerate() {
         if i > 0 {
