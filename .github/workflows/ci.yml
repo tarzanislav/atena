@@ -1,9 +1,94 @@
-name: samotest
+name: CI
+
 on:
   push:
+    branches: [main]
   pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+# Actions are pinned to full commit SHAs so a moved tag cannot change what runs here.
+
 jobs:
-  test:
+  rust:
+    name: Rust (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal --component rustfmt,clippy
+          rustup default stable
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - name: Format
+        run: cargo fmt --all --check
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: Test
+        run: cargo test --workspace --locked
+
+  msrv:
+    name: Minimum Rust version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check with the rust-version from Cargo.toml
+        run: |
+          msrv=$(sed -n 's/^rust-version = "\(.*\)"/\1/p' Cargo.toml)
+          rustup toolchain install "$msrv" --profile minimal
+          cargo +"$msrv" check --workspace --all-targets --locked
+
+  licenses:
+    name: Licences and advisories
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: EmbarkStudios/cargo-deny-action@3c6349835b2b7b196a839186cb8b78e02f7b5f25 # v2.1.1
+        with:
+          command: check
+
+  data:
+    name: Core languages in the taxonomy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Report missing labels (not yet blocking – translations are in progress)
+        run: |
+          python3 - <<'PY'
+          import yaml
+          d = yaml.safe_load(open("data/taxonomy.yaml", encoding="utf-8"))
+          core = d["core_languages"]
+          missing = {l: 0 for l in core}
+          for s in d["schemes"].values():
+              for c in s["concepts"]:
+                  for l in core:
+                      if l not in c["labels"]:
+                          missing[l] += 1
+          print("Missing labels per core language:", missing)
+          PY
+
+  prototype:
+    name: Prototype v0.1 (Python)
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -12,15 +97,16 @@ jobs:
         ports: ["5432:5432"]
         options: >-
           --health-cmd "pg_isready -U postgres" --health-interval 5s --health-retries 10
+    defaults:
+      run:
+        working-directory: prototyp-v0.1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5 # TODO: pin to a commit SHA (Dependabot)
         with: {python-version: "3.12"}
       - run: pip install -e ".[dev]"
-        working-directory: prototyp-v0.1
-      - name: Testy (vrátane databázových a koniec-koncov)
+      - name: Tests
         env: {ATENA_TEST_DATABASE_URL: "postgresql://postgres:test@localhost:5432/atena_test"}
         run: pytest -q
-        working-directory: prototyp-v0.1
-      - name: Docker obraz sa dá zostaviť
-        run: docker build -t atena:ci prototyp-v0.1

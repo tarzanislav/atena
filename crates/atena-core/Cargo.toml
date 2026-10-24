@@ -1,0 +1,23 @@
+[package]
+name = "atena-core"
+description = "ATENA core: text normalisation, taxonomy, classification and document versions"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[dependencies]
+blake3 = "1.8.7"
+serde.workspace = true
+serde-saphyr = "1.1.0"
+similar = "3.2.0"
+thiserror.workspace = true
+unicode-normalization = "0.1.26"
+
+[dev-dependencies]
+serde_json.workspace = true
+
+[lints]
+workspace = true

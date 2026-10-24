@@ -1,6 +1,5 @@
-# ATENA – register zdrojov (generované z prehodnoteného katalógu, 24. 10. 2026)
-# Licencia dát: CC0 1.0
-version: 1
+# ATENA source register. Licence: CC0 1.0. Reviewed 24 Oct 2026 (see docs/sk and the review workbook).
+version: 2
 sources:
 - id: SK01
   name: Ministerstvo školstva SR
@@ -11,10 +10,11 @@ sources:
   authority: A2
   priority: P0
   connector: rss
-  frequency: 1× za hodinu (kanál)
-  status: Ponechať
+  interval_s: 3600
+  review: keep
   feed: https://www.minedu.sk/rss/
-  note: Overený RSS kanál tlačových správ (50 položiek). Sekcia kurikulárnej reformy sledovať ako HTML denne.
+  note:
+    sk: Overený RSS kanál tlačových správ (50 položiek). Sekcia kurikulárnej reformy sledovať ako HTML denne.
 - id: SK02
   name: Organizácia školského roka
   url: https://www.minedu.sk/38037-sk/organizacia-skolskeho-roka/
@@ -24,9 +24,10 @@ sources:
   authority: A2
   priority: P0
   connector: html
-  frequency: denne; v auguste 2× denne
-  status: Ponechať
-  note: Kľúčové pre termíny školského roka – sledovať zmenu obsahu a príloh (PDF).
+  interval_s: 43200
+  review: keep
+  note:
+    sk: Kľúčové pre termíny školského roka – sledovať zmenu obsahu a príloh (PDF).
 - id: SK03
   name: Slov Lex školský zákon
   url: https://www.slov-lex.sk/ezbierky/pravne-predpisy/SK/ZZ/2008/245/
@@ -36,10 +37,11 @@ sources:
   authority: A1
   priority: P0
   connector: slovlex
-  frequency: denne
-  status: Upraviť
-  note: Rozšíriť na zoznam sledovaných predpisov (min. 245/2008, 596/2003, 138/2019, 61/2015, 448/2008). robots.txt Slov-Lexu povoľuje všetko; statické časové znenia na static.slov-lex.sk. Sitemapy majú
-    zastarané lastmod – nespoliehať sa na ne.
+  interval_s: 86400
+  review: adjusted
+  note:
+    sk: Rozšíriť na zoznam sledovaných predpisov (min. 245/2008, 596/2003, 138/2019, 61/2015, 448/2008). robots.txt Slov-Lexu povoľuje všetko;
+      statické časové znenia na static.slov-lex.sk. Sitemapy majú zastarané lastmod – nespoliehať sa na ne.
 - id: SK04
   name: Ministerstvo školstva štátne vzdelávacie programy
   url: https://www.minedu.sk/8387-sk/statne-vzdelavacie-programy/
@@ -49,9 +51,10 @@ sources:
   authority: A2
   priority: P0
   connector: html
-  frequency: týždenne
-  status: Ponechať
-  note: Úradné ŠVP podľa druhov škôl; sledovať prílohy.
+  interval_s: 604800
+  review: keep
+  note:
+    sk: Úradné ŠVP podľa druhov škôl; sledovať prílohy.
 - id: SK05
   name: Vzdelávanie 21
   url: https://vzdelavanie21.sk/
@@ -61,10 +64,11 @@ sources:
   authority: A2
   priority: P0
   connector: wp
-  frequency: 1× za hodinu (kanál)
-  status: Ponechať
+  interval_s: 3600
+  review: keep
   feed: https://vzdelavanie21.sk/feed/
-  note: Overený RSS kanál.
+  note:
+    sk: Overený RSS kanál.
 - id: SK06
   name: Učíme metodický portál
   url: https://ucime.vzdelavanie21.sk/
@@ -74,10 +78,11 @@ sources:
   authority: A2
   priority: P0
   connector: wp
-  frequency: 1× za hodinu (kanál)
-  status: Ponechať
+  interval_s: 3600
+  review: keep
   feed: https://ucime.vzdelavanie21.sk/feed/
-  note: Overený RSS kanál; jadro metodickej podpory reformy.
+  note:
+    sk: Overený RSS kanál; jadro metodickej podpory reformy.
 - id: SK07
   name: NIVaM
   url: https://nivam.sk/
@@ -87,11 +92,12 @@ sources:
   authority: A2
   priority: P0
   connector: wp
-  frequency: 1× za hodinu (kanál)
-  status: Upraviť
+  interval_s: 3600
+  review: adjusted
   feed: https://nivam.sk/feed/
-  note: 'Overený RSS kanál. NIVaM od 1. 7. 2022 zlúčil ŠPÚ, NÚCEM, MPC, IUVENTU a Slovenskú pedagogickú knižnicu – pridať vstupy: Merania (Testovanie 9, maturita, medzinárodné merania), Profesijný rozvoj,
-    Práca s mládežou.'
+  note:
+    sk: 'Overený RSS kanál. NIVaM od 1. 7. 2022 zlúčil ŠPÚ, NÚCEM, MPC, IUVENTU a Slovenskú pedagogickú knižnicu – pridať vstupy: Merania (Testovanie
+      9, maturita, medzinárodné merania), Profesijný rozvoj, Práca s mládežou.'
 - id: SK08
   name: ŠIOV štátne vzdelávacie programy
   url: https://siov.sk/statne-vzdelavacie-programy/
@@ -101,10 +107,11 @@ sources:
   authority: A2
   priority: P0
   connector: wp
-  frequency: 1× za hodinu (kanál)
-  status: Ponechať
+  interval_s: 3600
+  review: keep
   feed: https://siov.sk/feed/
-  note: Overený RSS kanál.
+  note:
+    sk: Overený RSS kanál.
 - id: SK09
   name: CVTI štatistická ročenka školstva
   url: https://www.cvtisr.sk/cvti-sr-vedecka-kniznica/informacie-o-skolstve/statistiky/statisticka-rocenka-publikacia.html?page_id=9580
@@ -114,9 +121,10 @@ sources:
   authority: A2
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Ponechať
-  note: Štatistické ročenky – ukladať ako dataset s rokom a metodikou.
+  interval_s: 2592000
+  review: keep
+  note:
+    sk: Štatistické ročenky – ukladať ako dataset s rokom a metodikou.
 - id: SK10
   name: Štátna školská inšpekcia
   url: https://www.ssi.sk/
@@ -126,10 +134,11 @@ sources:
   authority: A2
   priority: P0
   connector: wp
-  frequency: 1× za hodinu (kanál)
-  status: Ponechať
+  interval_s: 3600
+  review: keep
   feed: https://www.ssi.sk/feed/
-  note: Overený RSS kanál; správy o stave výchovy a vzdelávania.
+  note:
+    sk: Overený RSS kanál; správy o stave výchovy a vzdelávania.
 - id: SK11
   name: VÚDPaP odborné materiály
   url: https://vudpap.sk/hlavne-cinnosti/odborne-materialy/
@@ -139,9 +148,10 @@ sources:
   authority: A2
   priority: P1
   connector: html
-  frequency: týždenne
-  status: Upraviť
-  note: robots.txt zakazuje /feed/ – zber len povolených HTML stránok a rešpektovať robots.
+  interval_s: 604800
+  review: adjusted
+  note:
+    sk: robots.txt zakazuje /feed/ – zber len povolených HTML stránok a rešpektovať robots.
 - id: SK12
   name: NIVaM podporné opatrenia
   url: https://nivam.sk/pre-skoly/podporne-opatrenia/
@@ -151,9 +161,10 @@ sources:
   authority: A2
   priority: P0
   connector: html
-  frequency: týždenne
-  status: Zlúčiť ako vstup
-  note: Zlúčiť ako vstup vydavateľa SK07 (NIVaM).
+  interval_s: 604800
+  review: merged-endpoint
+  note:
+    sk: Zlúčiť ako vstup vydavateľa SK07 (NIVaM).
 - id: SK13
   name: Knižnica NIVaM
   url: https://nivam.sk/o-organizacii/kniznica/
@@ -163,9 +174,10 @@ sources:
   authority: A2
   priority: P2
   connector: katalog
-  frequency: mesačne
-  status: Ponechať
-  note: Knižničný katalóg – len metadáta a odkazy.
+  interval_s: 2592000
+  review: keep
+  note:
+    sk: Knižničný katalóg – len metadáta a odkazy.
 - id: SK14
   name: ŠPÚ staršie materiály
   url: https://www.statpedu.sk/sk/
@@ -175,9 +187,10 @@ sources:
   authority: A2
   priority: P2
   connector: html
-  frequency: jednorazovo + štvrťročná kontrola
-  status: Archív (jednorazovo)
-  note: Neaktualizované od 1/2023; ŠPÚ je od 7/2022 súčasťou NIVaM. Historické kurikulá – označiť ako archív, nie aktuálne znenie.
+  interval_s: 7776000
+  review: archive
+  note:
+    sk: Neaktualizované od 1/2023; ŠPÚ je od 7/2022 súčasťou NIVaM. Historické kurikulá – označiť ako archív, nie aktuálne znenie.
 - id: SK15
   name: Inklucentrum
   url: https://inklucentrum.sk/
@@ -187,10 +200,11 @@ sources:
   authority: C1
   priority: P1
   connector: wp
-  frequency: denne
-  status: Ponechať
+  interval_s: 86400
+  review: keep
   feed: https://www.inklucentrum.sk/feed/
-  note: Overený RSS kanál.
+  note:
+    sk: Overený RSS kanál.
 - id: SK16
   name: Živica Zelená škola
   url: https://zivica.sk/projekt/zelena-skola/
@@ -200,8 +214,8 @@ sources:
   authority: C1
   priority: P1
   connector: html
-  frequency: týždenne
-  status: Ponechať
+  interval_s: 604800
+  review: keep
 - id: SK17
   name: Lepšia geografia
   url: https://lepsiageografia.sk/materialy-na-vyucbu/
@@ -211,8 +225,8 @@ sources:
   authority: C1
   priority: P1
   connector: html
-  frequency: týždenne
-  status: Ponechať
+  interval_s: 604800
+  review: keep
 - id: SK18
   name: Človek v ohrození globálne vzdelávanie
   url: https://clovekvohrozeni.sk/co-robime/globalne-vzdelavanie/
@@ -222,8 +236,8 @@ sources:
   authority: C1
   priority: P1
   connector: html
-  frequency: týždenne
-  status: Ponechať
+  interval_s: 604800
+  review: keep
 - id: SK19
   name: Slovenský skauting
   url: https://skauting.sk/
@@ -233,8 +247,8 @@ sources:
   authority: C1
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: SK20
   name: Rada mládeže Slovenska
   url: https://mladez.sk/
@@ -244,8 +258,8 @@ sources:
   authority: C1
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: SK21
   name: PDCO service learning
   url: https://www.dobrovolnickecentra.sk/sk/treningy/service-learning/inovacne-vzdelavanie
@@ -255,8 +269,8 @@ sources:
   authority: C1
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: SK22
   name: NBS 5peňazí
   url: https://5penazi.sk/
@@ -266,9 +280,10 @@ sources:
   authority: A2
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Ponechať
-  note: Národná banka Slovenska – finančná gramotnosť.
+  interval_s: 2592000
+  review: keep
+  note:
+    sk: Národná banka Slovenska – finančná gramotnosť.
 - id: SK23
   name: Vzdelávanie 21 sprievodné materiály
   url: https://vzdelavanie21.sk/sprievodne-materialy/
@@ -278,10 +293,11 @@ sources:
   authority: A2
   priority: P0
   connector: wp
-  frequency: denne
-  status: Zlúčiť ako vstup
+  interval_s: 86400
+  review: merged-endpoint
   feed: https://vzdelavanie21.sk/feed/
-  note: Zlúčiť ako vstup vydavateľa SK05.
+  note:
+    sk: Zlúčiť ako vstup vydavateľa SK05.
 - id: SK24
   name: Učíme digitálny štátny vzdelávací program
   url: https://ucime.vzdelavanie21.sk/digitalny-statny-vzdelavaci-program/
@@ -291,9 +307,10 @@ sources:
   authority: A2
   priority: P0
   connector: html
-  frequency: denne
-  status: Ponechať
-  note: Digitálny ŠVP – najdôležitejší kurikulárny zdroj; ukladať verzie a štandardy na úrovni položiek.
+  interval_s: 86400
+  review: keep
+  note:
+    sk: Digitálny ŠVP – najdôležitejší kurikulárny zdroj; ukladať verzie a štandardy na úrovni položiek.
 - id: CZ01
   name: MŠMT
   url: https://msmt.gov.cz/
@@ -303,9 +320,10 @@ sources:
   authority: A2
   priority: P0
   connector: html
-  frequency: denne
-  status: Ponechať
-  note: Adresa /rss neexistuje – HTML zber aktualít a dokumentov.
+  interval_s: 86400
+  review: keep
+  note:
+    sk: Adresa /rss neexistuje – HTML zber aktualít a dokumentov.
 - id: CZ02
   name: Edu metodický portál MŠMT
   url: https://edu.gov.cz/
@@ -315,10 +333,11 @@ sources:
   authority: A2
   priority: P0
   connector: wp
-  frequency: 1× za hodinu (kanál)
-  status: Ponechať
+  interval_s: 3600
+  review: keep
   feed: https://edu.gov.cz/feed/
-  note: Overený RSS kanál.
+  note:
+    sk: Overený RSS kanál.
 - id: CZ03
   name: Národní pedagogický institut
   url: https://www.npi.cz/
@@ -328,9 +347,10 @@ sources:
   authority: A2
   priority: P1
   connector: html
-  frequency: denne
-  status: Ponechať
-  note: RSS nepotvrdený.
+  interval_s: 86400
+  review: keep
+  note:
+    sk: RSS nepotvrdený.
 - id: CZ04
   name: RVP virtuálne hospitácie
   url: https://audiovideo.rvp.cz/kategorie/H
@@ -340,9 +360,10 @@ sources:
   authority: A2
   priority: P1
   connector: html
-  frequency: jednorazovo
-  status: Archív (jednorazovo)
-  note: Modul AudioVideo je archivovaný (posledné položky 2020) – jednorazovo zozbierať metadáta 86 virtuálnych hospitácií, nesledovať.
+  interval_s: 31536000
+  review: archive
+  note:
+    sk: Modul AudioVideo je archivovaný (posledné položky 2020) – jednorazovo zozbierať metadáta 86 virtuálnych hospitácií, nesledovať.
 - id: CZ05
   name: Revízie RVP
   url: https://revize.rvp.cz/
@@ -352,8 +373,8 @@ sources:
   authority: A2
   priority: P1
   connector: html
-  frequency: týždenne
-  status: Ponechať
+  interval_s: 604800
+  review: keep
 - id: CZ06
   name: ČT edu
   url: https://edu.ceskatelevize.cz/
@@ -363,9 +384,10 @@ sources:
   authority: C1
   priority: P1
   connector: html
-  frequency: týždenne
-  status: Ponechať
-  note: Verejnoprávna ČT – vzdelávací portál; videá iba odkaz/vloženie.
+  interval_s: 604800
+  review: keep
+  note:
+    sk: Verejnoprávna ČT – vzdelávací portál; videá iba odkaz/vloženie.
 - id: CZ07
   name: JSNS mediálne vzdelávanie
   url: https://www.jsns.cz/projekty/medialni-vzdelavani/materialy/lekce
@@ -375,8 +397,8 @@ sources:
   authority: C1
   priority: P1
   connector: html
-  frequency: týždenne
-  status: Ponechať
+  interval_s: 604800
+  review: keep
 - id: CZ08
   name: AI dětem kurikulum
   url: https://kurikulum.aidetem.cz/
@@ -386,8 +408,8 @@ sources:
   authority: C1
   priority: P1
   connector: html
-  frequency: týždenne
-  status: Ponechať
+  interval_s: 604800
+  review: keep
 - id: CZ09
   name: Učíme venku
   url: https://ucimesevenku.cz/
@@ -397,8 +419,8 @@ sources:
   authority: C1
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: CZ10
   name: ČŠI inšpirácie zo škôl
   url: https://www.csicr.cz/cz/Dokumenty/Publikace-a-ostatni-vystupy/Publikace-Skoly%2C-do-kterych-se-zaci-tesi%2C-Inspirac
@@ -408,8 +430,8 @@ sources:
   authority: A2
   priority: P1
   connector: html
-  frequency: týždenne
-  status: Ponechať
+  interval_s: 604800
+  review: keep
 - id: PL01
   name: Ministerstwo Edukacji Narodowej
   url: https://www.gov.pl/web/edukacja
@@ -419,8 +441,8 @@ sources:
   authority: A2
   priority: P1
   connector: html
-  frequency: denne
-  status: Ponechať
+  interval_s: 86400
+  review: keep
 - id: PL02
   name: Zintegrowana Platforma Edukacyjna
   url: https://zpe.gov.pl/
@@ -430,8 +452,8 @@ sources:
   authority: A2
   priority: P1
   connector: html
-  frequency: týždenne
-  status: Ponechať
+  interval_s: 604800
+  review: keep
 - id: PL03
   name: Ośrodek Rozwoju Edukacji
   url: https://ore.edu.pl/
@@ -441,8 +463,8 @@ sources:
   authority: A2
   priority: P1
   connector: html
-  frequency: týždenne
-  status: Ponechať
+  interval_s: 604800
+  review: keep
 - id: PL04
   name: Instytut Badań Edukacyjnych
   url: https://ibe.edu.pl/pl/
@@ -452,8 +474,8 @@ sources:
   authority: B2
   priority: P1
   connector: html
-  frequency: týždenne
-  status: Ponechať
+  interval_s: 604800
+  review: keep
 - id: PL05
   name: Centrum Edukacji Obywatelskiej
   url: https://ceo.org.pl/programy/
@@ -463,8 +485,8 @@ sources:
   authority: C1
   priority: P2
   connector: html
-  frequency: týždenne
-  status: Ponechať
+  interval_s: 604800
+  review: keep
 - id: DE01
   name: Deutscher Bildungsserver
   url: https://www.bildungsserver.de/
@@ -474,9 +496,10 @@ sources:
   authority: B2
   priority: P1
   connector: rss
-  frequency: denne
-  status: Ponechať
-  note: DIPF; preveriť RSS kanály Bildungsservera.
+  interval_s: 86400
+  review: keep
+  note:
+    sk: DIPF; preveriť RSS kanály Bildungsservera.
 - id: DE02
   name: Elixier
   url: https://www.bildungsserver.de/elixier/
@@ -486,9 +509,10 @@ sources:
   authority: B2
   priority: P1
   connector: api
-  frequency: týždenne
-  status: Ponechať
-  note: Preveriť dátové rozhranie Elixier (výmena metadát OER).
+  interval_s: 604800
+  review: keep
+  note:
+    sk: Preveriť dátové rozhranie Elixier (výmena metadát OER).
 - id: DE03
   name: Kultusministerkonferenz
   url: https://www.kmk.org/
@@ -498,8 +522,8 @@ sources:
   authority: A2
   priority: P1
   connector: html
-  frequency: týždenne
-  status: Ponechať
+  interval_s: 604800
+  review: keep
 - id: DE04
   name: Fachportal Pädagogik
   url: https://www.fachportal-paedagogik.de/
@@ -509,8 +533,8 @@ sources:
   authority: B2
   priority: P2
   connector: katalog
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: DE05
   name: peDOCS
   url: https://www.pedocs.de/index.php?la=en
@@ -521,9 +545,10 @@ sources:
   authority: B2
   priority: P1
   connector: oai
-  frequency: týždenne
-  status: Upraviť
-  note: Repozitár – zber cez OAI-PMH namiesto HTML.
+  interval_s: 604800
+  review: adjusted
+  note:
+    sk: Repozitár – zber cez OAI-PMH namiesto HTML.
 - id: AT01
   name: BMB učebné plány
   url: https://www.bmb.gv.at/Themen/schule/schulpraxis/lp.html
@@ -533,8 +558,8 @@ sources:
   authority: A2
   priority: P1
   connector: html
-  frequency: týždenne
-  status: Ponechať
+  interval_s: 604800
+  review: keep
 - id: AT02
   name: RIS učebný plán základnej školy
   url: https://www.ris.bka.gv.at/NormDokument.wxe?Abfrage=Bundesnormen&Anlage=1&Artikel=&Gesetzesnummer=10009275&Paragraf=&Uebergangsrecht=
@@ -544,9 +569,10 @@ sources:
   authority: A1
   priority: P1
   connector: ris
-  frequency: denne
-  status: Upraviť
-  note: RIS má oficiálne rozhranie Open Government Data – použiť API namiesto HTML.
+  interval_s: 86400
+  review: adjusted
+  note:
+    sk: RIS má oficiálne rozhranie Open Government Data – použiť API namiesto HTML.
 - id: AT03
   name: Schule učebné plány
   url: https://www.schule.at/bildungsnews/detail/lehrplaene-fuer-volks-mittelschule-und-ahs-unterstufe-erlassen
@@ -556,9 +582,10 @@ sources:
   authority: C1
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
-  note: Education Group (nie úrad) – len sprievodné informácie.
+  interval_s: 2592000
+  review: keep
+  note:
+    sk: Education Group (nie úrad) – len sprievodné informácie.
 - id: AT04
   name: OeAD
   url: https://oead.at/en/
@@ -569,8 +596,8 @@ sources:
   authority: A2
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: HU01
   name: Oktatási Hivatal kerettantervek
   url: https://www.oktatas.hu/kozneveles/kerettantervek
@@ -580,8 +607,8 @@ sources:
   authority: A2
   priority: P1
   connector: html
-  frequency: týždenne
-  status: Ponechať
+  interval_s: 604800
+  review: keep
 - id: HU02
   name: Nemzeti Köznevelési Portál
   url: https://www.nkp.hu/
@@ -591,8 +618,8 @@ sources:
   authority: A2
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: HU03
   name: Oktatási Hivatal vzorové plány
   url: https://www.oktatas.hu/kozneveles/kerettantervek/2020_nat/mintatanmenetek
@@ -602,9 +629,10 @@ sources:
   authority: A2
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Zlúčiť ako vstup
-  note: Zlúčiť ako vstup vydavateľa HU01.
+  interval_s: 2592000
+  review: merged-endpoint
+  note:
+    sk: Zlúčiť ako vstup vydavateľa HU01.
 - id: EU01
   name: Eurydice Eurypedia
   url: https://eurydice.eacea.ec.europa.eu/eurypedia
@@ -614,8 +642,8 @@ sources:
   authority: B1
   priority: P0
   connector: html
-  frequency: týždenne
-  status: Ponechať
+  interval_s: 604800
+  review: keep
 - id: EU02
   name: European School Education Platform
   url: https://school-education.ec.europa.eu/en/teach/teaching-materials
@@ -625,9 +653,10 @@ sources:
   authority: B1
   priority: P1
   connector: html
-  frequency: týždenne
-  status: Ponechať
-  note: Zahŕňa eTwinning.
+  interval_s: 604800
+  review: keep
+  note:
+    sk: Zahŕňa eTwinning.
 - id: EU03
   name: EPALE
   url: https://epale.ec.europa.eu/en
@@ -637,8 +666,8 @@ sources:
   authority: B1
   priority: P1
   connector: html
-  frequency: týždenne
-  status: Ponechať
+  interval_s: 604800
+  review: keep
 - id: EU04
   name: Cedefop
   url: https://www.cedefop.europa.eu/en
@@ -648,8 +677,8 @@ sources:
   authority: B1
   priority: P1
   connector: html
-  frequency: týždenne
-  status: Ponechať
+  interval_s: 604800
+  review: keep
 - id: EU05
   name: European Agency for Special Needs and Inclusive Education
   url: https://www.european-agency.org/
@@ -659,8 +688,8 @@ sources:
   authority: B1
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: EU06
   name: DigCompEdu
   url: https://joint-research-centre.ec.europa.eu/scientific-activities/key-competences-lifelong-learning/digcompedu_en
@@ -671,9 +700,10 @@ sources:
   authority: B1
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Ponechať
-  note: Rámce DigComp/DigCompEdu – ukladať ako kompetenčný rámec s verziou.
+  interval_s: 2592000
+  review: keep
+  note:
+    sk: Rámce DigComp/DigCompEdu – ukladať ako kompetenčný rámec s verziou.
 - id: EU07
   name: Europeana pre pedagógov
   url: https://www.europeana.eu/en/educators
@@ -683,9 +713,10 @@ sources:
   authority: B1
   priority: P1
   connector: api
-  frequency: týždenne
-  status: Upraviť
-  note: Europeana má bezplatné API; práva každej položky podľa rights statement.
+  interval_s: 604800
+  review: adjusted
+  note:
+    sk: Europeana má bezplatné API; práva každej položky podľa rights statement.
 - id: EU08
   name: Scientix
   url: https://www.scientix.eu/
@@ -696,8 +727,8 @@ sources:
   authority: B1
   priority: P1
   connector: html
-  frequency: týždenne
-  status: Ponechať
+  interval_s: 604800
+  review: keep
 - id: EU09
   name: SALTO Youth Toolbox
   url: https://www.salto-youth.net/tools/toolbox/
@@ -708,8 +739,8 @@ sources:
   authority: B1
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: EU10
   name: Youthpass
   url: https://www.youthpass.eu/en/
@@ -719,8 +750,8 @@ sources:
   authority: B1
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: EU11
   name: Ministère de l Éducation nationale
   url: https://www.education.gouv.fr/
@@ -730,8 +761,8 @@ sources:
   authority: A2
   priority: P2
   connector: html
-  frequency: týždenne
-  status: Ponechať
+  interval_s: 604800
+  review: keep
 - id: EU12
   name: éduscol
   url: https://eduscol.education.gouv.fr/
@@ -741,8 +772,8 @@ sources:
   authority: A2
   priority: P1
   connector: html
-  frequency: týždenne
-  status: Ponechať
+  interval_s: 604800
+  review: keep
 - id: EU13
   name: Finnish National Agency for Education
   url: https://www.oph.fi/en
@@ -754,8 +785,8 @@ sources:
   authority: A2
   priority: P1
   connector: html
-  frequency: týždenne
-  status: Ponechať
+  interval_s: 604800
+  review: keep
 - id: EU14
   name: Skolverket
   url: https://www.skolverket.se/
@@ -766,8 +797,8 @@ sources:
   authority: A2
   priority: P2
   connector: html
-  frequency: týždenne
-  status: Ponechať
+  interval_s: 604800
+  review: keep
 - id: UK01
   name: Department for Education
   url: https://www.gov.uk/government/organisations/department-for-education
@@ -777,9 +808,10 @@ sources:
   authority: A2
   priority: P1
   connector: gov-uk
-  frequency: denne
-  status: Upraviť
-  note: GOV.UK poskytuje Content API a Atom kanály – použiť ich; obsah prevažne pod Open Government Licence.
+  interval_s: 86400
+  review: adjusted
+  note:
+    sk: GOV.UK poskytuje Content API a Atom kanály – použiť ich; obsah prevažne pod Open Government Licence.
 - id: UK02
   name: EEF Teaching and Learning Toolkit
   url: https://educationendowmentfoundation.org.uk/education-evidence/teaching-learning-toolkit
@@ -789,9 +821,10 @@ sources:
   authority: B2
   priority: P0
   connector: html
-  frequency: týždenne
-  status: Ponechať
-  note: Kľúčová syntéza dôkazov.
+  interval_s: 604800
+  review: keep
+  note:
+    sk: Kľúčová syntéza dôkazov.
 - id: UK03
   name: EEF ukážky z tried
   url: https://educationendowmentfoundation.org.uk/news/clips-from-the-classroom-new-videos
@@ -801,9 +834,10 @@ sources:
   authority: B2
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Zlúčiť ako vstup
-  note: Zlúčiť ako vstup vydavateľa UK02.
+  interval_s: 2592000
+  review: merged-endpoint
+  note:
+    sk: Zlúčiť ako vstup vydavateľa UK02.
 - id: UK04
   name: Oak National Academy
   url: https://www.thenational.academy/
@@ -813,9 +847,10 @@ sources:
   authority: A2
   priority: P1
   connector: html
-  frequency: týždenne
-  status: Ponechať
-  note: Oak je verejný orgán; preveriť licenciu (Open Government Licence) – umožnila by preklad a ďalšie použitie.
+  interval_s: 604800
+  review: keep
+  note:
+    sk: Oak je verejný orgán; preveriť licenciu (Open Government Licence) – umožnila by preklad a ďalšie použitie.
 - id: UK05
   name: British Council TeachingEnglish
   url: https://www.teachingenglish.org.uk/teaching-resources
@@ -825,8 +860,8 @@ sources:
   authority: C1
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: UK06
   name: NRICH University of Cambridge
   url: https://nrich.maths.org/
@@ -836,8 +871,8 @@ sources:
   authority: B2
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: GL01
   name: UNESCO AI vo vzdelávaní
   url: https://www.unesco.org/en/digital-education/artificial-intelligence
@@ -848,8 +883,8 @@ sources:
   authority: B1
   priority: P0
   connector: html
-  frequency: týždenne
-  status: Ponechať
+  interval_s: 604800
+  review: keep
 - id: GL02
   name: UNESCO kompetencie učiteľov v AI
   url: https://www.unesco.org/en/articles/ai-competency-framework-teachers
@@ -860,9 +895,10 @@ sources:
   authority: B1
   priority: P0
   connector: html
-  frequency: mesačne
-  status: Zlúčiť ako vstup
-  note: Zlúčiť ako vstup vydavateľa GL01 (UNESCO).
+  interval_s: 2592000
+  review: merged-endpoint
+  note:
+    sk: Zlúčiť ako vstup vydavateľa GL01 (UNESCO).
 - id: GL03
   name: UNESCO UIS Data Browser
   url: https://databrowser.uis.unesco.org/
@@ -873,9 +909,10 @@ sources:
   authority: B1
   priority: P1
   connector: api
-  frequency: mesačne
-  status: Upraviť
-  note: UIS poskytuje dátové API – zber cez API.
+  interval_s: 2592000
+  review: adjusted
+  note:
+    sk: UIS poskytuje dátové API – zber cez API.
 - id: GL04
   name: UNESCO Global Education Monitoring Report
   url: https://www.unesco.org/gem-report/en
@@ -886,8 +923,8 @@ sources:
   authority: B1
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: GL05
   name: OECD PISA
   url: https://www.oecd.org/en/about/programmes/pisa.html
@@ -898,8 +935,8 @@ sources:
   authority: B1
   priority: P0
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: GL06
   name: OECD TALIS 2024 databáza
   url: https://www.oecd.org/en/data/datasets/talis-2024-database.html
@@ -909,8 +946,8 @@ sources:
   authority: B1
   priority: P2
   connector: html
-  frequency: pri vydaní
-  status: Ponechať
+  interval_s: 31536000
+  review: keep
 - id: GL07
   name: OECD Data Explorer
   url: https://data-explorer.oecd.org/
@@ -921,9 +958,10 @@ sources:
   authority: B1
   priority: P1
   connector: api
-  frequency: mesačne
-  status: Upraviť
-  note: SDMX API.
+  interval_s: 2592000
+  review: adjusted
+  note:
+    sk: SDMX API.
 - id: GL08
   name: Eurostat vzdelávanie a odborná príprava
   url: https://ec.europa.eu/eurostat/web/education-and-training/database
@@ -933,9 +971,10 @@ sources:
   authority: B1
   priority: P1
   connector: api
-  frequency: mesačne
-  status: Upraviť
-  note: Eurostat API (JSON/SDMX).
+  interval_s: 2592000
+  review: adjusted
+  note:
+    sk: Eurostat API (JSON/SDMX).
 - id: GL09
   name: TIMSS a PIRLS
   url: https://timssandpirls.bc.edu/
@@ -945,8 +984,8 @@ sources:
   authority: B2
   priority: P1
   connector: html
-  frequency: pri vydaní
-  status: Ponechať
+  interval_s: 31536000
+  review: keep
 - id: GL10
   name: Campbell Collaboration
   url: https://www.campbellcollaboration.org/
@@ -956,8 +995,8 @@ sources:
   authority: B2
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: GL11
   name: WHO Health promoting schools
   url: https://www.who.int/health-topics/health-promoting-schools
@@ -967,8 +1006,8 @@ sources:
   authority: B1
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: GL12
   name: World Organization of the Scout Movement
   url: https://www.scout.org/
@@ -979,8 +1018,8 @@ sources:
   authority: C1
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: GL13
   name: UNESCO IBE slovník kurikula
   url: https://unesdoc.unesco.org/ark%3A/48223/pf0000223059
@@ -990,9 +1029,10 @@ sources:
   authority: B1
   priority: P1
   connector: html
-  frequency: jednorazovo
-  status: Ponechať
-  note: Terminológia – importovať do modulu Pojmy so zdrojom a rokom.
+  interval_s: 31536000
+  review: keep
+  note:
+    sk: Terminológia – importovať do modulu Pojmy so zdrojom a rokom.
 - id: GL14
   name: Cedefop slovník kvality vzdelávania
   url: https://www.cedefop.europa.eu/en/publications/4106
@@ -1004,9 +1044,10 @@ sources:
   authority: B1
   priority: P1
   connector: html
-  frequency: jednorazovo
-  status: Ponechať
-  note: Terminológia – importovať do modulu Pojmy.
+  interval_s: 31536000
+  review: keep
+  note:
+    sk: Terminológia – importovať do modulu Pojmy.
 - id: US01
   name: U S Department of Education
   url: https://www.ed.gov/
@@ -1016,9 +1057,10 @@ sources:
   authority: A2
   priority: P2
   connector: html
-  frequency: týždenne
-  status: Upraviť
-  note: Federálne ministerstvo sa od 2025 výrazne zmenšuje – sledovať, ale nespoliehať sa na kontinuitu.
+  interval_s: 604800
+  review: adjusted
+  note:
+    sk: Federálne ministerstvo sa od 2025 výrazne zmenšuje – sledovať, ale nespoliehať sa na kontinuitu.
 - id: US02
   name: ERIC
   url: https://eric.ed.gov/
@@ -1028,9 +1070,10 @@ sources:
   authority: B2
   priority: P1
   connector: api
-  frequency: týždenne
-  status: Upraviť
-  note: ERIC API; po zrušení zmlúv IES (2/2025) sledovať kontinuitu služby.
+  interval_s: 604800
+  review: adjusted
+  note:
+    sk: ERIC API; po zrušení zmlúv IES (2/2025) sledovať kontinuitu služby.
 - id: US03
   name: What Works Clearinghouse
   url: https://ies.ed.gov/ncee/wwc
@@ -1040,9 +1083,10 @@ sources:
   authority: B2
   priority: P0
   connector: html
-  frequency: mesačne
-  status: Upraviť
-  note: Riziko kontinuity (zrušené zmluvy IES 2025). Doplniť Evidence for ESSA (N22) ako nezávislý zdroj hodnotení.
+  interval_s: 2592000
+  review: adjusted
+  note:
+    sk: Riziko kontinuity (zrušené zmluvy IES 2025). Doplniť Evidence for ESSA (N22) ako nezávislý zdroj hodnotení.
 - id: US04
   name: WWC Practice Guides
   url: https://ies.ed.gov/ncee/wwc/practiceguides
@@ -1052,9 +1096,10 @@ sources:
   authority: B2
   priority: P0
   connector: html
-  frequency: mesačne
-  status: Zlúčiť ako vstup
-  note: Zlúčiť ako vstup vydavateľa US03.
+  interval_s: 2592000
+  review: merged-endpoint
+  note:
+    sk: Zlúčiť ako vstup vydavateľa US03.
 - id: US05
   name: Harvard Project Zero Thinking Routines
   url: https://pz.harvard.edu/thinking-routines
@@ -1064,9 +1109,10 @@ sources:
   authority: B2
   priority: P0
   connector: html
-  frequency: mesačne
-  status: Upraviť
-  note: Preveriť licenciu pomôcok (časť pod licenciou s obmedzením NC) pred prekladom.
+  interval_s: 2592000
+  review: adjusted
+  note:
+    sk: Preveriť licenciu pomôcok (časť pod licenciou s obmedzením NC) pred prekladom.
 - id: US06
   name: Reading Rockets stratégie
   url: https://www.readingrockets.org/classroom/classroom-strategies
@@ -1076,8 +1122,8 @@ sources:
   authority: C1
   priority: P0
   connector: html
-  frequency: týždenne
-  status: Ponechať
+  interval_s: 604800
+  review: keep
 - id: US07
   name: Reading Rockets Reciprocal Teaching
   url: https://www.readingrockets.org/classroom/classroom-strategies/reciprocal-teaching
@@ -1087,9 +1133,10 @@ sources:
   authority: C1
   priority: P0
   connector: html
-  frequency: mesačne
-  status: Zlúčiť ako vstup
-  note: Zlúčiť ako vstup vydavateľa US06.
+  interval_s: 2592000
+  review: merged-endpoint
+  note:
+    sk: Zlúčiť ako vstup vydavateľa US06.
 - id: US08
   name: Edutopia videá
   url: https://www.edutopia.org/videos
@@ -1099,9 +1146,10 @@ sources:
   authority: C1
   priority: P0
   connector: html
-  frequency: týždenne
-  status: Ponechať
-  note: Videá iba odkaz/vloženie.
+  interval_s: 604800
+  review: keep
+  note:
+    sk: Videá iba odkaz/vloženie.
 - id: US09
   name: PBS LearningMedia
   url: https://www.pbslearningmedia.org/
@@ -1111,9 +1159,10 @@ sources:
   authority: C1
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
-  note: Časť obsahu viazaná na prihlásenie a USA.
+  interval_s: 2592000
+  review: keep
+  note:
+    sk: Časť obsahu viazaná na prihlásenie a USA.
 - id: US10
   name: IRIS Center Vanderbilt
   url: https://iris.peabody.vanderbilt.edu/
@@ -1123,8 +1172,8 @@ sources:
   authority: B2
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: US11
   name: CAST UDL Guidelines
   url: https://udlguidelines.cast.org/
@@ -1136,8 +1185,8 @@ sources:
   authority: C1
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: US12
   name: National Association for Gifted Children
   url: https://www.nagc.org/
@@ -1147,8 +1196,8 @@ sources:
   authority: C1
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: US13
   name: CASEL
   url: https://casel.org/fundamentals-of-sel/
@@ -1158,8 +1207,8 @@ sources:
   authority: C1
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: US14
   name: Common Sense digitálne občianstvo
   url: https://www.commonsense.org/education/digital-citizenship
@@ -1169,8 +1218,8 @@ sources:
   authority: C1
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: US15
   name: Digital Inquiry Group Civic Online Reasoning
   url: https://cor.inquirygroup.org/
@@ -1180,8 +1229,8 @@ sources:
   authority: B2
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: US16
   name: News Literacy Project
   url: https://newslit.org/
@@ -1191,8 +1240,8 @@ sources:
   authority: C1
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: US17
   name: AI4K12
   url: https://ai4k12.org/
@@ -1202,8 +1251,8 @@ sources:
   authority: C1
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: US18
   name: TeachAI AI literacy
   url: https://www.teachai.org/ailiteracy
@@ -1213,8 +1262,8 @@ sources:
   authority: C1
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: US19
   name: ISTE a ASCD AI
   url: https://iste-ascd.org/ai
@@ -1224,9 +1273,10 @@ sources:
   authority: C1
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
-  note: Časť obsahu platená – len odkazy.
+  interval_s: 2592000
+  review: keep
+  note:
+    sk: Časť obsahu platená – len odkazy.
 - id: TO01
   name: PhET
   url: https://phet.colorado.edu/
@@ -1236,9 +1286,10 @@ sources:
   authority: B2
   priority: P0
   connector: html
-  frequency: mesačne
-  status: Ponechať
-  note: Simulácie pod CC BY 4.0 – vhodné aj na preklad a vloženie.
+  interval_s: 2592000
+  review: keep
+  note:
+    sk: Simulácie pod CC BY 4.0 – vhodné aj na preklad a vloženie.
 - id: TO02
   name: GeoGebra materiály
   url: https://www.geogebra.org/materials
@@ -1248,9 +1299,10 @@ sources:
   authority: C1
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Upraviť
-  note: Aplikácia GeoGebra má nekomerčnú licenciu; materiály spravidla CC BY-NC-SA – len odkaz, nie prevzatie.
+  interval_s: 2592000
+  review: adjusted
+  note:
+    sk: Aplikácia GeoGebra má nekomerčnú licenciu; materiály spravidla CC BY-NC-SA – len odkaz, nie prevzatie.
 - id: TO03
   name: Scratch pre pedagógov
   url: https://www.scratchfoundation.org/learn/for-educators
@@ -1260,9 +1312,10 @@ sources:
   authority: C1
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Ponechať
-  note: CC BY-SA.
+  interval_s: 2592000
+  review: keep
+  note:
+    sk: CC BY-SA.
 - id: TO04
   name: H5P ukážky
   url: https://h5p.org/content-types-and-applications
@@ -1273,8 +1326,8 @@ sources:
   authority: C1
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: TO05
   name: LearningApps
   url: https://learningapps.org/
@@ -1284,8 +1337,8 @@ sources:
   authority: C1
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: TO06
   name: iCivics
   url: https://vision.icivics.org/
@@ -1295,9 +1348,10 @@ sources:
   authority: C1
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
-  note: Americký kontext.
+  interval_s: 2592000
+  review: keep
+  note:
+    sk: Americký kontext.
 - id: TO07
   name: OER Commons
   url: https://www.oercommons.org/
@@ -1308,8 +1362,8 @@ sources:
   authority: C1
   priority: P1
   connector: html
-  frequency: týždenne
-  status: Ponechať
+  interval_s: 604800
+  review: keep
 - id: RU01
   name: Ministerstvo osvety Ruskej federácie
   url: https://edu.gov.ru/
@@ -1319,9 +1373,10 @@ sources:
   authority: A2
   priority: P2
   connector: html
-  frequency: týždenne
-  status: Upraviť
-  note: Z EÚ môže byť prístup obmedzený; ponechať ako zahraničný kontext.
+  interval_s: 604800
+  review: adjusted
+  note:
+    sk: Z EÚ môže byť prístup obmedzený; ponechať ako zahraničný kontext.
 - id: RU02
   name: Banka dokumentov ministerstva
   url: https://docs.edu.gov.ru/
@@ -1331,8 +1386,8 @@ sources:
   authority: A2
   priority: P2
   connector: html
-  frequency: týždenne
-  status: Ponechať
+  interval_s: 604800
+  review: keep
 - id: RU03
   name: Jednotný obsah všeobecného vzdelávania
   url: https://edsoo.ru/
@@ -1342,8 +1397,8 @@ sources:
   authority: A2
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: RU04
   name: Register federálnych programov
   url: https://fgosreestr.edsoo.ru/
@@ -1353,8 +1408,8 @@ sources:
   authority: A2
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: RU05
   name: Ruská elektronická škola
   url: https://resh.edu.ru/
@@ -1364,8 +1419,8 @@ sources:
   authority: A2
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: CN01
   name: Ministerstvo školstva Číny
   url: https://en.moe.gov.cn/
@@ -1376,8 +1431,8 @@ sources:
   authority: A2
   priority: P2
   connector: html
-  frequency: týždenne
-  status: Ponechať
+  interval_s: 604800
+  review: keep
 - id: CN02
   name: Čínske kurikulárne štandardy
   url: https://www.moe.gov.cn/srcsite/A26/s8001/202204/t20220420_619921.html
@@ -1387,8 +1442,8 @@ sources:
   authority: A2
   priority: P2
   connector: html
-  frequency: pri zmene
-  status: Ponechať
+  interval_s: 31536000
+  review: keep
 - id: CN03
   name: Smart Education of China
   url: https://www.smartedu.cn/
@@ -1398,8 +1453,8 @@ sources:
   authority: A2
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: CN04
   name: Národná platforma pre školské vzdelávanie
   url: https://www.zxx.edu.cn/
@@ -1409,8 +1464,8 @@ sources:
   authority: A2
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: MD01
   name: OpenAlex
   url: https://help.openalex.org/api/
@@ -1421,9 +1476,10 @@ sources:
   authority: B2
   priority: P1
   connector: api
-  frequency: denne
-  status: Upraviť
-  note: Dáta CC0; API od 2025/26 s bezplatným účtom a denným limitom ($1/deň) – pre veľký objem použiť bezplatne stiahnuteľný snapshot.
+  interval_s: 86400
+  review: adjusted
+  note:
+    sk: Dáta CC0; API od 2025/26 s bezplatným účtom a denným limitom ($1/deň) – pre veľký objem použiť bezplatne stiahnuteľný snapshot.
 - id: MD02
   name: Crossref REST API
   url: https://www.crossref.org/documentation/retrieve-metadata/rest-api/
@@ -1434,9 +1490,10 @@ sources:
   authority: B2
   priority: P1
   connector: api
-  frequency: denne
-  status: Upraviť
-  note: Pridať kontrolu stiahnutých článkov cez otvorené dáta Retraction Watch (Crossref).
+  interval_s: 86400
+  review: adjusted
+  note:
+    sk: Pridať kontrolu stiahnutých článkov cez otvorené dáta Retraction Watch (Crossref).
 - id: AL01
   name: Association Montessori Internationale zdroje
   url: https://montessori-ami.org/resource-library
@@ -1447,8 +1504,8 @@ sources:
   authority: C2
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: AL02
   name: American Montessori Society trieda
   url: https://amshq.org/about-us/inside-the-montessori-classroom/
@@ -1458,8 +1515,8 @@ sources:
   authority: C2
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: AL03
   name: Waldorf International zoznam škôl
   url: https://www.waldorf-international.org/en/waldorf-world-list-2026/
@@ -1470,8 +1527,8 @@ sources:
   authority: C2
   priority: P2
   connector: html
-  frequency: ročne
-  status: Ponechať
+  interval_s: 31536000
+  review: keep
 - id: AL04
   name: Waldorfská pedagogika na Slovensku
   url: https://www.waldorf.sk/?page_id=2
@@ -1481,8 +1538,8 @@ sources:
   authority: C2
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: AL05
   name: FIMEM Freinet
   url: https://www.fimem-freinet.org/en/node/11
@@ -1494,8 +1551,8 @@ sources:
   authority: C2
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: AL06
   name: ICEM Freinet voľný text
   url: https://www.icem-pedagogie-freinet.org/accueil-texte-libre
@@ -1505,8 +1562,8 @@ sources:
   authority: C2
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: AL07
   name: Dalton International
   url: https://daltoninternational.org/dalton-education/
@@ -1516,8 +1573,8 @@ sources:
   authority: C2
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: AL08
   name: Jenaplan základné princípy
   url: https://jenaplan.nl/userfiles/files/2018/basisprincipes.pdf
@@ -1527,8 +1584,8 @@ sources:
   authority: C2
   priority: P2
   connector: html
-  frequency: ročne
-  status: Ponechať
+  interval_s: 31536000
+  review: keep
 - id: AL09
   name: Reggio Children
   url: https://www.reggiochildren.it/en/reggio-emilia-approach/
@@ -1539,8 +1596,8 @@ sources:
   authority: C2
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: AL10
   name: HighScope
   url: https://highscope.org/our-approach/
@@ -1550,8 +1607,8 @@ sources:
   authority: C2
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: AL11
   name: EUDEC demokratické vzdelávanie
   url: https://eudec.org/democratic-education/what-is-democratic-education/
@@ -1562,8 +1619,8 @@ sources:
   authority: C2
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: AL12
   name: Summerhill School
   url: https://www.summerhillschool.co.uk/
@@ -1573,9 +1630,10 @@ sources:
   authority: D
   priority: P2
   connector: html
-  frequency: ročne
-  status: Ponechať
-  note: Jedna konkrétna škola – opis praxe, nie všeobecný dôkaz.
+  interval_s: 31536000
+  review: keep
+  note:
+    sk: Jedna konkrétna škola – opis praxe, nie všeobecný dôkaz.
 - id: AL13
   name: ISSA Step by Step
   url: https://issa.nl/knowledge-hub/child-centered-democratic-pre-school-classrooms-step-step-approach
@@ -1585,8 +1643,8 @@ sources:
   authority: C2
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: AL14
   name: Začít spolu centrá aktivít
   url: https://www.zacitspolu.eu/centra-aktivit-v-zacit-spolu/
@@ -1596,8 +1654,8 @@ sources:
   authority: C1
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: AL15
   name: PBLWorks zdroje projektového učenia
   url: https://www.pblworks.org/resources-overview
@@ -1607,8 +1665,8 @@ sources:
   authority: C1
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: AL16
   name: Forest School Association
   url: https://forestschoolassociation.org/full-principles-and-criteria-for-good-practice/
@@ -1618,8 +1676,8 @@ sources:
   authority: C2
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: AL17
   name: The Philosophy Foundation
   url: https://www.philosophy-foundation.org/become-a-member
@@ -1629,9 +1687,10 @@ sources:
   authority: C1
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Upraviť
-  note: Vstupná URL smeruje na stránku členstva – zmeniť na stránku zdrojov organizácie.
+  interval_s: 2592000
+  review: adjusted
+  note:
+    sk: Vstupná URL smeruje na stránku členstva – zmeniť na stránku zdrojov organizácie.
 - id: AL18
   name: Flipped Learning Network
   url: https://flippedlearning.org/definition-of-flipped-learning/
@@ -1641,8 +1700,8 @@ sources:
   authority: C1
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: AL19
   name: Association for Experiential Education
   url: https://www.aee.org/what-is-experiential-education
@@ -1652,8 +1711,8 @@ sources:
   authority: C2
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: AL20
   name: Alliance for Self Directed Education
   url: https://www.self-directed.org/
@@ -1663,8 +1722,8 @@ sources:
   authority: C2
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: AL21
   name: Campbell prehľad výskumu Montessori
   url: https://www.campbellcollaboration.org/review/montessori-impact-on-academic-and-nonacademic-outcomes/
@@ -1674,9 +1733,10 @@ sources:
   authority: B2
   priority: P1
   connector: html
-  frequency: jednorazovo
-  status: Ponechať
-  note: Systematický prehľad – dôkazová úroveň E4 pre Montessori.
+  interval_s: 31536000
+  review: keep
+  note:
+    sk: Systematický prehľad – dôkazová úroveň E4 pre Montessori.
 - id: AL22
   name: Kritické listy príklady lekcií
   url: https://kritickemysleni.cz/inspirace-pro-ucitele/kriticke-listy/kriticke-listy-35/
@@ -1686,8 +1746,8 @@ sources:
   authority: C1
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: AL23
   name: Učitel21
   url: https://www.ucitel21.cz/
@@ -1697,8 +1757,8 @@ sources:
   authority: D
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Ponechať
+  interval_s: 2592000
+  review: keep
 - id: AL24
   name: Cult of Pedagogy stratégie
   url: https://www.cultofpedagogy.com/tag/teaching-strategies/
@@ -1708,10 +1768,11 @@ sources:
   authority: D
   priority: P1
   connector: wp
-  frequency: denne
-  status: Ponechať
+  interval_s: 86400
+  review: keep
   feed: https://www.cultofpedagogy.com/feed/
-  note: Overený RSS kanál.
+  note:
+    sk: Overený RSS kanál.
 - id: AL25
   name: Teacherhead Tom Sherrington
   url: https://teacherhead.com/about/
@@ -1721,10 +1782,11 @@ sources:
   authority: D
   priority: P1
   connector: wp
-  frequency: denne
-  status: Ponechať
+  interval_s: 86400
+  review: keep
   feed: https://teacherhead.com/feed/
-  note: Overený RSS kanál.
+  note:
+    sk: Overený RSS kanál.
 - id: N01
   name: NIVaM – Merania (Testovanie 9, maturita, medzinárodné merania)
   url: https://nivam.sk/
@@ -1734,9 +1796,10 @@ sources:
   authority: A2
   priority: P0
   connector: html
-  frequency: týždenne
-  status: Nový zdroj
-  note: Bývalý NÚCEM; výsledky meraní a uvoľnené úlohy.
+  interval_s: 604800
+  review: new
+  note:
+    sk: Bývalý NÚCEM; výsledky meraní a uvoľnené úlohy.
 - id: N02
   name: NIVaM – Profesijný rozvoj a atestácie
   url: https://nivam.sk/
@@ -1746,9 +1809,10 @@ sources:
   authority: A2
   priority: P1
   connector: html
-  frequency: týždenne
-  status: Nový zdroj
-  note: Kontinuálne vzdelávanie, atestácie, profesijné štandardy.
+  interval_s: 604800
+  review: new
+  note:
+    sk: Kontinuálne vzdelávanie, atestácie, profesijné štandardy.
 - id: N03
   name: Indícia, n. o.
   url: https://indicia.sk/
@@ -1758,9 +1822,10 @@ sources:
   authority: C1
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Nový zdroj
-  note: Hejného metóda, Comenia Script, bádateľské vyučovanie ExpEdícia.
+  interval_s: 2592000
+  review: new
+  note:
+    sk: Hejného metóda, Comenia Script, bádateľské vyučovanie ExpEdícia.
 - id: N04
   name: To dá rozum (MESA10)
   url: https://todarozum.sk/
@@ -1770,9 +1835,10 @@ sources:
   authority: B2
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Nový zdroj
-  note: Rozsiahla analýza slovenského vzdelávacieho systému.
+  interval_s: 2592000
+  review: new
+  note:
+    sk: Rozsiahla analýza slovenského vzdelávacieho systému.
 - id: N05
   name: EDUin, o. p. s.
   url: https://eduin.cz/
@@ -1782,10 +1848,11 @@ sources:
   authority: C1
   priority: P1
   connector: wp
-  frequency: denne
-  status: Nový zdroj
+  interval_s: 86400
+  review: new
   feed: https://eduin.cz/feed/
-  note: Nezávislá analýza českej vzdelávacej politiky; kanál existuje, aktuálne bez položiek – kombinovať s HTML.
+  note:
+    sk: Nezávislá analýza českej vzdelávacej politiky; kanál existuje, aktuálne bez položiek – kombinovať s HTML.
 - id: N06
   name: e-Sbírka (české právne predpisy)
   url: https://www.e-sbirka.cz/
@@ -1795,9 +1862,10 @@ sources:
   authority: A1
   priority: P1
   connector: html
-  frequency: denne
-  status: Nový zdroj
-  note: Otvorené dáta sú obmedzené – preveriť rozhranie.
+  interval_s: 86400
+  review: new
+  note:
+    sk: Otvorené dáta sú obmedzené – preveriť rozhranie.
 - id: N07
   name: Centralna Komisja Egzaminacyjna
   url: https://cke.gov.pl/
@@ -1807,9 +1875,10 @@ sources:
   authority: A2
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Nový zdroj
-  note: Poľské skúšky a ich výsledky.
+  interval_s: 2592000
+  review: new
+  note:
+    sk: Poľské skúšky a ich výsledky.
 - id: N08
   name: IQB – Institut zur Qualitätsentwicklung im Bildungswesen
   url: https://www.iqb.hu-berlin.de/
@@ -1819,9 +1888,10 @@ sources:
   authority: B2
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Nový zdroj
-  note: Nemecké vzdelávacie štandardy a IQB-Bildungstrend.
+  interval_s: 2592000
+  review: new
+  note:
+    sk: Nemecké vzdelávacie štandardy a IQB-Bildungstrend.
 - id: N09
   name: Bundeszentrale für politische Bildung
   url: https://www.bpb.de/
@@ -1831,9 +1901,10 @@ sources:
   authority: A2
   priority: P1
   connector: rss
-  frequency: denne
-  status: Nový zdroj
-  note: Občianska a mediálna výchova, metodiky.
+  interval_s: 86400
+  review: new
+  note:
+    sk: Občianska a mediálna výchova, metodiky.
 - id: N10
   name: ZUM-Unterrichten (otvorená wiki učiteľov)
   url: https://unterrichten.zum.de/
@@ -1843,9 +1914,10 @@ sources:
   authority: C1
   priority: P2
   connector: api
-  frequency: týždenne
-  status: Nový zdroj
-  note: Obsah pod otvorenou licenciou (CC BY-SA); MediaWiki API.
+  interval_s: 604800
+  review: new
+  note:
+    sk: Obsah pod otvorenou licenciou (CC BY-SA); MediaWiki API.
 - id: N11
   name: klicksafe (EU Safer Internet DE)
   url: https://www.klicksafe.de/
@@ -1855,9 +1927,10 @@ sources:
   authority: B1
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Nový zdroj
-  note: Mediálna a digitálna gramotnosť.
+  interval_s: 2592000
+  review: new
+  note:
+    sk: Mediálna a digitálna gramotnosť.
 - id: N12
   name: IQS – Institut des Bundes für Qualitätssicherung
   url: https://www.iqs.gv.at/
@@ -1867,9 +1940,10 @@ sources:
   authority: A2
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Nový zdroj
-  note: PISA, PIRLS a štandardy v Rakúsku.
+  interval_s: 2592000
+  review: new
+  note:
+    sk: PISA, PIRLS a štandardy v Rakúsku.
 - id: N13
   name: Eduthek (BMB)
   url: https://eduthek.at/
@@ -1879,9 +1953,10 @@ sources:
   authority: A2
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Nový zdroj
-  note: Oficiálne digitálne vzdelávacie zdroje Rakúska.
+  interval_s: 2592000
+  review: new
+  note:
+    sk: Oficiálne digitálne vzdelávacie zdroje Rakúska.
 - id: N14
   name: Nemzeti Jogszabálytár
   url: https://njt.hu/
@@ -1891,9 +1966,10 @@ sources:
   authority: A1
   priority: P2
   connector: html
-  frequency: týždenne
-  status: Nový zdroj
-  note: Maďarské právne predpisy (aj pre školy s VJM na Slovensku ako kontext).
+  interval_s: 604800
+  review: new
+  note:
+    sk: Maďarské právne predpisy (aj pre školy s VJM na Slovensku ako kontext).
 - id: N15
   name: EUR-Lex
   url: https://eur-lex.europa.eu/
@@ -1903,9 +1979,10 @@ sources:
   authority: A1
   priority: P1
   connector: api
-  frequency: denne
-  status: Nový zdroj
-  note: Právo EÚ (AI Act, GDPR, autorské právo); webová služba a SPARQL.
+  interval_s: 86400
+  review: new
+  note:
+    sk: Právo EÚ (AI Act, GDPR, autorské právo); webová služba a SPARQL.
 - id: N16
   name: ECML – European Centre for Modern Languages (Rada Európy)
   url: https://www.ecml.at/
@@ -1917,9 +1994,10 @@ sources:
   authority: B1
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Nový zdroj
-  note: Praktické zdroje pre výučbu jazykov, viacjazyčný glosár.
+  interval_s: 2592000
+  review: new
+  note:
+    sk: Praktické zdroje pre výučbu jazykov, viacjazyčný glosár.
 - id: N17
   name: Rada Európy – CEFR (SERR)
   url: https://www.coe.int/en/web/common-european-framework-reference-languages
@@ -1930,9 +2008,10 @@ sources:
   authority: B1
   priority: P1
   connector: html
-  frequency: ročne
-  status: Nový zdroj
-  note: Úrovne B1/B2 a deskriptory – priama väzba na osnovy cudzích jazykov.
+  interval_s: 31536000
+  review: new
+  note:
+    sk: Úrovne B1/B2 a deskriptory – priama väzba na osnovy cudzích jazykov.
 - id: N18
   name: Better Internet for Kids
   url: https://better-internet-for-kids.europa.eu/
@@ -1942,9 +2021,10 @@ sources:
   authority: B1
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Nový zdroj
-  note: Bezpečnosť online a mediálna gramotnosť.
+  interval_s: 2592000
+  review: new
+  note:
+    sk: Bezpečnosť online a mediálna gramotnosť.
 - id: N19
   name: SLO – národné centrum pre kurikulum (Holandsko)
   url: https://www.slo.nl/
@@ -1954,9 +2034,10 @@ sources:
   authority: A2
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Nový zdroj
-  note: Kerndoelen, nástroje a príručky ku kurikulu.
+  interval_s: 2592000
+  review: new
+  note:
+    sk: Kerndoelen, nástroje a príručky ku kurikulu.
 - id: N20
   name: NCCA – National Council for Curriculum and Assessment (Írsko)
   url: https://ncca.ie/
@@ -1966,9 +2047,10 @@ sources:
   authority: A2
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Nový zdroj
-  note: Prehľadne spracované kurikulum v angličtine.
+  interval_s: 2592000
+  review: new
+  note:
+    sk: Prehľadne spracované kurikulum v angličtine.
 - id: N21
   name: HundrED
   url: https://hundred.org/
@@ -1978,9 +2060,10 @@ sources:
   authority: C1
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Nový zdroj
-  note: Kurátorované vzdelávacie inovácie; označovať ako opis praxe (E1).
+  interval_s: 2592000
+  review: new
+  note:
+    sk: Kurátorované vzdelávacie inovácie; označovať ako opis praxe (E1).
 - id: N22
   name: Evidence for ESSA (Johns Hopkins)
   url: https://www.evidenceforessa.org/
@@ -1990,9 +2073,10 @@ sources:
   authority: B2
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Nový zdroj
-  note: Hodnotenie programov podľa dôkazov; pravidlá aktualizované 8/2026.
+  interval_s: 2592000
+  review: new
+  note:
+    sk: Hodnotenie programov podľa dôkazov; pravidlá aktualizované 8/2026.
 - id: N23
   name: The Learning Scientists
   url: https://www.learningscientists.org/
@@ -2002,9 +2086,10 @@ sources:
   authority: B2
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Nový zdroj
-  note: Kognitívne stratégie učenia (vybavovanie, rozložené opakovanie).
+  interval_s: 2592000
+  review: new
+  note:
+    sk: Kognitívne stratégie učenia (vybavovanie, rozložené opakovanie).
 - id: N24
   name: CommonLit
   url: https://www.commonlit.org/
@@ -2014,9 +2099,10 @@ sources:
   authority: C1
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Nový zdroj
-  note: Texty a úlohy pre čitateľskú gramotnosť.
+  interval_s: 2592000
+  review: new
+  note:
+    sk: Texty a úlohy pre čitateľskú gramotnosť.
 - id: N25
   name: Day of AI (MIT RAISE)
   url: https://www.dayofai.org/
@@ -2026,9 +2112,10 @@ sources:
   authority: B2
   priority: P1
   connector: html
-  frequency: mesačne
-  status: Nový zdroj
-  note: Bezplatné scenáre AI gramotnosti podľa veku.
+  interval_s: 2592000
+  review: new
+  note:
+    sk: Bezplatné scenáre AI gramotnosti podľa veku.
 - id: N26
   name: Ontario Curriculum and Resources
   url: https://www.dcp.edu.gov.on.ca/
@@ -2039,9 +2126,10 @@ sources:
   authority: A2
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Nový zdroj
-  note: Kanada – kurikulum provincie Ontário.
+  interval_s: 2592000
+  review: new
+  note:
+    sk: Kanada – kurikulum provincie Ontário.
 - id: N27
   name: BC Curriculum (Britská Kolumbia)
   url: https://curriculum.gov.bc.ca/
@@ -2051,9 +2139,10 @@ sources:
   authority: A2
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Nový zdroj
-  note: Kompetenčne orientované kurikulum.
+  interval_s: 2592000
+  review: new
+  note:
+    sk: Kompetenčne orientované kurikulum.
 - id: N28
   name: Ministry of Education Singapore
   url: https://www.moe.gov.sg/
@@ -2063,9 +2152,10 @@ sources:
   authority: A2
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Nový zdroj
-  note: Krajina s najvyššími výsledkami PISA.
+  interval_s: 2592000
+  review: new
+  note:
+    sk: Krajina s najvyššími výsledkami PISA.
 - id: N29
   name: AITSL – Australian Institute for Teaching and School Leadership
   url: https://www.aitsl.edu.au/
@@ -2075,9 +2165,10 @@ sources:
   authority: A2
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Nový zdroj
-  note: Profesijné štandardy učiteľov a vedúcich.
+  interval_s: 2592000
+  review: new
+  note:
+    sk: Profesijné štandardy učiteľov a vedúcich.
 - id: N30
   name: Estónsko – e-Koolikott (repozitár OER)
   url: https://e-koolikott.ee/
@@ -2087,9 +2178,10 @@ sources:
   authority: A2
   priority: P2
   connector: api
-  frequency: mesačne
-  status: Nový zdroj
-  note: Štátny repozitár digitálnych materiálov.
+  interval_s: 2592000
+  review: new
+  note:
+    sk: Štátny repozitár digitálnych materiálov.
 - id: N31
   name: FIPI – otvorené banky úloh funkčnej gramotnosti
   url: https://fipi.ru/
@@ -2099,9 +2191,10 @@ sources:
   authority: A2
   priority: P2
   connector: html
-  frequency: mesačne
-  status: Nový zdroj
-  note: Otvorená banka úloh čitateľskej a prírodovednej gramotnosti (7.–9. roč.).
+  interval_s: 2592000
+  review: new
+  note:
+    sk: Otvorená banka úloh čitateľskej a prírodovednej gramotnosti (7.–9. roč.).
 - id: N32
   name: DOAJ – Directory of Open Access Journals
   url: https://doaj.org/
@@ -2111,9 +2204,10 @@ sources:
   authority: B2
   priority: P1
   connector: api
-  frequency: týždenne
-  status: Nový zdroj
-  note: Otvorené časopisy; bezplatné API, metadáta CC0.
+  interval_s: 604800
+  review: new
+  note:
+    sk: Otvorené časopisy; bezplatné API, metadáta CC0.
 - id: N33
   name: CORE – agregátor otvorených výskumných textov
   url: https://core.ac.uk/
@@ -2123,9 +2217,10 @@ sources:
   authority: B2
   priority: P2
   connector: api
-  frequency: týždenne
-  status: Nový zdroj
-  note: Bezplatný prístup s limitom; rýchlejší prístup platený – použiť len bezplatný režim.
+  interval_s: 604800
+  review: new
+  note:
+    sk: Bezplatný prístup s limitom; rýchlejší prístup platený – použiť len bezplatný režim.
 - id: N34
   name: Zenodo
   url: https://zenodo.org/
@@ -2135,9 +2230,10 @@ sources:
   authority: B2
   priority: P2
   connector: oai
-  frequency: týždenne
-  status: Nový zdroj
-  note: OAI-PMH; mnoho materiálov pod CC licenciou.
+  interval_s: 604800
+  review: new
+  note:
+    sk: OAI-PMH; mnoho materiálov pod CC licenciou.
 - id: N35
   name: EdArXiv – preprinty z pedagogiky
   url: https://edarxiv.org/
@@ -2147,9 +2243,10 @@ sources:
   authority: B2
   priority: P2
   connector: api
-  frequency: týždenne
-  status: Nový zdroj
-  note: Nerecenzované – povinne označiť.
+  interval_s: 604800
+  review: new
+  note:
+    sk: Nerecenzované – povinne označiť.
 - id: N36
   name: Retraction Watch (otvorené dáta cez Crossref)
   url: https://www.crossref.org/
@@ -2159,9 +2256,10 @@ sources:
   authority: B2
   priority: P1
   connector: api
-  frequency: týždenne
-  status: Nový zdroj
-  note: Kontrola stiahnutých štúdií.
+  interval_s: 604800
+  review: new
+  note:
+    sk: Kontrola stiahnutých štúdií.
 - id: N37
   name: Wikidata
   url: https://www.wikidata.org/
@@ -2171,9 +2269,10 @@ sources:
   authority: D
   priority: P1
   connector: api
-  frequency: mesačne
-  status: Nový zdroj
-  note: CC0 – identifikátory organizácií, krajín a pojmov pre prepojenie entít.
+  interval_s: 2592000
+  review: new
+  note:
+    sk: CC0 – identifikátory organizácií, krajín a pojmov pre prepojenie entít.
 - id: N38
   name: Common Crawl (objavovanie nových zdrojov)
   url: https://commoncrawl.org/
@@ -2183,9 +2282,10 @@ sources:
   authority: D
   priority: P2
   connector: api
-  frequency: mesačne
-  status: Nový zdroj
-  note: Bezplatný index webu na objavovanie kandidátov – nie zdroj obsahu.
+  interval_s: 2592000
+  review: new
+  note:
+    sk: Bezplatný index webu na objavovanie kandidátov – nie zdroj obsahu.
 - id: N39
   name: YouTube kanály vybraných inštitúcií
   url: https://www.youtube.com/
@@ -2195,6 +2295,7 @@ sources:
   authority: D
   priority: P1
   connector: youtube-api
-  frequency: denne
-  status: Nový zdroj
-  note: Kanál /feeds/videos.xml je zakázaný v robots.txt – použiť oficiálne YouTube Data API (bezplatná kvóta); videá len odkaz/vloženie.
+  interval_s: 86400
+  review: new
+  note:
+    sk: Kanál /feeds/videos.xml je zakázaný v robots.txt – použiť oficiálne YouTube Data API (bezplatná kvóta); videá len odkaz/vloženie.
