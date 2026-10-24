@@ -25,6 +25,10 @@ Russian UI with the Slovak pack.
 * **Core locales – Czech, Russian, Chinese (Simplified).** Equal status with Slovak and English: always complete,
   reviewed and release-blocking. A UI string translated by AI stays marked as a draft until a native speaker
   approves it.
+* **Taxonomy labels.** Every scheme and concept has a label in all five core languages; the test
+  `core_languages_are_complete` fails otherwise. Languages listed in `draft_label_languages`
+  (`data/taxonomy.yaml`; currently cs, ru, zh) are machine-drafted, shown as "translation – suggestion" and
+  removed from the list once a native speaker has reviewed them.
 
 ### What the five languages require
 * **Search:** diacritics folded for sk/cs, `ё → е` for Russian, Chinese segmented into words (jieba-rs, MIT)

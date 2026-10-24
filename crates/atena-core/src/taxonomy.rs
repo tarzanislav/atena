@@ -43,6 +43,20 @@ pub enum TaxonomyError {
         /// Reference language code.
         lang: String,
     },
+    /// A language marked as draft is not a taxonomy language, or is the reference language.
+    #[error("draft label language {0} is unknown or is the reference language")]
+    InvalidDraftLanguage(String),
+}
+
+/// A scheme or concept without a label in a core language.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MissingLabel {
+    /// Scheme ID.
+    pub scheme: String,
+    /// Concept ID; `None` when the scheme's own label is missing.
+    pub concept: Option<String>,
+    /// Language code.
+    pub lang: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -50,6 +64,8 @@ struct RawTaxonomy {
     version: u32,
     reference_language: String,
     core_languages: Vec<String>,
+    #[serde(default)]
+    draft_label_languages: Vec<String>,
     languages: Vec<String>,
     schemes: BTreeMap<String, RawScheme>,
 }
@@ -156,6 +172,9 @@ pub struct Taxonomy {
     pub reference_language: String,
     /// Languages that must be complete before a release.
     pub core_languages: Vec<String>,
+    /// Languages whose labels are machine-drafted and await review by a native speaker;
+    /// the UI marks them as "translation – suggestion".
+    pub draft_label_languages: Vec<String>,
     /// All languages the taxonomy may contain.
     pub languages: Vec<String>,
     /// Schemes in file order of their IDs.
@@ -205,6 +224,13 @@ impl Taxonomy {
     /// Parses and validates a taxonomy in the v2 YAML format.
     pub fn from_yaml(text: &str) -> Result<Self, TaxonomyError> {
         let raw: RawTaxonomy = serde_saphyr::from_str(text)?;
+        if let Some(lang) = raw
+            .draft_label_languages
+            .iter()
+            .find(|l| **l == raw.reference_language || !raw.languages.contains(l))
+        {
+            return Err(TaxonomyError::InvalidDraftLanguage(lang.clone()));
+        }
         let mut schemes = BTreeMap::new();
         let mut concepts = HashMap::new();
         for (sid, rs) in raw.schemes {
@@ -268,6 +294,7 @@ impl Taxonomy {
             version: raw.version,
             reference_language: raw.reference_language,
             core_languages: raw.core_languages,
+            draft_label_languages: raw.draft_label_languages,
             languages: raw.languages,
             schemes,
             concepts,
@@ -316,16 +343,27 @@ impl Taxonomy {
         out
     }
 
-    /// Concepts without a label in one of the core languages: `(scheme, id, language)`.
-    /// A release requires this list to be empty.
-    pub fn missing_core_labels(&self) -> Vec<(String, String, String)> {
+    /// `true` when labels in `lang` are drafts awaiting review.
+    pub fn is_draft_language(&self, lang: &str) -> bool {
+        self.draft_label_languages.iter().any(|l| l == lang)
+    }
+
+    /// Schemes and concepts without a label in a core language. A release requires this list to be empty.
+    pub fn missing_core_labels(&self) -> Vec<MissingLabel> {
         let mut out = Vec::new();
         for scheme in self.schemes.values() {
-            for id in &scheme.concept_ids {
-                let c = &self.concepts[&(scheme.id.clone(), id.clone())];
+            let labelled = std::iter::once((None, &scheme.labels)).chain(
+                self.concepts_of(&scheme.id)
+                    .map(|c| (Some(c.id.clone()), &c.labels)),
+            );
+            for (concept, labels) in labelled {
                 for lang in &self.core_languages {
-                    if !c.labels.contains_key(lang) {
-                        out.push((scheme.id.clone(), id.clone(), lang.clone()));
+                    if !labels.contains_key(lang) {
+                        out.push(MissingLabel {
+                            scheme: scheme.id.clone(),
+                            concept: concept.clone(),
+                            lang: lang.clone(),
+                        });
                     }
                 }
             }
@@ -383,6 +421,42 @@ mod tests {
             assert!(t.get("topic", id).is_some(), "topic {id}");
         }
         assert!(t.concepts_of("literacy").count() >= 10);
+    }
+
+    #[test]
+    fn core_languages_are_complete() {
+        let t = Taxonomy::bundled().unwrap();
+        assert_eq!(t.missing_core_labels(), []);
+        assert!(t.is_draft_language("zh") && !t.is_draft_language("sk"));
+        let c = t.get("school-type", "special-education").unwrap();
+        assert_eq!(c.label("cs"), "Školy pro děti a žáky se SVP");
+        assert_eq!(c.label("ru"), "Школы для детей с ОВЗ");
+        assert_eq!(c.label("zh"), "特殊教育学校");
+    }
+
+    #[test]
+    fn reports_missing_labels_and_rejects_a_draft_reference() {
+        let yaml = |draft: &str| {
+            format!(
+                "version: 2\nreference_language: sk\ncore_languages: [sk, cs]\n\
+                 draft_label_languages: [{draft}]\nlanguages: [sk, cs]\nschemes:\n  \
+                 topic:\n    labels: {{sk: Témy}}\n    concepts:\n    \
+                 - id: ai\n      labels: {{sk: AI, cs: AI}}\n"
+            )
+        };
+        let t = Taxonomy::from_yaml(&yaml("cs")).unwrap();
+        assert_eq!(
+            t.missing_core_labels(),
+            [MissingLabel {
+                scheme: "topic".into(),
+                concept: None,
+                lang: "cs".into()
+            }]
+        );
+        assert!(matches!(
+            Taxonomy::from_yaml(&yaml("sk")),
+            Err(TaxonomyError::InvalidDraftLanguage(l)) if l == "sk"
+        ));
     }
 
     #[test]
