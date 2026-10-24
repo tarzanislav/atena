@@ -95,6 +95,7 @@ jobs:
   installer:
     name: Windows installer
     runs-on: windows-latest
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -156,6 +157,7 @@ jobs:
           & "$to/bin/postgres.exe" --version
 
       - name: The database inside the app with exactly these programs
+        timeout-minutes: 30
         shell: pwsh
         run: |
           $env:ATENA_TEST_PG_BIN = (Resolve-Path apps/desktop/src-tauri/resources/postgres/bin).Path
