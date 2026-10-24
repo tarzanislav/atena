@@ -34,7 +34,8 @@ env:
   # empty, the build reports the checksum it found and stops, so that a person pins it.
   PG_VERSION: "17.11"
   PG_URL: "https://sbp.enterprisedb.com/getfile.jsp?fileid=1260616"
-  PG_SHA256: ""
+  # 381,531,864 bytes; pinned on 24 Oct 2026 after two downloads gave the same archive
+  PG_SHA256: "80379b2c04d51c30225532e0ae04509899141e9957ed096fe749d7fd9df8f82f"
 
 # Actions are pinned to full commit SHAs so a moved tag cannot change what runs here.
 
@@ -134,7 +135,10 @@ jobs:
             Write-Output "::error::PostgreSQL archive SHA-256 $sha differs from the pinned $env:PG_SHA256"
             exit 1
           }
-          Expand-Archive pg.zip -DestinationPath pg
+          # only what the app needs (not pgAdmin, StackBuilder, headers or documentation)
+          New-Item -ItemType Directory -Force pg | Out-Null
+          tar -xf pg.zip -C pg pgsql/bin pgsql/lib pgsql/share pgsql/commandlinetools_3rd_party_licenses.txt
+          if ($LASTEXITCODE -ne 0) { exit 1 }
           $from = "pg/pgsql"
           $to = "apps/desktop/src-tauri/resources/postgres"
           New-Item -ItemType Directory -Force "$to/bin", "$to/lib" | Out-Null
@@ -144,6 +148,9 @@ jobs:
           Copy-Item "$from/lib/*.dll" "$to/lib/"
           Copy-Item "$from/share" $to -Recurse
           Remove-Item "$to/share/doc" -Recurse -ErrorAction SilentlyContinue
+          # the licences of the libraries, as EnterpriseDB ships them with the programs
+          New-Item -ItemType Directory -Force "apps/desktop/src-tauri/resources/notices" | Out-Null
+          Copy-Item "$from/commandlinetools_3rd_party_licenses.txt" "apps/desktop/src-tauri/resources/notices/postgresql-libraries-edb.txt"
           $libraries = (Get-ChildItem "$to/bin" -Filter *.dll | ForEach-Object Name) -join ", "
           Write-Output "::notice::PostgreSQL $env:PG_VERSION libraries: $libraries"
           & "$to/bin/postgres.exe" --version
