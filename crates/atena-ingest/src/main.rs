@@ -24,6 +24,9 @@ USAGE:
                                       check due endpoints; --once stops when nothing is due
     atena-ingest fetch URL            fetch and extract one URL and print a summary (no database)
     atena-ingest legality [REGISTER]  what the legality principle allows for every source (no database)
+    atena-ingest assess [FILE] [--json] [--concurrency N]
+                                      read addresses or DOIs, one per line (FILE or standard input),
+                                      and propose licence and terms for each (no database)
     atena-ingest forget URL --reason TEXT [--prefix]
                                       erase everything about URL (with --prefix: every URL below it)
                                       and never fetch it again – for erasure requests (GDPR Art. 17)
@@ -232,6 +235,97 @@ async fn fetch_one(url: &str) -> Result<(), String> {
     Ok(())
 }
 
+/// Reads one item per line from `path`, or from standard input without one.
+fn read_lines(path: Option<&str>) -> Result<String, String> {
+    match path {
+        Some(p) => std::fs::read_to_string(p).map_err(|e| format!("{p}: {e}")),
+        None => std::io::read_to_string(std::io::stdin()).map_err(|e| e.to_string()),
+    }
+}
+
+/// What a proposal allows, in the words of the legality report.
+fn allows(country: Option<&str>, licence: &str, terms: &str) -> (bool, bool, bool) {
+    let (Some(country), licence, terms) = (
+        country,
+        atena_core::Licence::parse(licence),
+        atena_core::Terms::parse(terms),
+    ) else {
+        return (false, false, false);
+    };
+    let p = permission(
+        SourceFacts {
+            country,
+            licence: &licence,
+            terms,
+        },
+        false,
+        true,
+    );
+    (p.crawl, p.store_text, p.show_full_text)
+}
+
+async fn assess(args: &[String]) -> Result<(), String> {
+    let (mut path, mut json, mut concurrency) = (None, false, 4usize);
+    let mut args = args.iter();
+    while let Some(arg) = args.next() {
+        match arg.as_str() {
+            "--json" => json = true,
+            "--concurrency" => {
+                concurrency = args
+                    .next()
+                    .and_then(|n| n.parse().ok())
+                    .filter(|n| (1..=32).contains(n))
+                    .ok_or("--concurrency needs a number from 1 to 32")?;
+            }
+            other if path.is_none() && !other.starts_with("--") => path = Some(other),
+            other => return Err(format!("unexpected argument {other}\n\n{USAGE}")),
+        }
+    }
+    let parsed = atena_assess::parse_input(&read_lines(path)?);
+    for r in &parsed.rejected {
+        eprintln!("line {}: {:?}: {}", r.line, r.reason, r.text);
+    }
+    let fetcher = Arc::new(Fetcher::new(Config::default()).map_err(|e| e.to_string())?);
+    let assessments = atena_assess::Assessor::new(fetcher)
+        .assess_all(&parsed.items, concurrency)
+        .await;
+    if json {
+        let out = serde_json::to_string_pretty(&assessments).map_err(|e| e.to_string())?;
+        println!("{out}");
+        return Ok(());
+    }
+    let yes = |b: bool| if b { "yes" } else { "–" };
+    println!(
+        "{:<5} {:<8} {:<7} {:<12} {:<9} {:<5} {:<5} {:<5}  address",
+        "line", "kind", "country", "licence", "terms", "crawl", "text", "show"
+    );
+    for a in &assessments {
+        let p = &a.proposal;
+        let (crawl, text, show) = allows(a.country.as_deref(), &p.licence, &p.terms);
+        println!(
+            "{:<5} {:<8} {:<7} {:<12} {:<9} {:<5} {:<5} {:<5}  {}",
+            a.line,
+            a.kind
+                .map(|k| format!("{k:?}").to_lowercase())
+                .unwrap_or_else(|| "–".into()),
+            a.country.as_deref().unwrap_or("?"),
+            p.licence,
+            p.terms,
+            yes(crawl),
+            yes(text),
+            yes(show),
+            a.url
+        );
+        println!("      {}", p.rights.finding);
+    }
+    println!(
+        "\n{} items assessed, {} lines not accepted. Proposals are not applied: a person confirms each one.",
+        assessments.len(),
+        parsed.rejected.len()
+    );
+    Ok(())
+}
+
 async fn forget(args: &[String]) -> Result<(), String> {
     let mut url = None;
     let mut reason = None;
@@ -292,6 +386,7 @@ async fn main() -> ExitCode {
         },
         Some("forget") => forget(&args[1..]).await,
         Some("legality") => legality_report(args.get(1).map(String::as_str)),
+        Some("assess") => assess(&args[1..]).await,
         Some("help" | "--help" | "-h") | None => {
             print!("{USAGE}");
             Ok(())

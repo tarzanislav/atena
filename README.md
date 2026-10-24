@@ -21,6 +21,7 @@ and always links each item back to its original source.
 | `crates/atena-crawl/` | polite and safe crawler: robots.txt (RFC 9309), SSRF guard, pacing, TDMRep, RSS/Atom, sitemaps – see [docs/CRAWLER.md](docs/CRAWLER.md) |
 | `crates/atena-extract/` | main text without menus and footers, metadata and language from HTML (also legacy encodings), PDF, DOCX and ODT |
 | `crates/atena-store/` | PostgreSQL schema and queries, host-lease scheduling, content-addressed file store – see [docs/DATABASE.md](docs/DATABASE.md) |
+| `crates/atena-assess/` | automatic rights assessment: input lines → licence, terms of use and evidence – see [docs/ASSESSMENT.md](docs/ASSESSMENT.md) |
 | `crates/atena-ingest/` | the crawler program: register → fetch → extraction → versions → classification – see [docs/RUNNING.md](docs/RUNNING.md) |
 | `data/` | taxonomy (296 concepts, 15 facets, 8 languages) and a register of 186 sources |
 | `prototyp-v0.1/` | working Python prototype (crawling, versions, classification, search, web, 41 tests) – the executable specification for the Rust core |

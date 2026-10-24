@@ -85,6 +85,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "atena-assess"
+version = "0.2.0"
+dependencies = [
+ "atena-core",
+ "atena-crawl",
+ "atena-extract",
+ "jiff",
+ "serde",
+ "serde-saphyr",
+ "serde_json",
+ "tokio",
+ "unicode-normalization",
+ "url",
+]
+
+[[package]]
 name = "atena-core"
 version = "0.2.0"
 dependencies = [
@@ -136,11 +152,13 @@ dependencies = [
 name = "atena-ingest"
 version = "0.2.0"
 dependencies = [
+ "atena-assess",
  "atena-core",
  "atena-crawl",
  "atena-extract",
  "atena-store",
  "jiff",
+ "serde_json",
  "sqlx",
  "thiserror",
  "tokio",
@@ -3217,6 +3235,7 @@ dependencies = [
  "idna",
  "percent-encoding",
  "serde",
+ "serde_derive",
 ]
 
 [[package]]

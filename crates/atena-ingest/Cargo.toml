@@ -14,11 +14,13 @@ name = "atena-ingest"
 path = "src/main.rs"
 
 [dependencies]
+atena-assess = { path = "../atena-assess" }
 atena-core = { path = "../atena-core" }
 atena-crawl = { path = "../atena-crawl" }
 atena-extract = { path = "../atena-extract" }
 atena-store = { path = "../atena-store" }
 jiff = "0.2.38"
+serde_json.workspace = true
 thiserror.workspace = true
 tokio = { version = "1.54.1", features = ["macros", "rt-multi-thread", "signal", "sync", "time"] }
 tracing = "0.1.44"

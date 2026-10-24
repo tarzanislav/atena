@@ -1,0 +1,177 @@
+# What ATENA looks for when it reads terms of use, legal notices and licence statements.
+# Licence: CC0 1.0. Add a language by adding its phrases; no change to the program is needed.
+#
+# Matching: text is lower-cased and normalised (NFKC); a phrase must start at the beginning of a
+# word but may end inside one ("zakázan" matches "zakázané"); phrases of up to three letters must
+# match whole words. Phrases in scripts without spaces (Chinese, Japanese) match anywhere.
+#
+# A finding of `automation` needs a subject and a prohibition marker in the same sentence; a
+# finding of `mining` needs a subject and a prohibition or reservation marker. The other
+# categories are single phrases. False alarms only make the proposal stricter, and a person
+# confirms every proposal.
+version: 1
+
+# Words in link texts or addresses that lead to terms of use, legal notices and licences.
+legal_links:
+  en: [terms, conditions of use, legal, copyright, disclaimer, imprint, licence, license, licensing, permissions, reuse, re-use, rights and permissions]
+  sk: [podmienky, autorské, autorske, právne, pravne, licenci, impresum, ochrana obsahu]
+  cs: [podmínky, podminky, autorská, autorska, právní, pravni, licenc]
+  de: [impressum, nutzungsbedingung, agb, urheberrecht, rechtliche, rechtlicher, haftungsausschluss, lizenz]
+  fr: [mentions légales, mentions-legales, conditions générales, conditions d'utilisation, cgu, droits d'auteur, informations légales]
+  pl: [regulamin, warunki korzystania, prawa autorskie, nota prawna, licencj, zastrzeżenia prawne]
+  hu: [impresszum, jogi nyilatkozat, felhasználási feltételek, szerzői jog, licenc]
+  ru: [пользовательское соглашение, условия использования, правовая информация, авторск, правила использования, лиценз]
+  zh: [使用条款, 版权, 网站声明, 法律声明, 用户协议]
+  nl: [gebruiksvoorwaarden, voorwaarden, auteursrecht, colofon, licentie]
+  it: [note legali, condizioni d'uso, termini, diritto d'autore, licenza]
+  es: [aviso legal, términos, condiciones de uso, derechos de autor, licencia]
+  sv: [upphovsrätt, användarvillkor, villkor, om webbplatsen, licens]
+  fi: [käyttöehdot, tekijänoikeu, lisenssi]
+  et: [kasutustingimused, autoriõigus, litsents]
+  ja: [利用規約, 著作権, サイトポリシー, 免責]
+
+# Links that are never about content rights: privacy, cookies, accessibility, accounts.
+ignore_links: [privacy, cookie, gdpr, datenschutz, ochrana osobn, ochrany osobn, osobných údajov, osobních údajů, ochrana súkromia, rodo, prywatno, adatkezel, adatvédelm, конфиденциальн, персональн, 隐私, privacidad, confidentialité, données personnelles, integritet, tietosuoja, privacyverklaring, accessib, prístupnost, přístupnost, barrierefrei, dostępnoś, akadálymentes, login, log in, sign in, prihlás, přihlás, anmeld, newsletter]
+
+# Words that make a block of an ordinary page worth reading as a legal statement (footers).
+legal_context: ["©", "(c)", copyright, all rights, licen, terms, podmienk, podmínk, autorsk, práva, urheber, rechte, droits, prawa, jog, права, 版权, voorwaarden, diritti, derechos, rättigheter, oikeudet, õigused, 著作権]
+
+automation:
+  subjects:
+    en: [robot, spider, crawler, crawling, crawl the, scrap, screen scraping, automated means, automated device, automatic device, automated process, automated system, automated tool, automated software, automated agent, automated queries, automated access, bots, harvest, data mining tool, offline browser, retrieval system, index of]
+    sk: [robot, crawler, scraping, automatizovan, automatick, hromadné sťahovanie, hromadného sťahovania, zber dát, zber údajov]
+    cs: [robot, crawler, scraping, automatizovan, automatick, hromadné stahování, hromadného stahování, sběr dat]
+    de: [robot, spider, crawler, scraper, scraping, automatisiert, automatische, automatischen, automatischer]
+    fr: [robot, aspirateur, aspiration, crawler, scraping, moyens automatis, procédé automatis, extraction automatis, collecte automatis]
+    pl: [robot, crawler, scraping, automatyczn, zautomatyzowan, masowe pobieranie]
+    hu: [robot, crawler, scraping, automatizált, automatikus, adatgyűjt]
+    ru: [робот, краулер, парсинг, парсер, автоматизированн, автоматическ, сбор данных, скрапинг]
+    zh: [爬虫, 机器人, 自动化, 抓取, 采集, 爬取]
+    nl: [robot, crawler, spider, scraping, geautomatiseerd, automatisch]
+    it: [robot, crawler, spider, scraping, automatizzat, automatic]
+    es: [robot, rastreador, araña, scraping, automatizad, automátic, crawler]
+    sv: [robot, crawler, spindl, scraping, automatiserad, automatisk]
+    fi: [robot, crawler, scraping, automaattis]
+    et: [robot, automaatsel, automatiseer]
+    ja: [クローラ, ロボット, 自動, スクレイピング]
+  markers:
+    en: ["not", "no", "nor", never, prohibit, forbid, without, except with, unless, strictly, refrain]
+    sk: [nesmie, nesmú, nesmiete, zakáz, zákaz, nie je dovolen, nie je povolen, nie sú povolen, bez predchádzajúceho, bez písomného, bez súhlasu]
+    cs: [nesmí, nesmíte, zakáz, zákaz, není dovolen, není povolen, bez předchozího, bez písemného, bez souhlasu]
+    de: [nicht, untersagt, verboten, unzulässig, ohne, kein, keine]
+    fr: [interdit, ne pas, n'est pas autoris, ne sont pas autoris, sans autorisation, sans l'autorisation, sans accord, prohib]
+    pl: [zabronion, zakaz, nie wolno, niedozwolon, bez zgody, bez uprzedniej, nie jest dozwolon]
+    hu: [tilos, nem szabad, nem megengedett, engedély nélkül, hozzájárulás nélkül, nem engedélyez]
+    ru: [запрещ, не допускается, нельзя, без разрешения, без письменного, без согласия, не разрешается, не вправе]
+    zh: [禁止, 不得, 未经, 严禁]
+    nl: [niet, verboden, zonder toestemming, zonder voorafgaande]
+    it: [vietat, non è consentit, non sono consentit, senza autorizzazione, senza il consenso, proibit, non è permess]
+    es: [prohibid, no se permite, no está permitid, sin autorización, sin el consentimiento]
+    sv: [förbjud, inte tillåt, får inte, utan tillstånd, utan medgivande]
+    fi: [kielletty, ei saa, ilman lupaa, ilman kirjallista]
+    et: [keelatud, ilma loata]
+    ja: [禁止, してはならない, できません, 禁じ]
+
+mining:
+  subjects:
+    en: [text and data mining, text & data mining, text-and-data-mining, data mining, tdm, ai training, training of ai, train ai, training ai, training of artificial intelligence, train artificial intelligence, machine learning, large language model, generative ai, generative artificial intelligence, ai model, ai system, "2019/790", "article 4(3)", "art. 4(3)"]
+    sk: [vyťažovani, vytažovani, dolovanie dát, dolovania dát, umelej inteligencie, umelá inteligencia, strojové učenie, strojového učenia, trénovanie, trénovania]
+    cs: [vytěžování, dolování dat, umělé inteligence, umělá inteligence, strojové učení, strojového učení, trénování]
+    de: [text- und data-mining, text und data mining, data-mining, künstliche intelligenz, künstlichen intelligenz, ki-training, ki-modell, maschinelles lernen, maschinellen lernen, "§ 44b", "44b urhg", nutzungsvorbehalt]
+    fr: [fouille de textes, fouille de texte, fouille de données, exploration de textes, intelligence artificielle, apprentissage automatique]
+    pl: [eksploracj, sztucznej inteligencji, sztuczna inteligencja, uczenia maszynowego, uczenie maszynowe]
+    hu: [szöveg- és adatbányászat, adatbányász, mesterséges intelligencia, gépi tanulás]
+    ru: [интеллектуальный анализ, искусственного интеллекта, искусственный интеллект, машинного обучения, машинное обучение]
+    zh: [文本和数据挖掘, 数据挖掘, 人工智能, 机器学习]
+    nl: [tekst- en datamining, datamining, kunstmatige intelligentie]
+    it: [estrazione di testo, intelligenza artificiale, apprendimento automatico]
+    es: [minería de textos, minería de datos, inteligencia artificial, aprendizaje automático]
+    sv: [text- och datautvinning, datautvinning, artificiell intelligens, maskininlärning]
+    fi: [tekstin- ja tiedonlouhinta, tiedonlouhinta, tekoäly, koneoppim]
+    ja: [テキストデータマイニング, データマイニング, 人工知能, 機械学習]
+  markers:
+    en: [reserv, opt-out, opt out, not licensed, expressly, "not", "no", prohibit, forbid, without, exclude]
+    sk: [vyhradzuj, vyhraden, výhrad, nesmie, nesmú, zakáz, zákaz, bez súhlasu, nie je povolen]
+    cs: [vyhrazuj, vyhrazen, výhrad, nesmí, zakáz, zákaz, bez souhlasu, není povolen]
+    de: [vorbehalt, vorbehalten, behält sich, behalten uns, widersp, nicht, untersagt, verboten, ohne]
+    fr: [réserv, s'oppose, opposition, interdit, sans autorisation]
+    pl: [zastrzeg, zastrzeż, sprzeciw, zabronion, zakaz, bez zgody]
+    hu: [fenntart, kifejezetten, tilos, engedély nélkül]
+    ru: [оставля, сохраняет за собой, оговорк, запрещ, без разрешения]
+    zh: [保留, 禁止, 不得, 未经]
+    nl: [voorbehoud, behoudt, niet, verboden]
+    it: [riserv, si oppone, vietat, senza autorizzazione]
+    es: [reserv, se opone, prohibid, sin autorización]
+    sv: [förbehåll, förbjud, får inte]
+    fi: [pidättä, varaa, kielletty]
+    ja: [留保, 禁止]
+
+# Access only for one's own personal use: treated as a ban on automated access.
+personal_use:
+  en: [for your personal use, solely for your personal, for your own personal, personal use only, only for personal, personal use and for no other purpose]
+  sk: [výlučne pre osobnú potrebu, výhradne pre osobnú potrebu, len pre osobnú potrebu, iba pre osobnú potrebu, len na osobnú potrebu, výhradne na osobné]
+  cs: [pouze pro osobní potřebu, výhradně pro osobní potřebu, jen pro osobní potřebu, výhradně pro vlastní potřebu]
+  de: [ausschließlich für den persönlichen, nur für den persönlichen, ausschließlich zum privaten, nur zum privaten, nur für private zwecke, ausschließlich für private]
+  fr: [usage strictement personnel, usage exclusivement personnel, uniquement à des fins personnelles, usage personnel uniquement]
+  pl: [wyłącznie do użytku osobistego, wyłącznie na użytek własny, tylko do użytku osobistego, wyłącznie do własnego użytku]
+  hu: [kizárólag személyes, csak személyes használat]
+  ru: [только для личного, исключительно для личного]
+  zh: [仅供个人, 仅限个人]
+  nl: [uitsluitend voor persoonlijk, alleen voor persoonlijk]
+  it: [esclusivamente per uso personale, solo per uso personale]
+  es: [exclusivamente para uso personal, solo para uso personal, únicamente para uso personal]
+  sv: [endast för personligt bruk, enbart för personligt bruk]
+  fi: [vain henkilökohtaiseen, ainoastaan henkilökohtaiseen]
+  ja: [個人利用に限]
+
+# A plain copyright notice – not a reservation of mining (Art. 4(3) of Directive (EU) 2019/790).
+rights_reserved:
+  en: [all rights reserved]
+  sk: [všetky práva vyhradené, všetky práva sú vyhradené]
+  cs: [všechna práva vyhrazena]
+  de: [alle rechte vorbehalten]
+  fr: [tous droits réservés]
+  pl: [wszelkie prawa zastrzeżone, wszystkie prawa zastrzeżone]
+  hu: [minden jog fenntartva]
+  ru: [все права защищены]
+  zh: [版权所有]
+  nl: [alle rechten voorbehouden]
+  it: [tutti i diritti riservati]
+  es: [todos los derechos reservados]
+  sv: [alla rättigheter förbehållna]
+  fi: [kaikki oikeudet pidätetään]
+  et: [kõik õigused kaitstud]
+  ja: [無断転載]
+
+# Reuse only for non-commercial purposes: the content is not open in ATENA's sense.
+non_commercial:
+  en: [non-commercial, noncommercial, non commercial, by-nc]
+  sk: [nekomerčn]
+  cs: [nekomerční]
+  de: [nicht-kommerziell, nichtkommerziell, nicht kommerziell]
+  fr: [non commercial, non commerciale]
+  pl: [niekomercyjn]
+  hu: [nem kereskedelmi]
+  ru: [некоммерческ]
+  zh: [非商业]
+  nl: [niet-commercieel]
+  it: [non commerciale]
+  es: [no comercial]
+  sv: [icke-kommersiell]
+  fi: [ei-kaupallinen]
+  ja: [非営利]
+
+# Explicit permission to reuse content.
+reuse_permitted:
+  en: [may be reproduced, may be freely, may be copied, reproduction is authorised, reproduction is authorized, reproduction is permitted, free to use, you may reproduce]
+  sk: [je povolené, možno voľne, môžu byť voľne, povoľuje sa]
+  cs: [je povoleno, lze volně, mohou být volně]
+  de: [darf frei, dürfen frei, ist gestattet, mit quellenangabe]
+  fr: [reproduction est autorisée, librement réutilis]
+  pl: [dozwolone jest, można swobodnie]
+  hu: [szabadon felhasználható]
+  ru: [свободно использоват, при условии ссылки, при условии активной ссылки]
+  nl: [is toegestaan, mits de bron]
+  it: [è consentita la riproduzione]
+  es: [se permite la reproducción]
+  sv: [får fritt, är tillåtet]

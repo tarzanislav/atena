@@ -47,7 +47,7 @@ const UNCOUNTED: [&str; 34] = [
 
 /// The page up to the point where the (estimated) nesting depth exceeds [`MAX_DEPTH`],
 /// and at most [`MAX_HTML_BYTES`] long.
-fn limit_nesting(html: &str) -> &str {
+pub(crate) fn limit_nesting(html: &str) -> &str {
     let mut end = html.len().min(MAX_HTML_BYTES);
     while !html.is_char_boundary(end) {
         end -= 1;
@@ -154,7 +154,7 @@ const BOILERPLATE_WORDS: [&str; 31] = [
     "toolbar",
     "skiplink",
 ];
-const BLOCK_TAGS: [&str; 36] = [
+pub(crate) const BLOCK_TAGS: [&str; 36] = [
     "address",
     "article",
     "aside",
@@ -243,7 +243,7 @@ pub(crate) struct HtmlParts {
     pub tdm_policy: Option<String>,
 }
 
-fn collapse(text: &str) -> String {
+pub(crate) fn collapse(text: &str) -> String {
     text.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 

@@ -20,6 +20,8 @@ cargo run --release -p atena-ingest -- run       # zbiera, kým ho nezastavíte 
 cargo run --release -p atena-ingest -- run --once --concurrency 8   # zbiera, kým je čo
 cargo run --release -p atena-ingest -- fetch https://www.minedu.sk/  # jedna adresa, bez databázy
 cargo run --release -p atena-ingest -- legality  # čo zásada zákonnosti dovoľuje pri každom zdroji
+cargo run --release -p atena-ingest -- assess navrhy.txt [--json]
+                                                 # návrh licencie a podmienok pre adresy, jedna na riadok
 cargo run --release -p atena-ingest -- forget ADRESA --reason "žiadosť z 24. 10. 2026" [--prefix]
                                                  # žiadosť o výmaz: vymaže a navždy zablokuje
 ```

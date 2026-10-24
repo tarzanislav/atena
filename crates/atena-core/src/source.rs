@@ -2,7 +2,7 @@
 
 use std::collections::HashSet;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::taxonomy::Taxonomy;
 
@@ -136,7 +136,7 @@ impl Terms {
 }
 
 /// The record of a rights review: where and when the licence and terms of a source were read.
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Rights {
     /// Day of the review, `YYYY-MM-DD`.
