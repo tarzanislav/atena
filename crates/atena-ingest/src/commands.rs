@@ -42,7 +42,8 @@ fn service() -> Result<ServiceClient, String> {
 fn assessor() -> Result<Assessor, String> {
     Ok(Assessor::new(Arc::new(
         Fetcher::new(Config::default()).map_err(|e| e.to_string())?,
-    )))
+    ))
+    .with_parser(crate::parser()))
 }
 
 /// The person deciding: `--by` or `ATENA_EDITOR`.

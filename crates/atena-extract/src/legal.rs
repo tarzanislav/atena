@@ -22,7 +22,7 @@ const INVISIBLE: [&str; 11] = [
 ];
 
 /// Rights-related signals of an HTML page.
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct LegalSignals {
     /// Targets of `rel="license"` on `<a>` and `<link>` elements.
     pub licence_links: Vec<Url>,

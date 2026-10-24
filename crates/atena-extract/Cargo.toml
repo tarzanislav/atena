@@ -14,14 +14,18 @@ atena-core = { path = "../atena-core" }
 chardetng = "1.0.0"
 ego-tree = "0.11.1"
 encoding_rs = "0.8.42"
-jiff = "0.2.38"
+jiff = { version = "0.2.38", features = ["serde"] }
 # only the languages ATENA works with: taxonomy languages plus Ukrainian, so it is not taken for Russian
 lingua = { version = "1.8.0", default-features = false, features = ["chinese", "czech", "english", "german", "hungarian", "polish", "russian", "slovak", "ukrainian"] }
 pdf-extract = "0.12.1"
 quick-xml = "0.42.0"
 scraper = "0.29.0"
+serde.workspace = true
+serde_json.workspace = true
 thiserror.workspace = true
-url = "2.5.8"
+# the parsing worker runs as a child process (see isolated.rs)
+tokio = { version = "1.54.1", features = ["io-util", "process", "rt", "time"] }
+url = { version = "2.5.8", features = ["serde"] }
 zip = { version = "9.0.5", default-features = false, features = ["deflate"] }
 
 [lints]

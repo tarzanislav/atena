@@ -20,6 +20,8 @@ atena-crawl = { path = "../atena-crawl" }
 atena-extract = { path = "../atena-extract" }
 atena-search = { path = "../atena-search" }
 atena-store = { path = "../atena-store" }
+# counts allocations so that the parsing worker can be held to a memory limit
+cap = "0.1.2"
 jiff = "0.2.38"
 serde_json.workspace = true
 thiserror.workspace = true
@@ -29,6 +31,7 @@ tracing-subscriber = "0.3.23"
 url = "2.5.8"
 
 [dev-dependencies]
+flate2 = "1.1.10"
 atena-crawl = { path = "../atena-crawl", features = ["testing"] }
 atena-store = { path = "../atena-store", features = ["testing"] }
 sqlx = { version = "0.8.6", default-features = false, features = ["postgres", "runtime-tokio"] }

@@ -12,6 +12,7 @@
 mod danger;
 mod decode;
 mod html;
+mod isolated;
 mod lang;
 mod legal;
 mod meta;
@@ -23,9 +24,11 @@ use std::borrow::Cow;
 
 use atena_core::safety::{clean_line, clean_text, is_storable_url};
 use jiff::Timestamp;
+use serde::{Deserialize, Serialize};
 use url::Url;
 
 pub use html::{Link, MAX_LINKS};
+pub use isolated::{MEMORY_LIMIT, Parser, WORKER_ARG, serve};
 pub use lang::{Language, LanguageSource, detect as detect_language};
 pub use legal::{LegalSignals, MAX_LEGAL_TEXT, legal_signals};
 pub use office::MAX_PART_BYTES;
@@ -35,7 +38,7 @@ pub use video::{MAX_VIDEOS, Video, video_url};
 pub const MAX_TEXT_CHARS: usize = 2_000_000;
 
 /// Format of the source document.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Format {
     /// HTML or XHTML page.
     Html,
@@ -63,7 +66,7 @@ impl Format {
 }
 
 /// The content of a document.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Document {
     /// Recognised format.
     pub format: Format,
@@ -100,11 +103,11 @@ pub struct Document {
     /// TDMRep policy URL from the document.
     pub tdm_policy: Option<String>,
     /// Encoding the text was decoded from (HTML and plain text).
-    pub encoding: Option<&'static str>,
+    pub encoding: Option<String>,
 }
 
 /// A document that cannot be read.
-#[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
+#[derive(Debug, Clone, PartialEq, Eq, thiserror::Error, Serialize, Deserialize)]
 pub enum ExtractError {
     /// Not a format ATENA reads (images, video, archives…).
     #[error("unsupported format ({0})")]
@@ -118,6 +121,9 @@ pub enum ExtractError {
     /// A program, a disguised file or a document with active content – refused as a whole.
     #[error("dangerous file: {0}")]
     Dangerous(String),
+    /// Parsing needed more memory or time than allowed (see [`Parser`]); nothing is kept.
+    #[error("too demanding to process: {0}")]
+    TooDemanding(String),
 }
 
 fn tdm_value(value: Option<&str>) -> Option<bool> {
@@ -297,7 +303,7 @@ pub fn extract(
         Format::Html => {
             let (html, encoding) = decode::decode(body, content_type, url.host_str());
             let p = html::extract_html(&html, url);
-            doc.encoding = Some(encoding);
+            doc.encoding = Some(encoding.to_string());
             doc.title = p.title;
             doc.description = p.description;
             doc.declared_language = p.declared_language;
@@ -315,7 +321,7 @@ pub fn extract(
         }
         Format::Text => {
             let (text, encoding) = decode::decode(body, content_type, url.host_str());
-            doc.encoding = Some(encoding);
+            doc.encoding = Some(encoding.to_string());
             plain_text(&text)
         }
         Format::Pdf => {
@@ -453,7 +459,7 @@ mod tests {
             <body><p>Přijímací zkoušky na střední školy se konají v dubnu. Uchazeči podávají přihlášky do 1. března.</p></body></html>";
         let (bytes, _, _) = encoding_rs::WINDOWS_1250.encode(html);
         let d = extract(&bytes, Some("text/html"), &url()).unwrap();
-        assert_eq!(d.encoding, Some("windows-1250"));
+        assert_eq!(d.encoding.as_deref(), Some("windows-1250"));
         assert_eq!(d.title.as_deref(), Some("Přijímací řízení"));
         assert!(d.text.starts_with("Přijímací zkoušky na střední školy"));
         let lang = d.language.unwrap();

@@ -14,10 +14,11 @@
 //! from an import is not crawled until a person confirms it.
 
 use std::sync::Arc;
+use std::time::Duration;
 
 use atena_core::source::Rights;
 use atena_crawl::{FetchError, Fetched, Fetcher, Page, Validators, parse_feed, parse_sitemap};
-use atena_extract::{Format, LegalSignals, extract, legal_signals};
+use atena_extract::{ExtractError, Format, LegalSignals, Parser};
 use jiff::Timestamp;
 use jiff::tz::TimeZone;
 use serde::{Deserialize, Serialize};
@@ -85,6 +86,8 @@ pub enum Problem {
     TooLarge,
     /// A program, a disguised file or a document with active content (macros, JavaScript …).
     Dangerous,
+    /// Content that needs more memory or time to read than any real document.
+    TooDemanding,
 }
 
 impl Problem {
@@ -101,6 +104,9 @@ impl Problem {
             Self::TooLarge => "the content is larger than ATENA reads",
             Self::Dangerous => {
                 "it serves a program or a document with active content, which ATENA does not draw on"
+            }
+            Self::TooDemanding => {
+                "it serves content that needs more memory or time than any real document, which ATENA does not draw on"
             }
         }
     }
@@ -155,7 +161,8 @@ pub enum Reason {
     TermsUnreadable,
     /// The country could not be told from the address; a person must name it.
     UnknownCountry,
-    /// The address serves a program or a document with active content.
+    /// The address serves a program, a document with active content or content built to exhaust
+    /// a reader.
     DangerousContent,
 }
 
@@ -220,6 +227,7 @@ fn today() -> String {
 pub struct Assessor {
     fetcher: Arc<Fetcher>,
     phrases: &'static Phrases,
+    parser: Parser,
 }
 
 /// What was read from the item before the decision.
@@ -273,7 +281,16 @@ impl Assessor {
         Self {
             fetcher,
             phrases: Phrases::bundled(),
+            parser: Parser::InProcess {
+                time_limit: Duration::from_secs(60),
+            },
         }
+    }
+
+    /// Parses what it reads with `parser` – the crawler program uses a limited child process.
+    pub fn with_parser(mut self, parser: Parser) -> Self {
+        self.parser = parser;
+        self
     }
 
     async fn page(&self, url: &Url) -> Result<Page, FetchError> {
@@ -320,9 +337,16 @@ impl Assessor {
                 }
             };
             let ct = page.content_type.as_deref();
-            let text = match extract(&page.body, ct, &page.url) {
+            let text = match self.parser.extract(page.body.clone(), ct, &page.url).await {
                 Ok(doc) if doc.format == Format::Html => {
-                    let s = legal_signals(&page.body, ct, &page.url);
+                    let Ok(s) = self
+                        .parser
+                        .legal_signals(page.body.clone(), ct, &page.url)
+                        .await
+                    else {
+                        c.unreadable_legal_pages.push(link.url.clone());
+                        continue;
+                    };
                     c.add_licences(s.licence_links.iter().filter_map(licence_of_url));
                     s.text
                 }
@@ -373,7 +397,11 @@ impl Assessor {
         {
             c.kind = Some(Kind::Sitemap);
         } else {
-            match extract(&entry.body, ct, &entry.url) {
+            match self
+                .parser
+                .extract(entry.body.clone(), ct, &entry.url)
+                .await
+            {
                 Ok(doc) => {
                     c.tdm_reserved |= doc.tdm_reservation == Some(true);
                     c.title = doc.title.clone();
@@ -389,8 +417,12 @@ impl Assessor {
                         ));
                     }
                 }
-                Err(atena_extract::ExtractError::Dangerous(_)) => {
+                Err(ExtractError::Dangerous(_)) => {
                     c.problem = Some(Problem::Dangerous);
+                    return;
+                }
+                Err(ExtractError::TooDemanding(_)) => {
+                    c.problem = Some(Problem::TooDemanding);
                     return;
                 }
                 Err(_) => {
@@ -401,18 +433,21 @@ impl Assessor {
         }
 
         let signals = if html_entry {
-            Some(legal_signals(&entry.body, ct, &entry.url))
+            self.parser
+                .legal_signals(entry.body.clone(), ct, &entry.url)
+                .await
+                .ok()
         } else {
             // feeds, sitemaps, interfaces and documents: the site's home page speaks for them
             let mut home = entry.url.clone();
             home.set_path("/");
             home.set_query(None);
             match self.page(&home).await {
-                Ok(page) => Some(legal_signals(
-                    &page.body,
-                    page.content_type.as_deref(),
-                    &page.url,
-                )),
+                Ok(page) => self
+                    .parser
+                    .legal_signals(page.body.clone(), page.content_type.as_deref(), &page.url)
+                    .await
+                    .ok(),
                 Err(_) => None,
             }
         };
@@ -430,8 +465,12 @@ impl Assessor {
             let mut home = entry.url.clone();
             home.set_path("/");
             home.set_query(None);
-            if let Ok(page) = self.page(&home).await {
-                let s = legal_signals(&page.body, page.content_type.as_deref(), &page.url);
+            if let Ok(page) = self.page(&home).await
+                && let Ok(s) = self
+                    .parser
+                    .legal_signals(page.body.clone(), page.content_type.as_deref(), &page.url)
+                    .await
+            {
                 self.read_ordinary(&s, &page.url, c);
                 self.read_terms(&s, &page.url, c).await;
             }
@@ -565,11 +604,11 @@ pub fn propose(a: &Assessment) -> Proposal {
     let mut licence = "copyrighted".to_string();
 
     let terms =
-        if a.problem == Some(Problem::Dangerous) {
+        if let Some(problem @ (Problem::Dangerous | Problem::TooDemanding)) = a.problem {
             reasons.push(Reason::DangerousContent);
             notes.push(format!(
                 "the address could not be read: {}",
-                Problem::Dangerous.describe()
+                problem.describe()
             ));
             "forbidden"
         } else if let Some(problem) = a.problem {

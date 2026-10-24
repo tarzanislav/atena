@@ -12,7 +12,7 @@ use atena_core::legality::{self, Permission, SourceFacts};
 use atena_core::safety::is_storable_url;
 use atena_core::{ChangeKind, Licence, Taxonomy, Terms, compare, suggest};
 use atena_crawl::{FetchError, Fetched, Fetcher, Page, Validators, parse_feed, parse_sitemap};
-use atena_extract::{Document, ExtractError, Format, LanguageSource, extract, video_url};
+use atena_extract::{Document, ExtractError, Format, LanguageSource, Parser, video_url};
 use atena_store::{
     Capture, Check, DocumentLink, Endpoint, EndpointKind, LabelSuggestion, NewEndpoint, NewVersion,
     Origin, Rights, Store, StoreError, hash, parse_hex,
@@ -27,13 +27,16 @@ use crate::urls::{MAX_LINKS_PER_PAGE, follow, host, normalize};
 pub struct PipelineConfig {
     /// Check interval of endpoints found in feeds, sitemaps and links (default 30 days).
     pub discovered_interval: Duration,
-    /// Time limit for extracting one document (default 60 s).
+    /// Time limit for parsing one feed or sitemap (default 60 s).
     pub extract_timeout: Duration,
     /// Failed checks in a row after which a discovered endpoint is no longer checked (default 6);
     /// register endpoints are never switched off.
     pub disable_after_failures: i32,
     /// Lowest score of a classification suggestion (default 0.45).
     pub classify_threshold: f64,
+    /// How documents are parsed. The default parses in this process (tests, tools); the crawler
+    /// program parses in a limited child process (`Parser::isolated`).
+    pub parser: Parser,
 }
 
 impl Default for PipelineConfig {
@@ -43,6 +46,9 @@ impl Default for PipelineConfig {
             extract_timeout: Duration::from_secs(60),
             disable_after_failures: 6,
             classify_threshold: 0.45,
+            parser: Parser::InProcess {
+                time_limit: Duration::from_secs(60),
+            },
         }
     }
 }
@@ -412,18 +418,14 @@ impl Pipeline {
     }
 
     async fn page(&self, ep: &Endpoint, page: &Page) -> Result<Processed, StoreError> {
-        let (body, content_type, url) = (
-            page.body.clone(),
-            page.content_type.clone(),
-            page.url.clone(),
-        );
-        let doc = match blocking(self.config.extract_timeout, move || {
-            extract(&body, content_type.as_deref(), &url)
-        })
-        .await
+        let doc = match self
+            .config
+            .parser
+            .extract(page.body.clone(), page.content_type.as_deref(), &page.url)
+            .await
         {
-            Ok(Ok(doc)) => doc,
-            Ok(Err(ExtractError::Unsupported(what))) => {
+            Ok(doc) => doc,
+            Err(ExtractError::Unsupported(what)) => {
                 return Ok(Processed {
                     disable: true,
                     ..Processed::failed("unsupported", what)
@@ -431,14 +433,21 @@ impl Pipeline {
             }
             // nothing is read from a program or a document with active content, and the address
             // is not tried again
-            Ok(Err(ExtractError::Dangerous(what))) => {
+            Err(ExtractError::Dangerous(what)) => {
                 tracing::warn!(endpoint = ep.id, url = %ep.url, %what, "dangerous file refused");
                 return Ok(Processed {
                     disable: true,
                     ..Processed::failed("dangerous", what)
                 });
             }
-            Ok(Err(e)) => return Ok(Processed::failed("extract_error", e.to_string())),
+            // a document that needs more memory or time than any real one is not tried again
+            Err(ExtractError::TooDemanding(what)) => {
+                tracing::warn!(endpoint = ep.id, url = %ep.url, %what, "document too demanding");
+                return Ok(Processed {
+                    disable: true,
+                    ..Processed::failed("too_demanding", what)
+                });
+            }
             Err(e) => return Ok(Processed::failed("extract_error", e.to_string())),
         };
 
@@ -551,7 +560,7 @@ impl Pipeline {
             paragraphs_removed: removed,
             numbers_changed,
             content_type: Some(doc.format.media_type().to_string()),
-            encoding: doc.encoding.map(str::to_string),
+            encoding: doc.encoding.clone(),
             title: doc.title.clone(),
             description: doc.description.clone().filter(|_| keep_text),
             body: keep_text.then(|| doc.text.clone()),

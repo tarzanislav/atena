@@ -27,7 +27,7 @@ const LANGUAGES: [(Lingua, &str); 9] = [
 ];
 
 /// How the language was established.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum LanguageSource {
     /// Detected from the text.
     Detected,
@@ -36,7 +36,7 @@ pub enum LanguageSource {
 }
 
 /// The language of a document.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Language {
     /// ISO 639-1 code (`sk`, `cs`, `zh`…).
     pub code: String,
