@@ -1,0 +1,62 @@
+# Zberač ATENA
+
+*English: [../CRAWLER.md](../CRAWLER.md)*
+
+ATENA zbiera úradné, výskumné a praktické informácie o vzdelávaní a pri každej uvádza odkaz na originál.
+Táto stránka je pre **správcov webov** (čo zberač robí a ako ho obmedziť) a pre **prevádzkovateľov**
+ATENY (čo zberač zaručuje).
+
+## Ako sa zberač predstavuje
+* Názov pre pravidlá: **`ATENA`** – používa sa v `robots.txt` a v hlavičke `X-Robots-Tag`.
+* User-Agent: `Mozilla/5.0 (compatible; ATENA/<verzia>; +https://github.com/tarzanislav/atena/blob/main/docs/CRAWLER.md)`
+* Otázky a problémy: [GitHub issues](https://github.com/tarzanislav/atena/issues).
+
+## Čo zberač dodržiava
+| Pravidlo | Správanie |
+|---|---|
+| **robots.txt** ([RFC 9309](https://www.rfc-editor.org/rfc/rfc9309)) | Riadi sa skupinou `ATENA`, inak skupinou `*`; rozhoduje najdlhšie zhodné pravidlo, pri zhode vyhráva `Allow`; vzory `*` a `$`. Číta sa pred každou inou požiadavkou na web a platí 24 hodín. |
+| robots.txt neexistuje (4xx) | Stiahnuť sa smie všetko. |
+| robots.txt je nedostupný (5xx, 429, chyba siete) | Nestiahne sa **nič**; ak existuje posledná platná kópia, použije sa. Nový pokus o 30 minút. |
+| `Crawl-delay` | Dodržiava sa, najviac 60 sekúnd. |
+| Tempo | Na jeden server vždy len jedna požiadavka a medzi požiadavkami aspoň 5 sekúnd (predvolené nastavenie). |
+| `429` / `503` s `Retry-After` | Server dostane pokoj na požadovaný čas (najviac 6 hodín; bez hlavičky 60 sekúnd). |
+| Podmienené požiadavky | `If-None-Match` / `If-Modified-Since` – nezmenená stránka stojí len odpoveď `304`. |
+| **TDMRep** ([W3C](https://www.w3.org/community/reports/tdmrep/CG-FINAL-tdmrep-20240510/)) | `/.well-known/tdmrep.json` (platí 24 h), hlavičky `tdm-reservation` / `tdm-policy`, neskôr aj údaje v HTML a PDF. Výhrada sa zapíše ku každej stránke a ďalšie spracovanie ju rešpektuje (vyťažovanie textov a dát podľa čl. 4 smernice (EÚ) 2019/790). |
+| `X-Robots-Tag` / `<meta name="robots">` | `noindex`, `nofollow`, `noarchive` (aj `nocache`), `nosnippet`, `notranslate`, `none`; pokyny pre iné zberače (`otherbot: noindex`) sa ignorujú. |
+
+Príklady:
+
+```text
+# ATENA nesmie nič
+User-agent: ATENA
+Disallow: /
+
+# pomalšie a bez jedného priečinka
+User-agent: ATENA
+Crawl-delay: 30
+Disallow: /interne/
+```
+
+## Čo zberač sťahuje
+Webové stránky, dokumenty PDF a kancelárske súbory, kanály RSS/Atom a sitemapy (XML, text, gzip).
+Z jedného zdroja najviac 50 MiB po rozbalení a len typy obsahu, ktoré vie spracovať. Neposiela cookies,
+`Referer` ani prihlasovacie údaje a nespúšťa JavaScript.
+
+## Čo zaručuje prevádzkovateľovi
+* **Len verejný internet.** Každá adresa – aj každé presmerovanie a každý odkaz z kanála či sitemapy – sa
+  pred spojením overí: len `http`/`https`, žiadne meno ani heslo v adrese, len povolené porty
+  (80, 443, 8080, 8443), žiadne jednoslovné ani vyhradené mená (`localhost`, `*.local`, `*.internal`,
+  `*.home.arpa`…). Odpovede DNS sa filtrujú a spojenie sa nadviaže len na verejnú adresu. Preto sa zberač
+  nikdy nespojí s menom, ktoré vedie na `127.0.0.1`, `10.x`, `169.254.169.254` (údaje cloudového servera)
+  alebo súkromné rozsahy IPv6. Platí to aj pri podvrhnutí odpovede DNS (DNS rebinding). IPv6 len
+  v rozsahu `2000::/3`. Vnútornú sieť možno povoliť len výslovne (`NetPolicy::allowed_ranges`).
+* **Žiadne proxy.** Systémové proxy sa nepoužívajú, lebo proxy by si adresy prekladala sama a obišla by
+  kontrolu.
+* **Ohraničená práca.** Časové limity (10 s na spojenie, 60 s na požiadavku), 5 presmerovaní, limity
+  veľkosti kontrolované priebežne, robots.txt do 500 KiB, sitemapa do 50 000 položiek / 50 MiB, kanál do
+  10 000 položiek. Entity definované v DTD sa nikdy nerozbaľujú.
+* **Šifrovanie** cez rustls s úložiskom certifikátov operačného systému.
+
+Obmedzenia tejto verzie: stav jednotlivých serverov sa drží v pamäti bez čistenia (stačí pre tisíce
+serverov); kanály v inom kódovaní ako UTF-8 sa čítajú s náhradnými znakmi; pravidlá z HTML `<meta>` a
+údaje TDMRep v PDF/EPUB doplní modul na spracovanie obsahu, ktorý príde na rad ako ďalší.
