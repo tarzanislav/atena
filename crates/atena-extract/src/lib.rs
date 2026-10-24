@@ -28,7 +28,7 @@ use serde::{Deserialize, Serialize};
 use url::Url;
 
 pub use html::{Link, MAX_LINKS};
-pub use isolated::{MEMORY_LIMIT, Parser, WORKER_ARG, serve};
+pub use isolated::{MEMORY_LIMIT, Parser, WORKER_ARG, serve, worker_main};
 pub use lang::{Language, LanguageSource, detect as detect_language};
 pub use legal::{LegalSignals, MAX_LEGAL_TEXT, legal_signals};
 pub use office::MAX_PART_BYTES;

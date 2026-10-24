@@ -1,10 +1,17 @@
 //! From automatic assessments to imported sources, and from a person's decision to what the
 //! legality principle lets ATENA do with them.
+//!
+//! * [`propose`] assesses items and stores them as proposals; nothing is crawled yet.
+//! * [`confirm`] records a person's decision; only then may a source be crawled, and only as far
+//!   as the legality principle allows.
 
-use atena_assess::{Assessment, Kind, Target};
+use atena_assess::{Assessment, Assessor, Item, Kind, Target};
 use atena_core::legality::{SourceFacts, permission, profile};
 use atena_core::source::{Licence, OPEN_LICENCES, Terms};
-use atena_store::{AssessmentRecord, EndpointKind, NewEndpoint, NewImport, Origin, Via, hash, hex};
+use atena_store::{
+    AssessmentRecord, EndpointKind, ImportOutcome, NewEndpoint, NewImport, Origin, Store,
+    StoreError, Via, hash, hex,
+};
 use url::Url;
 
 use crate::urls::{host, normalize};
@@ -78,6 +85,26 @@ pub fn to_import(a: &Assessment, via: Via) -> Option<(NewImport, AssessmentRecor
     Some((source, auto))
 }
 
+/// Why a decision was not accepted.
+#[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
+pub enum DecisionError {
+    /// The person or the reason is missing.
+    #[error("a decision needs the person who made it and a reason")]
+    Incomplete,
+    /// The country has no legal profile, so nothing can be said about its law.
+    #[error("country {0} has no legal profile")]
+    Country(String),
+    /// Not a licence of the register.
+    #[error("{0}; open licences: {OPEN_LICENCES:?}")]
+    Licence(String),
+    /// Not a terms value of the register.
+    #[error("unknown terms {0} (allowed, forbidden, reserved, unknown)")]
+    Terms(String),
+    /// `official` where the law does not free official texts.
+    #[error("official texts of {0} are not free of copyright; use its open licence instead")]
+    Official(String),
+}
+
 /// A person's decision, checked: the country must have a legal profile, the licence and terms
 /// must be valid register values, and `official` only where the law frees official texts.
 /// Returns the record to store and whether the source may be crawled.
@@ -88,26 +115,19 @@ pub fn decision(
     terms: &str,
     page: &str,
     reason: &str,
-) -> Result<(AssessmentRecord, bool), String> {
+) -> Result<(AssessmentRecord, bool), DecisionError> {
     if by_person.trim().is_empty() || reason.trim().is_empty() {
-        return Err("a decision needs the person who made it and a reason".into());
+        return Err(DecisionError::Incomplete);
     }
-    let profile =
-        profile(country).ok_or_else(|| format!("country {country} has no legal profile"))?;
+    let profile = profile(country).ok_or_else(|| DecisionError::Country(country.to_string()))?;
     let parsed_licence = Licence::try_from(licence.to_string())
-        .map_err(|e| format!("{e}; open licences: {OPEN_LICENCES:?}"))?;
+        .map_err(|e| DecisionError::Licence(e.to_string()))?;
     let parsed_terms = match terms {
         "allowed" | "forbidden" | "reserved" | "unknown" => Terms::parse(terms),
-        other => {
-            return Err(format!(
-                "unknown terms {other} (allowed, forbidden, reserved, unknown)"
-            ));
-        }
+        other => return Err(DecisionError::Terms(other.to_string())),
     };
     if parsed_licence == Licence::Official && !profile.official_texts_free {
-        return Err(format!(
-            "official texts of {country} are not free of copyright; use its open licence instead"
-        ));
+        return Err(DecisionError::Official(country.to_string()));
     }
     let crawl = permission(
         SourceFacts {
@@ -130,6 +150,145 @@ pub fn decision(
         },
         crawl,
     ))
+}
+
+/// One assessed item and what became of it.
+#[derive(Debug, Clone)]
+pub struct Proposed {
+    /// The automatic assessment.
+    pub assessment: Assessment,
+    /// The ID of the imported source and what storing it did; `None` for a page about people,
+    /// which is not kept even as a proposal.
+    pub stored: Option<(String, ImportOutcome)>,
+}
+
+impl Proposed {
+    /// The line to share with the editor – only for a new or newly assessed proposal: the
+    /// address or DOI and the country, nothing else.
+    pub fn share_line(&self) -> Option<String> {
+        let (_, outcome) = self.stored.as_ref()?;
+        if !matches!(outcome, ImportOutcome::New | ImportOutcome::Reassessed) {
+            return None;
+        }
+        let a = &self.assessment;
+        let target = match &a.target {
+            Target::Url(u) => u.to_string(),
+            Target::Doi(doi) => doi.clone(),
+        };
+        Some(match &a.country {
+            Some(c) => format!("{target} {c}"),
+            None => target,
+        })
+    }
+}
+
+/// Assesses `items` and stores each as a proposal (`via` says where they came from).
+pub async fn propose(
+    store: &Store,
+    assessor: &Assessor,
+    items: &[Item],
+    via: Via,
+    concurrency: usize,
+) -> Result<Vec<Proposed>, StoreError> {
+    let mut proposed = Vec::new();
+    for assessment in assessor.assess_all(items, concurrency).await {
+        let stored = match to_import(&assessment, via) {
+            Some((source, auto)) => {
+                let outcome = store.import_source(&source, &auto).await?;
+                Some((source.id, outcome))
+            }
+            None => None,
+        };
+        proposed.push(Proposed { assessment, stored });
+    }
+    Ok(proposed)
+}
+
+/// What a person changes in a proposal when confirming it; `None` keeps the proposal.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct Choice {
+    /// Licence.
+    pub licence: Option<String>,
+    /// Terms.
+    pub terms: Option<String>,
+    /// Country (upper case).
+    pub country: Option<String>,
+}
+
+/// What a confirmation decided.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Confirmed {
+    /// Licence.
+    pub licence: String,
+    /// Terms.
+    pub terms: String,
+    /// Country.
+    pub country: String,
+    /// The source will be crawled.
+    pub crawl: bool,
+}
+
+/// Why a confirmation failed.
+#[derive(Debug, thiserror::Error)]
+pub enum ConfirmError {
+    /// No imported source has this ID.
+    #[error("{0}: no such imported source")]
+    NotFound(String),
+    /// The decision is not valid.
+    #[error("{0}: {1}")]
+    Decision(String, DecisionError),
+    /// The database failed.
+    #[error(transparent)]
+    Store(#[from] StoreError),
+}
+
+/// Records a person's decision on the imported source `id`: what `choice` names, otherwise the
+/// newest proposal, otherwise what is recorded now.
+pub async fn confirm(
+    store: &Store,
+    id: &str,
+    choice: &Choice,
+    by_person: &str,
+    reason: &str,
+) -> Result<Confirmed, ConfirmError> {
+    let source = store
+        .imported(None)
+        .await?
+        .into_iter()
+        .find(|s| s.id == id)
+        .ok_or_else(|| ConfirmError::NotFound(id.to_string()))?;
+    let proposal = source.proposal.as_ref();
+    let pick = |given: &Option<String>, proposed: Option<String>, current: &str| {
+        given
+            .clone()
+            .or(proposed)
+            .unwrap_or_else(|| current.to_string())
+    };
+    let country = pick(
+        &choice.country,
+        proposal.and_then(|p| p.country.clone()),
+        &source.country,
+    );
+    let licence = pick(
+        &choice.licence,
+        proposal.map(|p| p.licence.clone()),
+        &source.licence,
+    );
+    let terms = pick(
+        &choice.terms,
+        proposal.map(|p| p.terms.clone()),
+        &source.terms,
+    );
+    let page = proposal.map_or(source.url.clone(), |p| p.rights_page.clone());
+    let (record, crawl) = decision(by_person, &country, &licence, &terms, &page, reason)
+        .map_err(|e| ConfirmError::Decision(id.to_string(), e))?;
+    store.confirm_import(id, &record, crawl).await?;
+    Ok(Confirmed {
+        licence: record.licence,
+        terms: record.terms,
+        country,
+        crawl,
+    })
 }
 
 #[cfg(test)]

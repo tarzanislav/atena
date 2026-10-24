@@ -105,6 +105,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "atena-app"
+version = "0.2.0"
+dependencies = [
+ "atena-assess",
+ "atena-core",
+ "atena-crawl",
+ "atena-extract",
+ "atena-ingest",
+ "atena-search",
+ "atena-store",
+ "getrandom 0.4.3",
+ "jiff",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "url",
+]
+
+[[package]]
 name = "atena-assess"
 version = "0.2.0"
 dependencies = [

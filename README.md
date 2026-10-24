@@ -32,6 +32,7 @@ The principles below and the rules written into the core (`atena-core`) put the 
 | `crates/atena-assess/` | automatic rights assessment: input lines → licence, terms of use and evidence – see [docs/ASSESSMENT.md](docs/ASSESSMENT.md) |
 | `crates/atena-search/` | multilingual full-text search (Tantivy) of what the legality principle allows: own stemmers for Slovak, Czech and Polish, concepts across languages – see [docs/SEARCH.md](docs/SEARCH.md) |
 | `crates/atena-ingest/` | the crawler program: register → fetch → extraction → versions → classification → search index; imports and shared proposals – see [docs/RUNNING.md](docs/RUNNING.md), [docs/IMPORT-AND-SHARING.md](docs/IMPORT-AND-SHARING.md) |
+| `crates/atena-app/` | the desktop app without its window: the database inside the app (a private PostgreSQL for this computer only), the operations of the interface, errors as translatable codes – see [docs/DESKTOP.md](docs/DESKTOP.md) |
 | `data/` | taxonomy (296 concepts, 15 facets, 8 languages) and a register of 186 sources |
 | `prototyp-v0.1/` | working Python prototype (crawling, versions, classification, search, web, 41 tests) – the executable specification for the Rust core |
 | `tools/language-benchmark/` | benchmark of Rust, Go, Java, Node and Python on ATENA's classification task |

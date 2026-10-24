@@ -60,6 +60,10 @@ jobs:
           rustup toolchain install stable --profile minimal
           rustup default stable
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - name: PostgreSQL programs for the database inside the desktop app
+        run: |
+          bin=$(ls -d /usr/lib/postgresql/*/bin 2>/dev/null | sort -V | tail -n 1)
+          if [ -n "$bin" ]; then echo "ATENA_TEST_PG_BIN=$bin" >> "$GITHUB_ENV"; fi
       - name: Tests that need PostgreSQL
         env: {ATENA_TEST_DATABASE_URL: "postgres://postgres:test@localhost:5432/postgres"}
         run: cargo test --workspace --locked

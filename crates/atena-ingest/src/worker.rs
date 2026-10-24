@@ -126,6 +126,20 @@ async fn stop_requested(stop: &mut watch::Receiver<bool>) {
     }
 }
 
+/// The counts of a running worker, for watching it while it works.
+#[derive(Debug, Clone, Default)]
+pub struct Progress(Arc<Mutex<RunStats>>);
+
+impl Progress {
+    /// The counts so far.
+    pub fn snapshot(&self) -> RunStats {
+        self.0
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .clone()
+    }
+}
+
 /// Runs until `stop` becomes `true`; with `once`, returns as soon as nothing is due any more.
 ///
 /// A check whose extraction exceeds its time limit is abandoned, but its worker thread runs on
@@ -133,10 +147,21 @@ async fn stop_requested(stop: &mut watch::Receiver<bool>) {
 pub async fn run(
     pipeline: Arc<Pipeline>,
     config: WorkerConfig,
-    mut stop: watch::Receiver<bool>,
+    stop: watch::Receiver<bool>,
     once: bool,
 ) -> RunStats {
-    let stats = Arc::new(Mutex::new(RunStats::default()));
+    run_observed(pipeline, config, stop, once, Progress::default()).await
+}
+
+/// [`run`], counting into `progress` as it goes.
+pub async fn run_observed(
+    pipeline: Arc<Pipeline>,
+    config: WorkerConfig,
+    mut stop: watch::Receiver<bool>,
+    once: bool,
+    progress: Progress,
+) -> RunStats {
+    let stats = progress.0;
     let mut tasks: JoinSet<Result<(), StoreError>> = JoinSet::new();
     let mut last_prune: Option<Instant> = None;
     loop {

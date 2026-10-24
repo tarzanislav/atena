@@ -1,11 +1,106 @@
-//! From the source register (`data/sources.yaml`) to sources and their register endpoints.
+//! From the source register (`data/sources.yaml`) to sources and their register endpoints, and
+//! keeping the database in step with it.
 
+use atena_core::Taxonomy;
 use atena_core::legality::{SourceFacts, permission};
-use atena_core::source::{Review, Source};
-use atena_store::{EndpointKind, NewEndpoint, Origin, RegisterSource, SourceRecord};
+use atena_core::source::{Review, Source, load_sources};
+use atena_crawl::{Config, ServiceClient};
+use atena_store::{
+    EndpointKind, NewEndpoint, Origin, RegisterSource, SourceRecord, Store, StoreError, SyncReport,
+};
 use url::Url;
 
 use crate::urls::{host, normalize};
+
+/// The shared register all installations read – only on the user's explicit command.
+pub const DEFAULT_SHARED_REGISTER: &str =
+    "https://raw.githubusercontent.com/tarzanislav/atena/main/data/sources.yaml";
+
+/// Why the shared register could not be read.
+#[derive(Debug, thiserror::Error)]
+pub enum SharedRegisterError {
+    /// Not an address.
+    #[error("{0}: not an address")]
+    Address(String),
+    /// The register decides licences and terms: it travels encrypted or not at all.
+    #[error("{0}: the shared register is read over https only")]
+    NotHttps(Url),
+    /// It could not be downloaded.
+    #[error("{url}: {source}")]
+    Fetch {
+        /// The address.
+        url: Url,
+        /// Why.
+        source: atena_crawl::FetchError,
+    },
+    /// It is not a valid register.
+    #[error("{url}: {source}")]
+    Invalid {
+        /// The address.
+        url: Url,
+        /// What is wrong.
+        source: atena_core::source::RegisterError,
+    },
+    /// Not UTF-8 text.
+    #[error("{0}: not UTF-8 text")]
+    NotText(Url),
+}
+
+/// Downloads and checks the shared register at `address` (default: [`DEFAULT_SHARED_REGISTER`]).
+pub async fn fetch_shared(
+    address: Option<&str>,
+    taxonomy: &Taxonomy,
+) -> Result<Vec<Source>, SharedRegisterError> {
+    let text = address.unwrap_or(DEFAULT_SHARED_REGISTER);
+    let url = Url::parse(text).map_err(|_| SharedRegisterError::Address(text.to_string()))?;
+    if url.scheme() != "https" {
+        return Err(SharedRegisterError::NotHttps(url));
+    }
+    let fetch = |source| SharedRegisterError::Fetch {
+        url: url.clone(),
+        source,
+    };
+    let body = ServiceClient::new(&Config::default())
+        .map_err(fetch)?
+        .get(&url, &[])
+        .await
+        .map_err(fetch)?;
+    let yaml = std::str::from_utf8(&body).map_err(|_| SharedRegisterError::NotText(url.clone()))?;
+    load_sources(yaml, taxonomy).map_err(|source| SharedRegisterError::Invalid {
+        url: url.clone(),
+        source,
+    })
+}
+
+/// What [`sync`] changed.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct SyncSummary {
+    /// What the register changed.
+    pub report: SyncReport,
+    /// Documents removed of sources that may no longer be crawled.
+    pub purged: u64,
+    /// Versions reduced to metadata of sources that may no longer keep texts.
+    pub restricted: u64,
+}
+
+/// Makes the database match `sources`. The legality principle applies retroactively: what a
+/// source may no longer keep is removed.
+pub async fn sync(store: &Store, sources: &[Source]) -> Result<SyncSummary, StoreError> {
+    let report = store.sync_register(&register_entries(sources)).await?;
+    let mut summary = SyncSummary {
+        report,
+        ..SyncSummary::default()
+    };
+    for source in sources {
+        let allowed = permission(SourceFacts::from(source), false);
+        if !allowed.crawl {
+            summary.purged += store.purge_source(&source.id).await?;
+        } else if !allowed.store_text {
+            summary.restricted += store.restrict_source(&source.id).await?;
+        }
+    }
+    Ok(summary)
+}
 
 /// Archived sources are captured once and then only checked yearly.
 const ARCHIVE_INTERVAL_S: i32 = 365 * 86_400;

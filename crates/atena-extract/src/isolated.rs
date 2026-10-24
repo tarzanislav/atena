@@ -183,6 +183,21 @@ fn answer(request: &Request, body: &[u8]) -> Response {
     }
 }
 
+/// The whole worker, for a program started with [`WORKER_ARG`]: `limit` is the argument after it,
+/// `set_limit` applies the limit to the program's capped allocator and says whether it could.
+/// Without a limit in force nothing is parsed.
+pub fn worker_main(
+    limit: Option<&str>,
+    set_limit: impl FnOnce(usize) -> bool,
+) -> std::process::ExitCode {
+    let limit = limit.and_then(|l| l.parse().ok()).unwrap_or(MEMORY_LIMIT);
+    if set_limit(limit) && serve().is_ok() {
+        std::process::ExitCode::SUCCESS
+    } else {
+        std::process::ExitCode::FAILURE
+    }
+}
+
 /// The worker: reads one request (a JSON line, then the document) from standard input and writes
 /// the answer to standard output. The program sets its memory limit before calling this.
 pub fn serve() -> std::io::Result<()> {

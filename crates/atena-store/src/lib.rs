@@ -10,6 +10,7 @@ mod documents;
 mod erasure;
 mod hash;
 mod imports;
+mod overview;
 mod register;
 mod schedule;
 mod search;
@@ -32,6 +33,7 @@ pub use imports::{
     AssessmentRecord, ImportOutcome, ImportState, ImportedSource, InboxMessage, NewImport,
     OutboxMessage, Via,
 };
+pub use overview::{Overview, SourceSummary};
 pub use register::{RegisterSource, SourceRecord, SyncReport};
 pub use schedule::{
     Check, Endpoint, EndpointKind, HostLease, MAX_ENDPOINTS_PER_SOURCE, NewEndpoint, Origin,
