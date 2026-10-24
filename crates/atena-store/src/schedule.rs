@@ -239,6 +239,9 @@ const ENDPOINT_COLUMNS: &str = "e.id, e.source_id, e.host_id, e.url, e.kind, e.o
      s.licence AS source_licence, s.country AS source_country, s.terms AS source_terms, \
      e.fail_count, e.etag, e.last_modified";
 
+/// Most addresses one source may have (register entries, feeds, sitemaps and discovered pages).
+pub const MAX_ENDPOINTS_PER_SOURCE: i64 = 100_000;
+
 impl Store {
     /// Adds endpoints found on `discovered_from` (feed items, sitemap entries, links); URLs that
     /// are already known are skipped. Returns how many were new.
@@ -252,6 +255,16 @@ impl Store {
             return Ok(0);
         }
         let mut tx = self.pool.begin().await?;
+        // no source grows without bound, however many sitemaps or links it offers
+        let held: i64 = sqlx::query_scalar("SELECT count(*) FROM endpoint WHERE source_id = $1")
+            .bind(source_id)
+            .fetch_one(&mut *tx)
+            .await?;
+        let room = usize::try_from(MAX_ENDPOINTS_PER_SOURCE - held).unwrap_or(0);
+        let endpoints = &endpoints[..endpoints.len().min(room)];
+        if endpoints.is_empty() {
+            return Ok(0);
+        }
         insert_hosts(&mut tx, endpoints.iter().map(|e| e.host.as_str())).await?;
         let column =
             |f: fn(&NewEndpoint) -> String| endpoints.iter().map(f).collect::<Vec<String>>();

@@ -474,7 +474,7 @@ impl Pipeline {
         let mut redacted = 0;
         let mut clean = |text: &mut String| {
             let r = privacy::redact(text);
-            redacted += r.emails + r.phones;
+            redacted += r.total();
             *text = r.text;
         };
         clean(&mut doc.text);

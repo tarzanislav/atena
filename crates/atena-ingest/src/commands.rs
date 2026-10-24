@@ -468,10 +468,10 @@ pub async fn publish(store: &Store, args: &[String]) -> Result<(), String> {
     entry.push_str(&format!(
         "  rights:\n    checked: {checked}\n    page: {}\n    finding: {}\n",
         yaml_string(&decided.rights_page),
+        // the public register names no person – not even the editor (pillar 2)
         yaml_string(&format!(
-            "{} (decided by {})",
-            decided.finding,
-            decided.by_person.unwrap_or_default()
+            "{} (decided by the ATENA editor)",
+            decided.finding
         ))
     ));
     let current = std::fs::read_to_string(&path).map_err(|e| format!("{path}: {e}"))?;
@@ -525,6 +525,12 @@ pub async fn shared_register(url: Option<&str>) -> Result<String, String> {
         .map(str::to_string)
         .unwrap_or_else(|| env_or("ATENA_SHARED_REGISTER", DEFAULT_SHARED_REGISTER));
     let url = Url::parse(&text).map_err(|e| format!("{text}: {e}"))?;
+    // the register decides licences and terms: it travels encrypted or not at all
+    if url.scheme() != "https" {
+        return Err(format!(
+            "{url}: the shared register is read over https only"
+        ));
+    }
     let body = service()?.get(&url, &[]).await.map_err(|e| e.to_string())?;
     String::from_utf8(body.to_vec()).map_err(|_| format!("{url}: not UTF-8 text"))
 }

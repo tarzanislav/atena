@@ -42,7 +42,8 @@ personal data as possible:
 
 | Measure | Where |
 |---|---|
-| **E-mail addresses and telephone numbers are removed** from texts, titles, descriptions and link texts before anything is fingerprinted or stored (also obfuscated forms such as `name(at)school.sk`) | `atena-ingest/src/privacy.rs` |
+| **E-mail addresses, telephone numbers and birth numbers are removed** from texts, titles, descriptions and link texts before anything is fingerprinted or stored – also international domains, written-out forms (`name (at) school (dot) sk`), Russian and Chinese numbers and any number after a label such as `tel.`, `mobil`, `телефон` or `电话` | `atena-ingest/src/privacy.rs` |
+| **The public register names no person**: a decision published to `data/sources.yaml` says "decided by the ATENA editor"; the editor's name stays in their own installation | `atena-ingest publish` |
 | **No original files at all** – no web pages, PDFs or office documents; only the cleaned text and a fingerprint of the original | pipeline, migration 0007 |
 | **No programs and no active content**: programs, disguised files, PDFs with JavaScript, launch actions or embedded files and office documents with macros, ActiveX, OLE objects or remote templates are refused as a whole – nothing of them is kept | `atena-extract/src/danger.rs` |
 | **Pages about people are not followed**: photo galleries, staff lists, contacts, profiles, accounts | `urls::is_personal_page` |

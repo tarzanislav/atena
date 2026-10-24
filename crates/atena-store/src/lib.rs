@@ -33,7 +33,9 @@ pub use imports::{
     OutboxMessage, Via,
 };
 pub use register::{RegisterSource, SourceRecord, SyncReport};
-pub use schedule::{Check, Endpoint, EndpointKind, HostLease, NewEndpoint, Origin};
+pub use schedule::{
+    Check, Endpoint, EndpointKind, HostLease, MAX_ENDPOINTS_PER_SOURCE, NewEndpoint, Origin,
+};
 pub use search::{IndexRow, QueueEntry};
 
 /// The embedded migrations.

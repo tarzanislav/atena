@@ -89,7 +89,7 @@ Z jedného zdroja najviac 50 MiB po rozbalení a len typy obsahu, ktoré vie spr
 * **Z chyby sa nikdy nestane slučka.** Keď databáza výsledok uložiť nevie, kontrola sa počíta za
   neúspešnú a adresa počká aspoň hodinu, ako po každej inej chybe.
 
-Obmedzenia tejto verzie: stav jednotlivých serverov sa drží v pamäti bez čistenia (stačí pre tisíce
-serverov); kanály v inom kódovaní ako UTF-8 sa čítajú s náhradnými znakmi. Pravidlá z HTML `<meta>` a
+Rast je ohraničený: jeden zdroj môže mať najviac 100 000 adries a stav serverov v pamäti sa nad
+10 000 serverov prečisťuje. Obmedzenia tejto verzie: kanály v inom kódovaní ako UTF-8 sa čítajú s náhradnými znakmi. Pravidlá z HTML `<meta>` a
 TDMRep v HTML a PDF číta modul `atena-extract` a pri spracovaní sa spoja s pravidlami z hlavičiek HTTP;
 EPUB sa zatiaľ nečíta.

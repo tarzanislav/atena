@@ -130,7 +130,9 @@ pub fn search(args: &[String]) -> Result<(), String> {
         }
     }
     request.text = words.join(" ");
-    request.offset = (page - 1) * request.limit.clamp(1, atena_search::MAX_LIMIT);
+    request.offset = (page - 1)
+        .saturating_mul(request.limit.clamp(1, atena_search::MAX_LIMIT))
+        .min(atena_search::MAX_OFFSET);
     let path = index_path();
     if !path.exists() {
         return Err(format!(
