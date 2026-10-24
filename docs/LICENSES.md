@@ -29,6 +29,8 @@ The full tree is checked by `cargo deny` on every pull request (`deny.toml`).
 | pdf-extract (with lopdf) | MIT | PDF text and metadata; lopdf's unmaintained ttf-parser is only used for writing PDFs and is excepted in `deny.toml` (PDFium may replace it later) |
 | zip | MIT | DOCX and ODT archives |
 | lingua (9 languages only) | Apache-2.0 | language detection |
+| sqlx 0.8 (PostgreSQL, migrations) | MIT OR Apache-2.0 | database access (0.9 needs Rust 1.94) |
+| jiff-sqlx | Unlicense OR MIT | dates in the database |
 
 ## Prototype v0.1 (Python)
 

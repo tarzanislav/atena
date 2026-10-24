@@ -41,6 +41,29 @@ jobs:
       - name: Test
         run: cargo test --workspace --locked
 
+  database:
+    name: Database (PostgreSQL 17)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env: {POSTGRES_PASSWORD: test}
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - name: Tests that need PostgreSQL
+        env: {ATENA_TEST_DATABASE_URL: "postgres://postgres:test@localhost:5432/postgres"}
+        run: cargo test --workspace --locked
+
   msrv:
     name: Minimum Rust version
     runs-on: ubuntu-latest
