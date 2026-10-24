@@ -25,7 +25,7 @@ fn hostile_page() -> String {
          </head><body><main><h1>Oznam\u{1b}[2J \u{202e}fdp.exe\u{202c} riaditeľa</h1>\
          <p>Riaditeľ\u{0} školy oznamuje rodičom, že v piatok bude riaditeľské voľno a vyučovanie sa nekoná.</p>\
          <p><a href=\"javascript:alert(1)\">klikni</a> <a href=\"data:text/html,&lt;script&gt;\">dáta</a>\
-         <a href=\"{long}\">dlhý odkaz</a> <a href=\"/skola/dokument.txt\">dokument</a></p>\
+         <a href=\"{long}\">dlhý odkaz</a> <a href=\"/skola/dokument.txt\">dokument</a> <a href=\"/skola/program.pdf\">tlačivo</a></p>\
          </main></body></html>"
     )
 }
@@ -39,6 +39,8 @@ async fn serve() -> Server {
     );
     Server::start(move |req| match req.path.as_str() {
         "/skola/" => reply(200, hostile_page()),
+        // a program posing as a PDF
+        "/skola/program.pdf" => reply(200, &b"MZ\x90\x00\x03\x00\x00\x00%PDF-1.7"[..]),
         "/skola/rss.xml" => reply(200, feed.clone()).header("content-type", "application/rss+xml"),
         "/zlyha/" => reply(
             200,
@@ -141,8 +143,8 @@ async fn hostile_content_is_cleaned_and_failures_pause() {
     assert!(!bodies[0].contains('\u{0}'));
 
     // only plain web addresses are stored, and none longer than the limit
-    let links = text(store, "SELECT url FROM document_link").await;
-    assert_eq!(links.len(), 1, "{links:?}");
+    let links = text(store, "SELECT url FROM document_link ORDER BY url").await;
+    assert_eq!(links.len(), 2, "{links:?}");
     assert!(links[0].ends_with("/skola/dokument.txt"));
     let endpoints = text(store, "SELECT url FROM endpoint").await;
     assert!(
@@ -179,6 +181,20 @@ async fn hostile_content_is_cleaned_and_failures_pause() {
     .await
     .unwrap();
     assert_eq!((outcome.as_str(), checks, paused), ("store_error", 1, true));
+
+    // the program posing as a PDF: refused, nothing kept, never fetched again
+    let (outcome, enabled, documents): (String, bool, i64) = sqlx::query_as(
+        "SELECT e.last_outcome, e.enabled,
+                (SELECT count(*) FROM document d WHERE d.endpoint_id = e.id)
+         FROM endpoint e WHERE e.url LIKE '%/program.pdf'",
+    )
+    .fetch_one(store.pool())
+    .await
+    .unwrap();
+    assert_eq!(
+        (outcome.as_str(), enabled, documents),
+        ("dangerous", false, 0)
+    );
     db.drop().await;
 }
 

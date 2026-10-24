@@ -81,8 +81,7 @@ pub fn searchable(row: &IndexRow) -> Option<SearchDocument> {
         licence: &licence,
         terms: Terms::parse(&row.terms),
     };
-    let file = matches!(row.format.as_str(), "pdf" | "docx" | "odt");
-    let allowed = permission(facts, row.tdm_reserved, file);
+    let allowed = permission(facts, row.tdm_reserved);
     if !allowed.crawl {
         return None;
     }

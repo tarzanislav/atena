@@ -10,7 +10,7 @@ Licencie každej súčasti stráži v CI `cargo-deny` (Rust) a kontrola npm lice
 | Jadro (server, zberač, spracovanie, API) | **Rust**: Axum, Tokio, sqlx, reqwest | MIT / Apache-2.0 | najrýchlejší v našom meraní (669 dok./s vs. Python 15), jeden program, málo pamäte, chyby odhalí kompilátor |
 | Databáza | **PostgreSQL** + pgvector | PostgreSQL License | zdroj pravdy, zvláda stovky GB až TB |
 | Fulltextové vyhľadávanie | **Tantivy** (v programe) | MIT | rýchle, bez ďalšej služby, dá sa znovu zostaviť z DB |
-| Súbory (PDF, Word) | úložisko podľa odtlačku BLAKE3; neskôr SeaweedFS | Apache-2.0 / CC0 | jedno PDF sa uloží raz |
+| Súbory (PDF, Word) | neukladajú sa – len text a odtlačok BLAKE3 (rozhodnutie autora, piliere 2 a 3) | Apache-2.0 / CC0 | v databáze nie je žiadny súbor so škodlivým alebo osobným obsahom |
 | Jazyk dokumentu | lingua | Apache-2.0 | aj sk vs. cs |
 | PDF | PDFium (pdfium-render) | BSD / MIT | text so stranami |
 | AI modely | ONNX Runtime (BGE-M3, E5), llama.cpp (EuroLLM, Qwen3) | MIT / Apache-2.0 | lokálne, bez posielania textov von |

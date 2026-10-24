@@ -83,6 +83,8 @@ pub enum Problem {
     UnsupportedType,
     /// Larger than ATENA reads.
     TooLarge,
+    /// A program, a disguised file or a document with active content (macros, JavaScript …).
+    Dangerous,
 }
 
 impl Problem {
@@ -97,6 +99,9 @@ impl Problem {
             Self::RetryLater => "the server asked to be left alone for now",
             Self::UnsupportedType => "ATENA does not read this content type",
             Self::TooLarge => "the content is larger than ATENA reads",
+            Self::Dangerous => {
+                "it serves a program or a document with active content, which ATENA does not draw on"
+            }
         }
     }
 }
@@ -150,6 +155,8 @@ pub enum Reason {
     TermsUnreadable,
     /// The country could not be told from the address; a person must name it.
     UnknownCountry,
+    /// The address serves a program or a document with active content.
+    DangerousContent,
 }
 
 /// What the assessment proposes for the register.
@@ -382,6 +389,10 @@ impl Assessor {
                         ));
                     }
                 }
+                Err(atena_extract::ExtractError::Dangerous(_)) => {
+                    c.problem = Some(Problem::Dangerous);
+                    return;
+                }
                 Err(_) => {
                     c.problem = Some(Problem::UnsupportedType);
                     return;
@@ -554,7 +565,14 @@ pub fn propose(a: &Assessment) -> Proposal {
     let mut licence = "copyrighted".to_string();
 
     let terms =
-        if let Some(problem) = a.problem {
+        if a.problem == Some(Problem::Dangerous) {
+            reasons.push(Reason::DangerousContent);
+            notes.push(format!(
+                "the address could not be read: {}",
+                Problem::Dangerous.describe()
+            ));
+            "forbidden"
+        } else if let Some(problem) = a.problem {
             reasons.push(Reason::CannotRead);
             notes.push(format!(
                 "the address could not be read: {}",

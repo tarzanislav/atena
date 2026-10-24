@@ -39,8 +39,8 @@ Disallow: /interne/
 ```
 
 ## Osobné údaje a výmaz
-ATENA pred uložením odstráni z textov e-mailové adresy a telefónne čísla a neukladá pôvodné webové
-stránky. Nesleduje fotogalérie, zoznamy zamestnancov ani kontakty. Na požiadanie vymaže stránku alebo
+ATENA pred uložením odstráni z textov e-mailové adresy a telefónne čísla a neukladá žiadne pôvodné
+súbory. Nesleduje fotogalérie, zoznamy zamestnancov ani kontakty. Na požiadanie vymaže stránku alebo
 celú sekciu a tá sa už potom nikdy nestiahne. Žiadosti: [GitHub issues](https://github.com/tarzanislav/atena/issues)
 alebo kontakt prevádzkovateľa. Podrobnosti: [PRAVA-A-OCHRANA-UDAJOV.md](PRAVA-A-OCHRANA-UDAJOV.md).
 
@@ -70,6 +70,11 @@ Z jedného zdroja najviac 50 MiB po rozbalení a len typy obsahu, ktoré vie spr
     `javascript:`, `data:` ani `file:`, nikdy adresa s menom a heslom;
   * sa zahodia dátumy pred rokom 1900 alebo v budúcnosti;
   * sa odmietnu binárne dáta vydávané za text.
+* **Programy a aktívny obsah sa odmietnu** (`atena-extract/src/danger.rs`): programy a skripty, nech ich
+  server nazýva akokoľvek; súbory, ktoré sa len tvária ako PDF; PDF s JavaScriptom, spúšťacími akciami,
+  vloženými súbormi, multimédiami alebo formulármi XFA; dokumenty Word s makrami, ActiveX, objektmi OLE
+  alebo vzdialenými šablónami; dokumenty OpenDocument s makrami alebo skriptmi. Z takého súboru sa nič
+  neuloží a jeho adresa sa už neskúša. Pôvodné súbory sa neukladajú vôbec ([DATABAZA.md](DATABAZA.md)).
 * **Z chyby sa nikdy nestane slučka.** Keď databáza výsledok uložiť nevie, kontrola sa počíta za
   neúspešnú a adresa počká aspoň hodinu, ako po každej inej chybe.
 

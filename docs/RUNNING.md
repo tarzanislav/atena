@@ -12,7 +12,6 @@
 ## Commands
 ```sh
 export ATENA_DATABASE_URL=postgres://atena@localhost/atena
-export ATENA_FILES=/var/lib/atena/files          # file store for originals
 
 cargo run --release -p atena-ingest -- migrate   # create or update the tables
 cargo run --release -p atena-ingest -- sync      # load data/sources.yaml (or: sync path/to/register.yaml)

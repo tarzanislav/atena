@@ -62,7 +62,6 @@ USAGE:
 
 ENVIRONMENT:
     ATENA_DATABASE_URL   PostgreSQL connection, e.g. postgres://atena@localhost/atena (required except for fetch)
-    ATENA_FILES          directory of the file store (default: ./atena-files)
     ATENA_INDEX          directory of the search index (default: ./atena-index)
     ATENA_WORKER         name of this worker in host leases (default: host name and process ID)
     ATENA_LOG            error, warn, info (default) or debug
@@ -74,8 +73,7 @@ ENVIRONMENT:
 async fn connect(max_connections: u32) -> Result<Store, String> {
     let url = std::env::var("ATENA_DATABASE_URL")
         .map_err(|_| "ATENA_DATABASE_URL is not set".to_string())?;
-    let files = std::env::var("ATENA_FILES").unwrap_or_else(|_| "atena-files".into());
-    let store = Store::connect(&url, files, max_connections)
+    let store = Store::connect(&url, max_connections)
         .await
         .map_err(|e| e.to_string())?;
     store.migrate().await.map_err(|e| e.to_string())?;
@@ -102,7 +100,7 @@ fn legality_report(path: Option<&str>) -> Result<(), String> {
     let (mut crawl, mut text, mut show) = (0, 0, 0);
     let sources = register(path)?;
     for s in &sources {
-        let p = permission(SourceFacts::from(s), false, true);
+        let p = permission(SourceFacts::from(s), false);
         crawl += usize::from(p.crawl);
         text += usize::from(p.store_text);
         show += usize::from(p.show_full_text);
@@ -142,7 +140,7 @@ async fn sync(args: &[String]) -> Result<(), String> {
     // the legality principle applies retroactively: what a source may no longer keep is removed
     let (mut purged, mut restricted) = (0, 0);
     for source in &sources {
-        let allowed = permission(SourceFacts::from(source), false, false);
+        let allowed = permission(SourceFacts::from(source), false);
         if !allowed.crawl {
             purged += store
                 .purge_source(&source.id)
@@ -315,7 +313,6 @@ fn allows(country: Option<&str>, licence: &str, terms: &str) -> (bool, bool, boo
             terms,
         },
         false,
-        true,
     );
     (p.crawl, p.store_text, p.show_full_text)
 }
@@ -405,15 +402,14 @@ async fn forget(args: &[String]) -> Result<(), String> {
         .await
         .map_err(|e| e.to_string())?;
     println!(
-        "{normalized}{}: {} documents, {} versions and {} files erased; the address is blocked",
+        "{normalized}{}: {} documents and {} versions erased; the address is blocked",
         if prefix {
             " (and everything below)"
         } else {
             ""
         },
         report.documents,
-        report.versions,
-        report.files
+        report.versions
     );
     Ok(())
 }

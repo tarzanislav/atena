@@ -8,7 +8,7 @@ Licences are enforced in CI with `cargo-deny` (Rust) and an npm licence check, a
 | Core (server, crawler, processing, API) | **Rust**: Axum, Tokio, sqlx, reqwest | MIT / Apache-2.0 | fastest in our benchmark (669 docs/s vs Python 15), single binary, low memory, compile-time safety |
 | Database | **PostgreSQL** + pgvector | PostgreSQL License | source of truth, scales to hundreds of GB and beyond |
 | Full-text search | **Tantivy** (embedded) | MIT | fast, no extra service, rebuildable from the DB |
-| Files (PDF, Word) | content-addressed store (BLAKE3); later SeaweedFS | CC0 / Apache-2.0 | each file stored once |
+| Files (PDF, Word) | not kept – text and a BLAKE3 fingerprint only (the author's decision, pillars 2 and 3) | CC0 / Apache-2.0 | no harmful or personal content in stored files |
 | Language detection | lingua | Apache-2.0 | handles Slovak vs Czech |
 | PDF | PDFium (pdfium-render) | BSD / MIT | text with page numbers |
 | AI models | ONNX Runtime (BGE-M3, E5), llama.cpp (EuroLLM, Qwen3) | MIT / Apache-2.0 | local, texts never leave the server |
@@ -35,8 +35,8 @@ prototyp-v0.1/        Python prototype – executable specification and test sce
 ```
 
 ## Database size estimate (2 million documents)
-About 85 GB of data and indexes (vectors are the largest part; binary quantisation shrinks them to a few GB)
-and about 600 GB of original files outside the database. A global deployment with 20 million documents is
+About 85 GB of data and indexes (vectors are the largest part; binary quantisation shrinks them to a few GB);
+no original files are kept. A global deployment with 20 million documents is
 roughly ten times that – still a single PostgreSQL server with partitioning and replicas.
 
 ## Benchmark

@@ -28,7 +28,7 @@ The principles below and the rules written into the core (`atena-core`) put the 
 | `crates/atena-core/` | text normalisation, taxonomy, classification suggestions, change detection |
 | `crates/atena-crawl/` | polite and safe crawler: robots.txt (RFC 9309), SSRF guard, pacing, TDMRep, RSS/Atom, sitemaps – see [docs/CRAWLER.md](docs/CRAWLER.md) |
 | `crates/atena-extract/` | main text without menus and footers, metadata and language from HTML (also legacy encodings), PDF, DOCX and ODT |
-| `crates/atena-store/` | PostgreSQL schema and queries, host-lease scheduling, content-addressed file store – see [docs/DATABASE.md](docs/DATABASE.md) |
+| `crates/atena-store/` | PostgreSQL schema and queries, host-lease scheduling; no original files – see [docs/DATABASE.md](docs/DATABASE.md) |
 | `crates/atena-assess/` | automatic rights assessment: input lines → licence, terms of use and evidence – see [docs/ASSESSMENT.md](docs/ASSESSMENT.md) |
 | `crates/atena-search/` | multilingual full-text search (Tantivy) of what the legality principle allows: own stemmers for Slovak, Czech and Polish, concepts across languages – see [docs/SEARCH.md](docs/SEARCH.md) |
 | `crates/atena-ingest/` | the crawler program: register → fetch → extraction → versions → classification → search index; imports and shared proposals – see [docs/RUNNING.md](docs/RUNNING.md), [docs/IMPORT-AND-SHARING.md](docs/IMPORT-AND-SHARING.md) |

@@ -48,10 +48,11 @@ informácie o vzdelávaní, nie o ľuďoch, preto si osobných údajov necháva 
 | Opatrenie | Kde v programe |
 |---|---|
 | **E-mailové adresy a telefónne čísla sa odstránia** z textov, názvov, popisov a textov odkazov ešte pred uložením, aj v zakrytom tvare ako `meno(at)skola.sk` | `atena-ingest/src/privacy.rs` |
-| **Pôvodné webové stránky sa neukladajú**, len upravený text. Pôvodné súbory sa ukladajú len pri PDF a kancelárskych dokumentoch, ktorých text sa smie zobraziť celý (úradné texty, otvorené licencie) | `legality::permission` |
+| **Pôvodné súbory sa neukladajú vôbec** – ani webové stránky, ani PDF, ani kancelárske dokumenty; len upravený text a odtlačok originálu | spracovanie, migrácia 0007 |
+| **Žiadne programy ani aktívny obsah**: programy, maskované súbory, PDF s JavaScriptom, spúšťacími akciami alebo vloženými súbormi a kancelárske dokumenty s makrami, ActiveX, objektmi OLE alebo vzdialenými šablónami sa odmietnu celé – nič z nich sa neuloží | `atena-extract/src/danger.rs` |
 | **Stránky o ľuďoch sa nesledujú**: fotogalérie, zoznamy zamestnancov, kontakty, profily, prihlasovanie | `urls::is_personal_page` |
 | **Autor webovej stránky sa neukladá** (býva to správca webu); autor dokumentu áno | spracovanie |
-| **Výmaz na žiadosť** (čl. 17). Príkaz `atena-ingest forget ADRESA --reason …` odstráni dokumenty, verzie, odkazy, záznamy o kontrolách a súbory, ktoré nepoužíva nič iné. Adresu (alebo celú sekciu) navždy zablokuje | `Store::forget`, `blocked_url`, `erasure_log` |
+| **Výmaz na žiadosť** (čl. 17). Príkaz `atena-ingest forget ADRESA --reason …` odstráni dokumenty, verzie, odkazy a záznamy o kontrolách. Adresu (alebo celú sekciu) navždy zablokuje | `Store::forget`, `blocked_url`, `erasure_log` |
 | **Obmedzenie uchovávania**: záznamy o kontrolách sa po 90 dňoch zmažú | zberač |
 | Žiadne obrázky, žiadne cookies, žiadne sledovanie návštevníkov webov | zberač |
 | **Vyhľadávanie** nikdy nenájde dokument označený `noindex` ani dokument zo zdroja, ktorý ATENA nesmie zbierať. Ukážku textu ukáže len tam, kde sa text smie zobraziť, a len taký text uloží do indexu. Vymazaný dokument z indexu zmizne pri najbližšej aktualizácii ([VYHLADAVANIE.md](VYHLADAVANIE.md)) | `atena_search::searchable`, `search_queue` |

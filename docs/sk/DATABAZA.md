@@ -1,10 +1,10 @@
-# Databáza a úložisko súborov
+# Databáza
 
 *English: [../DATABASE.md](../DATABASE.md)*
 
-ATENA ukladá všetko do databázy **PostgreSQL** (verzia 15 alebo novšia) a pôvodné súbory do úložiska,
-kde má každý súbor meno podľa svojho odtlačku. Databáza je zdrojom pravdy; vyhľadávacie indexy sa z nej
-dajú kedykoľvek prepočítať. Všetky príkazy SQL sú v module `atena-store`.
+ATENA ukladá všetko do databázy **PostgreSQL** (verzia 15 alebo novšia) a **neukladá žiadne pôvodné
+súbory** (pozri nižšie). Databáza je zdrojom pravdy; vyhľadávacie indexy sa z nej dajú kedykoľvek
+prepočítať. Všetky príkazy SQL sú v module `atena-store`.
 
 ## Tabuľky
 | Tabuľka | Čo obsahuje |
@@ -15,7 +15,6 @@ dajú kedykoľvek prepočítať. Všetky príkazy SQL sú v module `atena-store`
 | `host` | jeden riadok na server: kedy je na rade, kto ho práve spracúva, prestávka po `429`/`503` |
 | `endpoint` | každá sledovaná adresa: kanály, sitemapy, stránky; plán kontrol, `ETag`, `Last-Modified`, chyby |
 | `fetch_log` | záznam o každej kontrole; po 90 dňoch sa maže |
-| `blob` | pôvodné súbory v úložisku podľa odtlačku BLAKE3 |
 | `document` | dokument zo stránky alebo súboru: aktuálny názov, jazyk, stav, pravidlá vydavateľa |
 | `document_version` | nový riadok len vtedy, keď sa zmení **text**: druh zmeny, pridané a odobraté odseky, zmena čísel a dátumov |
 | `document_link` | odkazy v aktuálnej verzii (prílohy, podstránky) a videá (`kind = 'video'`: videá na YouTube a Vimeo, na ktoré stránka odkazuje alebo ktoré vkladá – zapíšu sa, nikdy sa neotvárajú) |
@@ -43,19 +42,23 @@ uloží ako ďalšia verzia, a to v jednej transakcii spolu s odkazmi a novými 
 
 ## Pravidlá vydavateľa
 * **Výhrada vyťažovania textu a dát** (TDMRep): ukladajú sa len metadáta, teda názov, adresa, dátumy a
-  odtlačky. Text, pôvodný súbor ani odkazy sa neukladajú a zaradenie sa robí len podľa názvu. Ak sa výhrada
+  odtlačky. Text ani odkazy sa neukladajú a zaradenie sa robí len podľa názvu. Ak sa výhrada
   objaví neskôr, doteraz uložené texty, odkazy a automatické návrhy sa odstránia. Toto pravidlo schválil
   autor projektu; pred verejným spustením ho odporúčame overiť s právnikom.
 * `noindex`, `noarchive`, `nosnippet`, `notranslate` sa uložia k dokumentu. Vyhľadávanie a rozhranie ich
   dodržia: kópia pri `noarchive` slúži len na zistenie zmien a nikdy sa nezobrazí, dokument s `noindex`
   sa nikdy nenájde a pri `nosnippet` sa neukáže ukážka textu ([VYHLADAVANIE.md](VYHLADAVANIE.md)).
 
-## Úložisko súborov
-Ukladajú sa len pôvodné dokumenty (PDF, DOCX, ODT), ktorých text sa smie zobraziť celý (úradné texty,
-otvorené licencie – [ZASADA-ZAKONNOSTI.md](ZASADA-ZAKONNOSTI.md)); z webových stránok sa ukladá len upravený text
-(pozri [PRAVA-A-OCHRANA-UDAJOV.md](PRAVA-A-OCHRANA-UDAJOV.md)). Súbory sú v `<koreň>/ab/cd/<odtlačok>`. Zapisujú sa pod dočasným menom a potom sa premenujú, takže po
-páde nezostane pokazený súbor pod platným menom. HTML, XML, JSON a čistý text sa ukladajú komprimované
-(gzip). Pri čítaní sa odtlačok overí. Rovnaký súbor sa uloží len raz.
+## Žiadne pôvodné súbory
+Autor projektu 24. 10. 2026 rozhodol, že ATENA **neukladá žiadne pôvodné súbory** – ani webové
+stránky, ani PDF, ani kancelárske dokumenty. Súbor môže niesť škodlivý obsah alebo osobné údaje, ktoré
+sa z neho nedajú spoľahlivo odstrániť.
+- Každá verzia uchová upravený text (tam, kde to zásada zákonnosti dovoľuje).
+- Uchová aj odtlačok BLAKE3 pôvodných bajtov (`raw_hash`), ktorý dokazuje, čo vydavateľ zverejnil.
+- Originál zostáva u vydavateľa, vzdialený jedno kliknutie.
+
+Migrácia 0007 odstránila niekdajšie úložisko súborov. Súbory, ktoré v priečinku `./atena-files`
+zanechali staršie verzie, sa môžu zmazať.
 
 ## Migrácie
 Súbory `crates/atena-store/migrations/NNNN_nazov.sql` sú vložené priamo do programu. Spúšťa ich príkaz

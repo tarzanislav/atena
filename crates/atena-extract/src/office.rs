@@ -207,20 +207,41 @@ fn metadata(xml: &str, parts: &mut OfficeParts) {
     }
 }
 
-/// The format of a ZIP archive, if it is a supported office document.
-pub(crate) fn detect(bytes: &[u8]) -> Option<OfficeFormat> {
-    let zip = ZipArchive::new(Cursor::new(bytes)).ok()?;
+/// Most parts an office document may have; more is an archive bomb, not a text.
+const MAX_PARTS: usize = 5_000;
+/// The `mimetype` part of an OpenDocument text.
+const ODT_MIMETYPE: &str = "application/vnd.oasis.opendocument.text";
+
+/// The format of a ZIP archive, if it is a supported office document; `Err` names active content
+/// (macros, ActiveX, OLE objects, remote templates, scripts), for which the file is refused.
+pub(crate) fn detect(bytes: &[u8]) -> Result<Option<OfficeFormat>, &'static str> {
+    let Ok(mut zip) = ZipArchive::new(Cursor::new(bytes)) else {
+        return Ok(None);
+    };
+    if zip.len() > MAX_PARTS {
+        return Err("too many parts for a document");
+    }
     let names: Vec<String> = zip
         .file_names()
         .filter_map(|n| n.ok().map(|n| n.into_owned()))
         .collect();
     let has = |name: &str| names.iter().any(|n| n == name);
-    if has("word/document.xml") {
-        Some(OfficeFormat::Docx)
-    } else if has("content.xml") {
-        Some(OfficeFormat::Odt)
+    let format = if has("word/document.xml") {
+        OfficeFormat::Docx
+    } else if has("content.xml")
+        && read_part(&mut zip, "mimetype")
+            .ok()
+            .flatten()
+            .is_some_and(|m| m.trim() == ODT_MIMETYPE)
+    {
+        OfficeFormat::Odt
     } else {
-        None
+        return Ok(None);
+    };
+    let mut text_of = |name: &str| read_part(&mut zip, name).ok().flatten();
+    match crate::danger::office_active_content(&names, &mut text_of) {
+        Some(active) => Err(active),
+        None => Ok(Some(format)),
     }
 }
 
@@ -279,7 +300,7 @@ pub(crate) mod tests {
             ("word/document.xml", DOCX_BODY),
             ("docProps/core.xml", DOCX_CORE),
         ]);
-        assert_eq!(detect(&bytes), Some(OfficeFormat::Docx));
+        assert_eq!(detect(&bytes), Ok(Some(OfficeFormat::Docx)));
         let p = extract_office(&bytes, OfficeFormat::Docx).unwrap();
         assert_eq!(
             p.text,
@@ -306,7 +327,7 @@ pub(crate) mod tests {
             ("content.xml", content),
             ("meta.xml", meta),
         ]);
-        assert_eq!(detect(&bytes), Some(OfficeFormat::Odt));
+        assert_eq!(detect(&bytes), Ok(Some(OfficeFormat::Odt)));
         let p = extract_office(&bytes, OfficeFormat::Odt).unwrap();
         assert_eq!(
             p.text,
@@ -318,8 +339,8 @@ pub(crate) mod tests {
 
     #[test]
     fn other_archives_and_bombs() {
-        assert_eq!(detect(&zip_of(&[("readme.txt", "x")])), None);
-        assert_eq!(detect(b"not a zip"), None);
+        assert_eq!(detect(&zip_of(&[("readme.txt", "x")])), Ok(None));
+        assert_eq!(detect(b"not a zip"), Ok(None));
         let big = "a".repeat(MAX_PART_BYTES as usize + 10);
         let bytes = zip_of(&[("word/document.xml", &big)]);
         assert!(

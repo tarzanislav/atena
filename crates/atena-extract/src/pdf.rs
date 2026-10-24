@@ -6,6 +6,7 @@
 
 use std::panic::{AssertUnwindSafe, catch_unwind};
 
+use crate::danger;
 use jiff::Timestamp;
 use pdf_extract::{Document, Object, PlainTextOutput, decode_text_string, output_doc};
 
@@ -116,15 +117,28 @@ fn tidy(text: &str) -> String {
     out
 }
 
-fn extract(bytes: &[u8]) -> Result<PdfParts, String> {
-    let mut doc = Document::load_mem(bytes).map_err(|e| e.to_string())?;
+/// Why a PDF is not read.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum PdfError {
+    /// Damaged or protected.
+    Broken(String),
+    /// Carries active content (see `danger`).
+    Dangerous(&'static str),
+}
+
+fn extract(bytes: &[u8]) -> Result<PdfParts, PdfError> {
+    let broken = |e: &dyn std::fmt::Display| PdfError::Broken(e.to_string());
+    let mut doc = Document::load_mem(bytes).map_err(|e| broken(&e))?;
     if doc.is_encrypted() {
         // documents with an owner password only are readable with the empty user password
         doc.decrypt("")
-            .map_err(|_| "the PDF is protected by a password".to_string())?;
+            .map_err(|_| broken(&"the PDF is protected by a password"))?;
+    }
+    if let Some(active) = danger::pdf_active_content(&doc) {
+        return Err(PdfError::Dangerous(active));
     }
     let mut raw = String::new();
-    output_doc(&doc, &mut PlainTextOutput::new(&mut raw)).map_err(|e| e.to_string())?;
+    output_doc(&doc, &mut PlainTextOutput::new(&mut raw)).map_err(|e| broken(&e))?;
 
     let info = doc
         .trailer
@@ -158,9 +172,12 @@ fn extract(bytes: &[u8]) -> Result<PdfParts, String> {
 }
 
 /// Extracts a PDF; a panic inside the PDF library becomes an error.
-pub(crate) fn extract_pdf(bytes: &[u8]) -> Result<PdfParts, String> {
-    catch_unwind(AssertUnwindSafe(|| extract(bytes)))
-        .unwrap_or_else(|_| Err("the PDF library failed on this file".to_string()))
+pub(crate) fn extract_pdf(bytes: &[u8]) -> Result<PdfParts, PdfError> {
+    catch_unwind(AssertUnwindSafe(|| extract(bytes))).unwrap_or_else(|_| {
+        Err(PdfError::Broken(
+            "the PDF library failed on this file".to_string(),
+        ))
+    })
 }
 
 #[cfg(test)]
@@ -191,6 +208,34 @@ pub(crate) mod tests {
             tidy("Celoživotné vzdelá-\nvanie učiteľov  \n\u{c}\n\n\nČesko-\nSlovensko\n"),
             "Celoživotné vzdelávanie učiteľov\n\nČesko-\nSlovensko"
         );
+    }
+
+    #[test]
+    fn active_content_is_refused() {
+        use pdf_extract::{Dictionary, StringFormat};
+
+        let mut doc = Document::load_mem(&sample_pdf(&["Oznam riaditela"])).unwrap();
+        let mut action = Dictionary::new();
+        action.set("S", Object::Name(b"JavaScript".to_vec()));
+        action.set(
+            "JS",
+            Object::String(b"app.alert(1)".to_vec(), StringFormat::Literal),
+        );
+        let action_id = doc.add_object(action);
+        let catalog_id = doc.trailer.get(b"Root").unwrap().as_reference().unwrap();
+        doc.get_object_mut(catalog_id)
+            .unwrap()
+            .as_dict_mut()
+            .unwrap()
+            .set("OpenAction", Object::Reference(action_id));
+        let mut bytes = Vec::new();
+        doc.save_to(&mut bytes).unwrap();
+        assert!(matches!(
+            extract_pdf(&bytes),
+            Err(PdfError::Dangerous("JavaScript"))
+        ));
+        // the same document without the action is read
+        assert!(extract_pdf(&sample_pdf(&["Oznam riaditela"])).is_ok());
     }
 
     /// A one-page PDF with Helvetica text, document information and XMP metadata.

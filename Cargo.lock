@@ -209,7 +209,6 @@ version = "0.2.0"
 dependencies = [
  "atena-store",
  "blake3",
- "flate2",
  "jiff",
  "jiff-sqlx",
  "sqlx",

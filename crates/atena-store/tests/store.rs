@@ -477,28 +477,18 @@ async fn a_tdm_reservation_removes_kept_text() {
 }
 
 #[tokio::test]
-async fn blobs_and_log_pruning() {
+async fn no_original_files_and_log_pruning() {
     let Some(db) = TestDb::new().await else {
         return;
     };
     let s = &db.store;
-    let html = "<html><body><p>Školský vzdelávací program</p></body></html>".repeat(50);
-    let stored = s
-        .put_blob(html.clone().into_bytes(), Some("text/html; charset=utf-8"))
-        .await
-        .unwrap();
-    assert!(stored.stored_size < stored.size);
-    let again = s
-        .put_blob(html.clone().into_bytes(), Some("text/html"))
-        .await
-        .unwrap();
-    assert!(!again.written);
-    assert_eq!(
-        s.get_blob(stored.hash).await.unwrap().unwrap(),
-        html.as_bytes()
-    );
-    assert_eq!(s.get_blob(hash(b"never stored")).await.unwrap(), None);
-    assert_eq!(scalar_i64(s, "SELECT count(*) FROM blob").await, 1);
+    // ATENA keeps no original files: there is not even a table for them
+    let tables = scalar_i64(
+        s,
+        "SELECT count(*) FROM information_schema.tables WHERE table_name = 'blob'",
+    )
+    .await;
+    assert_eq!(tables, 0);
 
     s.sync_register(&[RegisterSource {
         source: source("SK01", true),
@@ -566,27 +556,15 @@ async fn erasure_removes_everything_and_blocks_the_url() {
     let page_ep = scalar_i64(s, &format!("SELECT id FROM endpoint WHERE url = '{page}'")).await;
     let other_ep = scalar_i64(s, &format!("SELECT id FROM endpoint WHERE url = '{other}'")).await;
 
-    // the personal page and the notice board share one original file (same bytes)
-    let shared = s
-        .put_blob(b"<p>shared</p>".to_vec(), Some("text/html"))
-        .await
-        .unwrap();
-    let own = s
-        .put_blob(b"<p>Jan Novak, ucitel</p>".to_vec(), Some("text/html"))
-        .await
-        .unwrap();
     let mut c = capture(page_ep, "Ján Novák, učiteľ", Rights::default());
-    c.raw_hash = own.hash;
     s.save_version(&c, &version("initial", "Ján Novák, učiteľ"), &[], &[])
         .await
         .unwrap();
-    c.raw_hash = shared.hash;
     c.fingerprint = hash(b"v2");
     s.save_version(&c, &version("minor", "Ján Novák, učiteľ."), &[], &[])
         .await
         .unwrap();
-    let mut o = capture(other_ep, "Oznamy", Rights::default());
-    o.raw_hash = shared.hash;
+    let o = capture(other_ep, "Oznamy", Rights::default());
     s.save_version(
         &o,
         &version("initial", "Oznamy"),
@@ -614,7 +592,7 @@ async fn erasure_removes_everything_and_blocks_the_url() {
         .forget(page, false, "request of the data subject, ticket 17")
         .await
         .unwrap();
-    assert_eq!((report.documents, report.versions, report.files), (1, 2, 1));
+    assert_eq!((report.documents, report.versions), (1, 2));
     assert_eq!(scalar_i64(s, "SELECT count(*) FROM document").await, 1);
     assert_eq!(
         scalar_i64(
@@ -629,11 +607,6 @@ async fn erasure_removes_everything_and_blocks_the_url() {
         scalar_i64(s, "SELECT count(*) FROM document_link").await,
         0,
         "links to it are gone too"
-    );
-    assert!(s.get_blob(own.hash).await.unwrap().is_none() && !s.blobs().path(&own.hash).exists());
-    assert!(
-        s.get_blob(shared.hash).await.unwrap().is_some(),
-        "a file another document uses stays"
     );
     assert_eq!(scalar_i64(s, "SELECT count(*) FROM erasure_log").await, 1);
 
@@ -694,12 +667,7 @@ async fn sources_can_be_restricted_to_metadata_or_purged() {
     .await
     .unwrap();
     let ep = scalar_i64(s, "SELECT id FROM endpoint").await;
-    let pdf = s
-        .put_blob(b"%PDF-1.7 fake".to_vec(), Some("application/pdf"))
-        .await
-        .unwrap();
-    let mut c = capture(ep, "Text", Rights::default());
-    c.raw_hash = pdf.hash;
+    let c = capture(ep, "Text", Rights::default());
     let mut v = version("initial", "Text");
     v.description = Some("Popis".into());
     let saved = s
@@ -732,7 +700,6 @@ async fn sources_can_be_restricted_to_metadata_or_purged() {
     );
     assert_eq!(scalar_i64(s, "SELECT count(*) FROM document_link").await, 0);
     assert!(s.labels(saved.document_id).await.unwrap().is_empty());
-    assert!(s.get_blob(pdf.hash).await.unwrap().is_none());
     assert_eq!(
         s.versions(saved.document_id).await.unwrap().len(),
         1,

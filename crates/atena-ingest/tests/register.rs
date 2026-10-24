@@ -29,7 +29,7 @@ async fn the_reviewed_register_is_stored_and_only_permitted_sources_are_enabled(
     for (id, terms, enabled) in &rows {
         let source = sources.iter().find(|s| &s.id == id).unwrap();
         assert_eq!(terms, source.terms.as_str(), "{id}");
-        let crawl = permission(SourceFacts::from(source), false, false).crawl;
+        let crawl = permission(SourceFacts::from(source), false).crawl;
         assert_eq!(*enabled, crawl, "{id}");
     }
     // the review produced every kind of terms, and the database accepts all of them

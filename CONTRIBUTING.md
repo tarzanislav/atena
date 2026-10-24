@@ -28,5 +28,5 @@ a legal review recorded in the pull request. Changes must also keep these true:
   register refuses the entry otherwise; see [docs/SOURCE-RIGHTS.md](docs/SOURCE-RIGHTS.md));
 * a source proposed by a user is never crawled before a person confirms it; automatic assessment
   may only make a proposal stricter (see [docs/ASSESSMENT.md](docs/ASSESSMENT.md));
-* never store more personal data than the purpose needs – no contact details, no originals of web pages,
+* never store more personal data than the purpose needs – no contact details, no original files,
   no pages about people – and keep erasure (`Store::forget`) complete when adding tables.

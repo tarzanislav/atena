@@ -39,8 +39,7 @@ Disallow: /internal/
 ```
 
 ## Personal data and erasure
-ATENA removes e-mail addresses and telephone numbers before storing texts, keeps no originals of web
-pages, does not follow galleries, staff lists or contact pages, and erases a page or a whole section on
+ATENA removes e-mail addresses and telephone numbers before storing texts, keeps no original files, does not follow galleries, staff lists or contact pages, and erases a page or a whole section on
 request (it is then never fetched again). Requests: [GitHub issues](https://github.com/tarzanislav/atena/issues)
 or the contact of the installation's operator. Details: [PRIVACY-AND-RIGHTS.md](PRIVACY-AND-RIGHTS.md).
 
@@ -70,6 +69,11 @@ resource (after decompression), only the content types it can process. It sends 
     `javascript:`, `data:` or `file:`, never an address with credentials;
   * dates before 1900 or in the future are dropped;
   * binary data declared as text is refused.
+* **Programs and active content are refused** (`atena-extract/src/danger.rs`): programs and scripts,
+  whatever the server calls them; files that only pretend to be a PDF; PDFs with JavaScript, launch
+  actions, embedded files, rich media or XFA forms; Word documents with macros, ActiveX, OLE objects or
+  remote templates; OpenDocument texts with macros or scripts. Nothing of such a file is kept and its
+  address is not tried again. Original files are never kept at all ([DATABASE.md](DATABASE.md)).
 * **A failure never turns into a loop.** When the database cannot store a result, the check counts as
   failed and the address waits at least an hour, like after any other failure.
 
