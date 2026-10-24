@@ -22,6 +22,7 @@ dajú kedykoľvek prepočítať. Všetky príkazy SQL sú v module `atena-store`
 | `document_label` | zaradenie: návrhy s dôvodom a rozhodnutia redaktora |
 | `blocked_url` | adresy (alebo celé sekcie), ktoré sa už nikdy nestiahnu – žiadosti o výmaz |
 | `erasure_log` | čo výmaz odstránil a prečo, bez odstráneného obsahu |
+| `search_queue` | dokumenty, ktoré musí index vyhľadávania aktualizovať; plnia ju spúšťače – [VYHLADAVANIE.md](VYHLADAVANIE.md) |
 
 ## Plánovanie: prenájom servera
 Slušnosť voči webom sa meria po serveroch, preto je jednotkou práce server. Pracovník si server
@@ -46,7 +47,8 @@ uloží ako ďalšia verzia, a to v jednej transakcii spolu s odkazmi a novými 
   objaví neskôr, doteraz uložené texty, odkazy a automatické návrhy sa odstránia. Toto pravidlo schválil
   autor projektu; pred verejným spustením ho odporúčame overiť s právnikom.
 * `noindex`, `noarchive`, `nosnippet`, `notranslate` sa uložia k dokumentu. Vyhľadávanie a rozhranie ich
-  dodržia; kópia pri `noarchive` slúži len na zistenie zmien a nikdy sa nezobrazí.
+  dodržia: kópia pri `noarchive` slúži len na zistenie zmien a nikdy sa nezobrazí, dokument s `noindex`
+  sa nikdy nenájde a pri `nosnippet` sa neukáže ukážka textu ([VYHLADAVANIE.md](VYHLADAVANIE.md)).
 
 ## Úložisko súborov
 Ukladajú sa len pôvodné dokumenty (PDF, DOCX, ODT), ktorých text sa smie zobraziť celý (úradné texty,

@@ -18,6 +18,7 @@ atena-assess = { path = "../atena-assess" }
 atena-core = { path = "../atena-core" }
 atena-crawl = { path = "../atena-crawl" }
 atena-extract = { path = "../atena-extract" }
+atena-search = { path = "../atena-search" }
 atena-store = { path = "../atena-store" }
 jiff = "0.2.38"
 serde_json.workspace = true

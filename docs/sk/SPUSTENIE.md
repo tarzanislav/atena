@@ -28,10 +28,14 @@ cargo run --release -p atena-ingest -- sync --shared       # načítať spoločn
                                                  # viac: docs/sk/IMPORT-A-ZDIELANIE.md
 cargo run --release -p atena-ingest -- forget ADRESA --reason "žiadosť z 24. 10. 2026" [--prefix]
                                                  # žiadosť o výmaz: vymaže a navždy zablokuje
+cargo run --release -p atena-ingest -- index     # aktualizovať index vyhľadávania (--rebuild: celý znova)
+cargo run --release -p atena-ingest -- search citatelska gramotnost --country SK
+                                                 # vyhľadávanie; viac: docs/sk/VYHLADAVANIE.md
 ```
 Príkaz `migrate` sa spustí aj sám pred `sync` a `run`. Na jednej databáze môže bežať viac zberačov,
 aj na rôznych počítačoch; ten istý server pritom nikdy nespracúvajú dva naraz.
-`ATENA_LOG=debug` vypisuje podrobnosti.
+`ATENA_LOG=debug` vypisuje podrobnosti. Príkaz `run` každú minútu a pri skončení aktualizuje aj index
+vyhľadávania v priečinku `ATENA_INDEX` (predvolene `./atena-index`).
 
 ## Čo zberač robí
 1. Vezme servery, ktoré sú na rade, a skontroluje ich adresy.

@@ -1,7 +1,8 @@
-//! `atena-ingest`: database migrations, register synchronisation, the crawler worker and a
-//! one-off fetch for checking a single URL.
+//! `atena-ingest`: database migrations, register synchronisation, the crawler worker, proposals of
+//! sources, the search index and a one-off fetch for checking a single URL.
 
 mod commands;
+mod searching;
 
 use std::process::ExitCode;
 use std::sync::Arc;
@@ -46,6 +47,13 @@ USAGE:
     atena-ingest publish ID --id NEW_ID --authority A1…E [--priority P0…P3] [--languages sk,en]
                          [--name TEXT] [--register PATH]
                                       editor: add a confirmed import to the register file
+    atena-ingest index [--rebuild] [--batch N]
+                                      bring the search index up to date with the database (run does
+                                      it every minute); --rebuild: build it anew
+    atena-ingest search WORDS... [--lang LL] [--label SCHEME/CONCEPT]... [--country CC]
+                        [--limit N] [--page N] [--facets] [--json]
+                                      search the index (no database); --lang: language of the words;
+                                      --label also takes language/LL and source/ID
     atena-ingest forget URL --reason TEXT [--prefix]
                                       erase everything about URL (with --prefix: every URL below it)
                                       and never fetch it again – for erasure requests (GDPR Art. 17)
@@ -53,6 +61,7 @@ USAGE:
 ENVIRONMENT:
     ATENA_DATABASE_URL   PostgreSQL connection, e.g. postgres://atena@localhost/atena (required except for fetch)
     ATENA_FILES          directory of the file store (default: ./atena-files)
+    ATENA_INDEX          directory of the search index (default: ./atena-index)
     ATENA_WORKER         name of this worker in host leases (default: host name and process ID)
     ATENA_LOG            error, warn, info (default) or debug
     ATENA_SHARE          0 turns sharing of imported addresses off (default: on)
@@ -191,6 +200,9 @@ async fn work(args: &[String]) -> Result<(), String> {
         tracing::warn!("sharing proposals: {e}");
     }
     let taxonomy = Taxonomy::bundled().map_err(|e| e.to_string())?;
+    // the search index follows what the checks store
+    let (indexed_tx, indexed_rx) = watch::channel(false);
+    let indexer = searching::keep_index_fresh(store.clone(), indexed_rx);
     let pipeline = Arc::new(Pipeline::new(
         store,
         Arc::new(fetcher),
@@ -206,6 +218,10 @@ async fn work(args: &[String]) -> Result<(), String> {
     });
     tracing::info!(worker = %config.worker_id, concurrency = config.concurrency, once, "started");
     let stats = run(pipeline, config, stop_rx, once).await;
+    let _ = indexed_tx.send(true);
+    if let Some(indexer) = indexer {
+        let _ = indexer.await;
+    }
     println!(
         "{} checks on {} hosts, {} store errors",
         stats.checks(),
@@ -426,6 +442,11 @@ async fn main() -> ExitCode {
         },
         Some("forget") => forget(&args[1..]).await,
         Some("legality") => legality_report(args.get(1).map(String::as_str)),
+        Some("search") => searching::search(&args[1..]),
+        Some("index") => match connect(4).await {
+            Ok(store) => searching::index(&store, &args[1..]).await,
+            Err(e) => Err(e),
+        },
         Some("assess") => assess(&args[1..]).await,
         Some(
             cmd @ ("import" | "imports" | "confirm" | "reject" | "share" | "proposals" | "publish"),

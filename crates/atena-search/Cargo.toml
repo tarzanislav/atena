@@ -1,0 +1,27 @@
+[package]
+name = "atena-search"
+description = "ATENA search: a multilingual Tantivy index of what the legality principle allows to be found"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish.workspace = true
+
+[dependencies]
+atena-core = { path = "../atena-core" }
+atena-store = { path = "../atena-store" }
+jiff = { version = "0.2.38", features = ["serde"] }
+serde.workspace = true
+# no zstd (a C library); Snowball stemmers, lz4 and memory-mapped files are enough
+tantivy = { version = "0.27.0", default-features = false, features = ["mmap", "stemmer", "lz4-compression"] }
+thiserror.workspace = true
+
+[dev-dependencies]
+atena-store = { path = "../atena-store", features = ["testing"] }
+tokio = { version = "1.54.1", features = ["macros", "rt-multi-thread"] }
+sqlx = { version = "0.8.6", default-features = false, features = ["postgres", "runtime-tokio"] }
+
+[lints]
+workspace = true

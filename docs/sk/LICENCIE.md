@@ -30,6 +30,7 @@ Novú závislosť pridaj až po doplnení do tohto zoznamu; celý strom knižní
 | sqlx 0.8 (PostgreSQL, migrácie) | MIT OR Apache-2.0 | prístup k databáze (0.9 vyžaduje Rust 1.94) |
 | jiff-sqlx | Unlicense OR MIT | dátumy v databáze |
 | tracing, tracing-subscriber | MIT | záznam o behu zberača |
+| tantivy 0.27 (bez predvolených funkcií: pamäťovo mapované súbory, stemmery Snowball, LZ4; bez zstd) | MIT; stemmery Snowball (frostem) BSD-3-Clause | fulltextové vyhľadávanie |
 
 ## Prototyp v0.1 (Python)
 
