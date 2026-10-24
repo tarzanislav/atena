@@ -19,7 +19,8 @@ ATENA stojí na štyroch pilieroch:
 
 ## Inštalácia
 
-1. Stiahnite si inštalátor `ATENA_0.2.0_x64-setup.exe`.
+1. Stiahnite si inštalátor `ATENA_…_x64-setup.exe` z najnovšieho vydania na
+   https://github.com/tarzanislav/atena/releases (bodky nahrádzajú číslo verzie).
 2. Spustite ho. Inštalátor zatiaľ nie je digitálne podpísaný, preto sa Windows môže opýtať, či
    mu dôverujete („Systém Windows ochránil váš počítač“). Kliknite na **Ďalšie informácie** a
    potom na **Spustiť aj tak**.

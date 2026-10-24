@@ -196,7 +196,8 @@ jobs:
         timeout-minutes: 30
         shell: pwsh
         run: |
-          $env:ATENA_TEST_PG_BIN = (Resolve-Path apps/desktop/src-tauri/resources/postgres/bin).Path
+          # in the extended form \\?\C:\…, as Windows gives the installed app its own folder
+          $env:ATENA_TEST_PG_BIN = "\\?\" + (Resolve-Path apps/desktop/src-tauri/resources/postgres/bin).Path
           cargo test -p atena-app --test postgres --locked
 
       - name: Interface
