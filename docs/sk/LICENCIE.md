@@ -2,9 +2,27 @@
 
 **Pravidlo projektu:** žiadna súčasť nesmie vyžadovať poplatok ani zakazovať komerčné použitie.
 Kód ATENA je pod **Apache-2.0** (permisívna licencia s patentovou doložkou – voľné súkromné aj komerčné použitie).
-Novú závislosť pridaj až po doplnení do tohto zoznamu a do `tests/test_registry_licenses.py`.
+Novú závislosť pridaj až po doplnení do tohto zoznamu; celý strom knižníc jadra kontroluje `cargo deny` pri každom pull requeste (`deny.toml`).
 
-## Softvér v jadre (v0.1)
+## Jadro v Ruste (priame závislosti)
+
+| Súčasť | Licencia | Na čo |
+|---|---|---|
+| serde, serde_json, thiserror | MIT OR Apache-2.0 | dátové štruktúry, JSON, chyby |
+| serde-saphyr | MIT OR Apache-2.0 | YAML (taxonómia, register) |
+| unicode-normalization | (MIT OR Apache-2.0) AND Unicode-3.0 | odstránenie diakritiky pri hľadaní |
+| blake3 | CC0-1.0 OR Apache-2.0 OR Apache-2.0 WITH LLVM-exception | odtlačky obsahu |
+| similar | Apache-2.0 | rozdiely medzi verziami |
+| tokio | MIT | súbežné spracovanie |
+| reqwest (bez predvolených funkcií) | MIT OR Apache-2.0 | sťahovanie (HTTP) |
+| rustls s ring | Apache-2.0 OR ISC OR MIT; ring: Apache-2.0 AND ISC | šifrovanie (TLS); aws-lc (predvolené v reqwest) sa nepoužíva pre licenciu OpenSSL |
+| url | MIT OR Apache-2.0 | rozbor adries (WHATWG) |
+| quick-xml | MIT | RSS/Atom, sitemapy |
+| jiff | Unlicense OR MIT | dátumy |
+| flate2 | MIT OR Apache-2.0 | zbalené sitemapy (gzip) |
+| bytes | MIT | obsah odpovedí |
+
+## Prototyp v0.1 (Python)
 
 | Súčasť | Licencia | Poznámka |
 |---|---|---|

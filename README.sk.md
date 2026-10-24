@@ -17,10 +17,12 @@ vedie späť na pôvodný zdroj.
 ## Obsah repozitára
 | Priečinok | Čo obsahuje |
 |---|---|
+| `crates/atena-core/` | úprava textu, taxonómia, návrhy zaradenia, rozpoznanie zmien |
+| `crates/atena-crawl/` | slušný a bezpečný zberač: robots.txt (RFC 9309), ochrana vnútornej siete, tempo, TDMRep, RSS/Atom, sitemapy – [docs/sk/ZBERAC.md](docs/sk/ZBERAC.md) |
 | `data/` | taxonómia (296 pojmov, 15 osí, 8 jazykov) a register 186 zdrojov |
 | `prototyp-v0.1/` | funkčný prototyp v Pythone (zber, verzie, zaradenie, vyhľadávanie, web, 41 testov) – špecifikácia pre jadro v Ruste |
 | `tools/language-benchmark/` | meranie rýchlosti Rust, Go, Java, Node, Python na úlohe ATENA |
-| `docs/` | technológie, dizajn, licencie |
+| `docs/` | technológie, dizajn, licencie, zberač |
 
 ## Zásady
 1. Každá položka má priamy odkaz na originál, dátum zachytenia a verziu.

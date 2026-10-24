@@ -4,6 +4,26 @@
 ATENA code is **Apache-2.0** (permissive, with a patent grant – free for private and commercial use).
 Add a new dependency only after adding it to this list and to the licence check in CI.
 
+## Rust core (direct dependencies)
+
+The full tree is checked by `cargo deny` on every pull request (`deny.toml`).
+
+| Component | Licence | Used for |
+|---|---|---|
+| serde, serde_json, thiserror | MIT OR Apache-2.0 | data structures, JSON, errors |
+| serde-saphyr | MIT OR Apache-2.0 | YAML (taxonomy, register) |
+| unicode-normalization | (MIT OR Apache-2.0) AND Unicode-3.0 | folding diacritics |
+| blake3 | CC0-1.0 OR Apache-2.0 OR Apache-2.0 WITH LLVM-exception | content fingerprints |
+| similar | Apache-2.0 | text differences between versions |
+| tokio | MIT | asynchronous runtime |
+| reqwest (without default features) | MIT OR Apache-2.0 | HTTP client |
+| rustls with the ring provider | Apache-2.0 OR ISC OR MIT; ring: Apache-2.0 AND ISC | TLS; aws-lc (reqwest's default) is not used because of its OpenSSL licence |
+| url | MIT OR Apache-2.0 | URL parsing (WHATWG) |
+| quick-xml | MIT | RSS/Atom, sitemaps |
+| jiff | Unlicense OR MIT | dates |
+| flate2 | MIT OR Apache-2.0 | gzip sitemaps |
+| bytes | MIT | response bodies |
+
 ## Prototype v0.1 (Python)
 
 | Component | Licence | Note |
