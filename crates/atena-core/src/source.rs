@@ -25,6 +25,93 @@ pub enum Review {
     New,
 }
 
+/// Open licences accepted in the register (SPDX identifiers and their IGO variants).
+pub const OPEN_LICENCES: [&str; 9] = [
+    "CC0-1.0",
+    "CC-BY-4.0",
+    "CC-BY-SA-4.0",
+    "CC-BY-3.0-IGO",
+    "CC-BY-SA-3.0-IGO",
+    "PDDL-1.0",
+    "ODC-By-1.0",
+    "ODbL-1.0",
+    "OGL-UK-3.0",
+];
+
+/// Under what terms a source's content may be shown.
+///
+/// ATENA may analyse publicly accessible content unless the publisher reserves text and data
+/// mining (Art. 4 of Directive (EU) 2019/790). Showing it is a different matter: the full text is
+/// shown only for official texts (laws and other official documents, which copyright does not
+/// protect, e.g. § 5 of the Slovak Copyright Act) and for openly licensed content; everything else
+/// is shown as title, metadata, ATENA's classification and a link to the original.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize)]
+#[serde(try_from = "String")]
+pub enum Licence {
+    /// Official texts (legal acts, official documents).
+    Official,
+    /// Protected by copyright – the default until the licence is verified.
+    #[default]
+    Copyrighted,
+    /// An open licence from [`OPEN_LICENCES`].
+    Open(String),
+}
+
+impl TryFrom<String> for Licence {
+    type Error = String;
+
+    fn try_from(text: String) -> Result<Self, String> {
+        match text.as_str() {
+            "official" => Ok(Self::Official),
+            "copyrighted" => Ok(Self::Copyrighted),
+            open if OPEN_LICENCES.contains(&open) => Ok(Self::Open(text)),
+            other => Err(format!(
+                "unknown licence {other} (official, copyrighted or one of {OPEN_LICENCES:?})"
+            )),
+        }
+    }
+}
+
+impl Licence {
+    /// The value stored in the register and the database.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Official => "official",
+            Self::Copyrighted => "copyrighted",
+            Self::Open(id) => id,
+        }
+    }
+
+    /// `true` when the full text may be shown to users.
+    pub fn allows_full_text(&self) -> bool {
+        !matches!(self, Self::Copyrighted)
+    }
+}
+
+/// What the publisher's terms of use say about automated access.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum Terms {
+    /// Automated access is allowed (or the content is under an open licence).
+    Allowed,
+    /// Automated access is forbidden: the source is not crawled at all.
+    Forbidden,
+    /// Not yet verified; robots.txt and TDMRep decide.
+    #[default]
+    Unknown,
+}
+
+impl Terms {
+    /// The value stored in the database.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Allowed => "allowed",
+            Self::Forbidden => "forbidden",
+            Self::Unknown => "unknown",
+        }
+    }
+}
+
 /// One source.
 #[derive(Debug, Clone, Deserialize)]
 pub struct Source {
@@ -51,6 +138,12 @@ pub struct Source {
     /// Verified feed address, if any.
     #[serde(default)]
     pub feed: Option<String>,
+    /// Licence of the content (default: copyrighted).
+    #[serde(default)]
+    pub licence: Licence,
+    /// The terms of use on automated access (default: unknown).
+    #[serde(default)]
+    pub terms: Terms,
 }
 
 #[derive(Deserialize)]
@@ -120,5 +213,27 @@ mod tests {
         assert_eq!(nivam.feed.as_deref(), Some("https://nivam.sk/feed/"));
         assert_eq!(nivam.interval_s, 3600);
         assert!(sources.iter().filter(|s| s.feed.is_some()).count() >= 10);
+        let slovlex = sources.iter().find(|s| s.id == "SK03").unwrap();
+        assert!(slovlex.licence.allows_full_text());
+        assert_eq!(nivam.licence, Licence::Copyrighted);
+        assert_eq!(nivam.terms, Terms::Unknown);
+        let youtube = sources.iter().find(|s| s.id == "N39").unwrap();
+        assert_eq!(youtube.terms, Terms::Forbidden);
+    }
+
+    #[test]
+    fn licences_are_validated() {
+        let t = Taxonomy::bundled().unwrap();
+        let entry = |licence: &str| {
+            format!(
+                "sources:\n- id: X1\n  name: X\n  url: https://x.example/\n  country: SK\n  languages: [sk]\n  \
+                 authority: A2\n  priority: P0\n  connector: html\n  interval_s: 3600\n  review: new\n  licence: {licence}\n"
+            )
+        };
+        let open = load_sources(&entry("CC-BY-4.0"), &t).unwrap();
+        assert_eq!(open[0].licence, Licence::Open("CC-BY-4.0".into()));
+        assert_eq!(open[0].licence.as_str(), "CC-BY-4.0");
+        assert!(load_sources(&entry("all-rights-mine"), &t).is_err());
+        assert!(!Licence::Copyrighted.allows_full_text());
     }
 }

@@ -19,6 +19,8 @@ cargo run --release -p atena-ingest -- sync      # načíta register zdrojov dat
 cargo run --release -p atena-ingest -- run       # zbiera, kým ho nezastavíte (Ctrl+C)
 cargo run --release -p atena-ingest -- run --once --concurrency 8   # zbiera, kým je čo
 cargo run --release -p atena-ingest -- fetch https://www.minedu.sk/  # jedna adresa, bez databázy
+cargo run --release -p atena-ingest -- forget ADRESA --reason "žiadosť z 24. 10. 2026" [--prefix]
+                                                 # žiadosť o výmaz: vymaže a navždy zablokuje
 ```
 Príkaz `migrate` sa spustí aj sám pred `sync` a `run`. Na jednej databáze môže bežať viac zberačov,
 aj na rôznych počítačoch; ten istý server pritom nikdy nespracúvajú dva naraz.

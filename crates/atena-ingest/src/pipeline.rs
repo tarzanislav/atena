@@ -17,6 +17,7 @@ use atena_store::{
 };
 use url::Url;
 
+use crate::privacy;
 use crate::urls::{MAX_LINKS_PER_PAGE, follow, host, normalize};
 
 /// Settings of the pipeline.
@@ -118,6 +119,15 @@ fn rights(page: &Page, doc: &Document) -> (Rights, bool) {
         notranslate: index.notranslate,
     };
     (rights, index.nofollow)
+}
+
+/// Originals are kept only for documents (PDF, DOCX, ODT) of public bodies and international
+/// organisations, or under an open or official licence. Of web pages only the cleaned text is
+/// kept: their originals would bring back the contact details removed from the text.
+fn keep_original(ep: &Endpoint, format: Format) -> bool {
+    matches!(format, Format::Pdf | Format::Docx | Format::Odt)
+        && (matches!(ep.source_authority.as_str(), "A1" | "A2" | "B1")
+            || ep.source_licence != "copyrighted")
 }
 
 /// Runs CPU-bound work on a worker thread with a time limit.
@@ -377,6 +387,23 @@ impl Pipeline {
             Err(e) => return Ok(Processed::failed("extract_error", e.to_string())),
         };
 
+        // data minimisation before anything is fingerprinted or stored
+        let mut doc = doc;
+        let mut redacted = 0;
+        let mut clean = |text: &mut String| {
+            let r = privacy::redact(text);
+            redacted += r.emails + r.phones;
+            *text = r.text;
+        };
+        clean(&mut doc.text);
+        doc.title.iter_mut().for_each(&mut clean);
+        doc.description.iter_mut().for_each(&mut clean);
+        doc.links.iter_mut().for_each(|l| clean(&mut l.text));
+        // a web page's "author" is usually its webmaster; authors are kept for documents only
+        if matches!(doc.format, Format::Html | Format::Text) {
+            doc.authors.clear();
+        }
+
         let (rights, nofollow) = rights(page, &doc);
         let keep_text = !rights.tdm_reserved;
         let fingerprint = parse_hex(&atena_core::text::fingerprint(&doc.text))
@@ -426,7 +453,7 @@ impl Pipeline {
             (Some(_), _) => ("changed", 0, 0, false),
         };
 
-        if keep_text {
+        if keep_text && keep_original(ep, doc.format) {
             self.store
                 .put_blob(page.body.to_vec(), page.content_type.as_deref())
                 .await?;
@@ -514,7 +541,7 @@ impl Pipeline {
         Ok(Processed::ok(
             outcome,
             Some(format!(
-                "version {} ({change_kind}), {discovered} new endpoints",
+                "version {} ({change_kind}), {discovered} new endpoints, {redacted} contact details removed",
                 saved.version_no
             )),
         ))

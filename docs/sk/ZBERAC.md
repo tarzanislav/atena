@@ -37,6 +37,12 @@ Crawl-delay: 30
 Disallow: /interne/
 ```
 
+## Osobné údaje a výmaz
+ATENA pred uložením odstráni z textov e-mailové adresy a telefónne čísla a neukladá pôvodné webové
+stránky. Nesleduje fotogalérie, zoznamy zamestnancov ani kontakty. Na požiadanie vymaže stránku alebo
+celú sekciu a tá sa už potom nikdy nestiahne. Žiadosti: [GitHub issues](https://github.com/tarzanislav/atena/issues)
+alebo kontakt prevádzkovateľa. Podrobnosti: [PRAVA-A-OCHRANA-UDAJOV.md](PRAVA-A-OCHRANA-UDAJOV.md).
+
 ## Čo zberač sťahuje
 Webové stránky, dokumenty PDF a kancelárske súbory, kanály RSS/Atom a sitemapy (XML, text, gzip).
 Z jedného zdroja najviac 50 MiB po rozbalení a len typy obsahu, ktoré vie spracovať. Neposiela cookies,

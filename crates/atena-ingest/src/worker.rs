@@ -30,6 +30,8 @@ pub struct WorkerConfig {
     pub lease: Duration,
     /// Pause when nothing is due (default 10 s).
     pub idle_wait: Duration,
+    /// How long the check log is kept (default 90 days); older records are deleted hourly.
+    pub log_retention: Duration,
 }
 
 impl Default for WorkerConfig {
@@ -42,6 +44,7 @@ impl Default for WorkerConfig {
             host_budget: Duration::from_secs(600),
             lease: Duration::from_secs(1_200),
             idle_wait: Duration::from_secs(10),
+            log_retention: Duration::from_secs(90 * 86_400),
         }
     }
 }
@@ -135,9 +138,19 @@ pub async fn run(
 ) -> RunStats {
     let stats = Arc::new(Mutex::new(RunStats::default()));
     let mut tasks: JoinSet<Result<(), StoreError>> = JoinSet::new();
+    let mut last_prune: Option<Instant> = None;
     loop {
         if *stop.borrow() {
             break;
+        }
+        // storage limitation: old check records are deleted (at start and then hourly)
+        if last_prune.is_none_or(|t| t.elapsed() > Duration::from_secs(3_600)) {
+            match pipeline.store().prune_fetch_log(config.log_retention).await {
+                Ok(n) if n > 0 => tracing::info!(deleted = n, "old check records deleted"),
+                Ok(_) => {}
+                Err(e) => tracing::error!(error = %e, "pruning the check log failed"),
+            }
+            last_prune = Some(Instant::now());
         }
         let free = config.concurrency.saturating_sub(tasks.len());
         let leased = if free > 0 {

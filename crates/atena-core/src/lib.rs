@@ -8,6 +8,6 @@ pub mod text;
 pub mod version;
 
 pub use classify::{Suggestion, suggest};
-pub use source::{Source, load_sources};
+pub use source::{Licence, Source, Terms, load_sources};
 pub use taxonomy::{Concept, MissingLabel, Taxonomy};
 pub use version::{Change, ChangeKind, compare};
