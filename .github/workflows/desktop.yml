@@ -1,0 +1,171 @@
+name: Desktop app
+
+on:
+  pull_request:
+    paths:
+      - "apps/desktop/**"
+      - "crates/**"
+      - "data/**"
+      - "Cargo.lock"
+      - "deny.toml"
+      - ".github/workflows/desktop.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/desktop/**"
+      - "crates/**"
+      - "data/**"
+      - "Cargo.lock"
+      - "deny.toml"
+      - ".github/workflows/desktop.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: never
+  # PostgreSQL inside the app: the official Windows binaries of EnterpriseDB, linked from
+  # https://www.postgresql.org/download/windows/. The checksum pins exactly this archive; when it is
+  # empty, the build reports the checksum it found and stops, so that a person pins it.
+  PG_VERSION: "17.11"
+  PG_URL: "https://sbp.enterprisedb.com/getfile.jsp?fileid=1260616"
+  PG_SHA256: ""
+
+# Actions are pinned to full commit SHAs so a moved tag cannot change what runs here.
+
+jobs:
+  window:
+    name: Interface and window (Linux)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/desktop
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+      - name: Interface (types, languages, build)
+        run: |
+          npm ci
+          npm run build
+      - name: System libraries of the web view
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libwebkit2gtk-4.1-dev librsvg2-dev
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal --component rustfmt,clippy
+          rustup default stable
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          workspaces: apps/desktop/src-tauri
+      - name: Format
+        run: cargo fmt --manifest-path src-tauri/Cargo.toml --check
+      - name: Clippy
+        shell: bash
+        run: |
+          set -o pipefail
+          cargo clippy --manifest-path src-tauri/Cargo.toml --locked --all-targets --message-format=short -- -D warnings 2>&1 \
+            | sed -E -e 's#^([^: ]+):([0-9]+):([0-9]+): (error|warning)(\[[^]]*\])?: (.*)$#::error file=apps/desktop/src-tauri/\1,line=\2,col=\3::\6 \5#' \
+                     -e 's/^(error.*)$/::error::\1/'
+
+  licences:
+    name: Licences and advisories of the window
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: EmbarkStudios/cargo-deny-action@3c6349835b2b7b196a839186cb8b78e02f7b5f25 # v2.1.1
+        with:
+          command: check
+          manifest-path: apps/desktop/src-tauri/Cargo.toml
+
+  installer:
+    name: Windows installer
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          workspaces: |
+            . -> target
+            apps/desktop/src-tauri -> target
+
+      - name: PostgreSQL programs
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          Invoke-WebRequest -Uri $env:PG_URL -OutFile pg.zip
+          $sha = (Get-FileHash pg.zip -Algorithm SHA256).Hash.ToLower()
+          if (-not $env:PG_SHA256) {
+            Write-Output "::error::PostgreSQL $env:PG_VERSION archive has SHA-256 $sha – check it and pin it as PG_SHA256"
+            exit 1
+          }
+          if ($sha -ne $env:PG_SHA256) {
+            Write-Output "::error::PostgreSQL archive SHA-256 $sha differs from the pinned $env:PG_SHA256"
+            exit 1
+          }
+          Expand-Archive pg.zip -DestinationPath pg
+          $from = "pg/pgsql"
+          $to = "apps/desktop/src-tauri/resources/postgres"
+          New-Item -ItemType Directory -Force "$to/bin", "$to/lib" | Out-Null
+          # the three programs the app runs and the libraries they need; nothing else
+          foreach ($program in "initdb.exe", "pg_ctl.exe", "postgres.exe") { Copy-Item "$from/bin/$program" "$to/bin/" }
+          Copy-Item "$from/bin/*.dll" "$to/bin/"
+          Copy-Item "$from/lib/*.dll" "$to/lib/"
+          Copy-Item "$from/share" $to -Recurse
+          Remove-Item "$to/share/doc" -Recurse -ErrorAction SilentlyContinue
+          $libraries = (Get-ChildItem "$to/bin" -Filter *.dll | ForEach-Object Name) -join ", "
+          Write-Output "::notice::PostgreSQL $env:PG_VERSION libraries: $libraries"
+          & "$to/bin/postgres.exe" --version
+
+      - name: The database inside the app with exactly these programs
+        shell: pwsh
+        run: |
+          $env:ATENA_TEST_PG_BIN = (Resolve-Path apps/desktop/src-tauri/resources/postgres/bin).Path
+          cargo test -p atena-app --test postgres --locked
+
+      - name: Interface
+        working-directory: apps/desktop
+        run: |
+          npm ci
+          npm run build
+
+      - name: Licence texts
+        working-directory: apps/desktop
+        run: |
+          node scripts/notices.mjs --target x86_64-pc-windows-msvc
+          node scripts/postgres-notices.mjs src-tauri/resources/postgres
+
+      - name: Installer
+        working-directory: apps/desktop
+        run: npx tauri build --bundles nsis
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: atena-windows-installer
+          path: apps/desktop/src-tauri/target/release/bundle/nsis/*.exe
+          if-no-files-found: error
+          retention-days: 30

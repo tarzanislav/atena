@@ -1,0 +1,7 @@
+# The Windows app carries its C runtime inside: it starts on a computer without the Visual C++
+# runtime installed.
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static"]
+
+[target.aarch64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static"]

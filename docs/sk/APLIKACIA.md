@@ -93,10 +93,12 @@ opakovaní.
 
 ## Okno
 
-Okno (`apps/desktop`) a jeho zostavenie opisuje jeho vlastné README. Okno nič nenačítava zo siete:
+Okno (`apps/desktop`) a jeho zostavenie opisuje jeho [README](../../apps/desktop/README.md) (v
+angličtine). Okno smie volať len príkazy ATENY – žiadne súbory, žiadny príkazový riadok, žiadnu
+sieť – a nič nenačítava zo siete:
 
 - písma a ikony sú súčasťou aplikácie;
 - pravidlá zabezpečenia obsahu povoľujú len vlastné súbory aplikácie;
 - zozbierané texty sa ukazujú ako text, nikdy ako značkovanie;
-- odkazy sa otvoria vo vlastnom prehliadači používateľa, až keď sa overí, že adresa je `http` alebo
-  `https`.
+- odkazy sa otvoria vo vlastnom prehliadači používateľa, až keď jadro overí adresu
+  (`atena_app::openable`: `http` alebo `https`, bez mena a hesla, bez skrytých znakov).

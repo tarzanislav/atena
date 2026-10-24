@@ -23,6 +23,10 @@ ignore = [
     # code for creating PDFs with embedded fonts. ATENA only reads PDFs and never calls it.
     # Remove when pdf-extract moves to a lopdf without ttf-parser, or when PDFium replaces it.
     { id = "RUSTSEC-2026-0192", reason = "only reachable when writing PDFs; ATENA only reads them" },
+    # proc-macro-error (unmaintained) comes with the GTK bindings that the desktop window
+    # (apps/desktop) uses on Linux: a procedural macro run at build time, no code of the app.
+    # Remove when Tauri moves to gtk-rs 0.19 or later.
+    { id = "RUSTSEC-2024-0370", reason = "build-time macro of the Linux GTK bindings of the desktop window" },
 ]
 
 [licenses]

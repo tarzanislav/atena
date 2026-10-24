@@ -87,7 +87,8 @@ An error reaches the interface as `{ "code": "...", "detail": "..." }`. The code
 
 ## The window
 
-The window (`apps/desktop`) is described with its build in its own README. It loads nothing from
-the network: fonts and icons are part of the app, the content security policy allows only the
-app's own files, collected texts are shown as text and never as markup, and links open in the
-user's browser only after the address is checked to be `http` or `https`.
+The window (`apps/desktop`) is described with its build in [its README](../apps/desktop/README.md).
+It loads nothing from the network: fonts and icons are part of the app, the content security
+policy allows only the app's own files, collected texts are shown as text and never as markup, and
+links open in the user's browser only after the address is checked (`atena_app::openable`). The
+window may call the commands of ATENA and nothing else – no files, no shell, no network.

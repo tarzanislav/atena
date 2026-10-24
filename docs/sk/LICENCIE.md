@@ -35,6 +35,30 @@ Novú závislosť pridaj až po doplnení do tohto zoznamu; celý strom knižní
 | tantivy 0.27 (bez predvolených funkcií: pamäťovo mapované súbory, stemmery Snowball, LZ4; bez zstd) | MIT; stemmery Snowball (frostem) BSD-3-Clause | fulltextové vyhľadávanie |
 | getrandom | MIT OR Apache-2.0 | náhodné heslo databázy vo vnútri aplikácie pre počítač |
 
+## Aplikácia pre počítač (`apps/desktop`)
+
+Okno má vlastný `Cargo.lock`; CI ho kontroluje s tým istým `deny.toml`. Inštalátor nesie licenčné
+texty všetkých súčastí (priečinok `notices/` v priečinku aplikácie, zapisujú ich
+`apps/desktop/scripts/notices.mjs` a `postgres-notices.mjs`).
+
+| Súčasť | Licencia | Na čo slúži |
+|---|---|---|
+| Tauri 2 (wry, tao a systémový webový pohľad: WebView2 vo Windows, WebKitGTK v Linuxe) | Apache-2.0 OR MIT | okno |
+| open | MIT | otvorenie originálu dokumentu v prehliadači používateľa |
+| React, React DOM, scheduler | MIT | rozhranie |
+| @fluent/bundle (Project Fluent) | Apache-2.0 | texty rozhrania vo všetkých jazykoch |
+| @tauri-apps/api | Apache-2.0 OR MIT | volanie príkazov okna |
+| Fluent UI System Icons (@fluentui/svg-icons) | MIT | ikony |
+| Open Sans, Noto Sans SC (@fontsource) | OFL-1.1 (písma), MIT (balíky) | písmo pre latinku, cyriliku a čínštinu |
+| Vite, TypeScript, @vitejs/plugin-react, @tauri-apps/cli | MIT, Apache-2.0 | len na zostavenie – nie sú súčasťou aplikácie |
+| PostgreSQL 17 (oficiálne programy pre Windows od EnterpriseDB) | PostgreSQL License | databáza vo vnútri aplikácie |
+| knižnice týchto programov: OpenSSL, ICU, libxml2, libxslt, zlib, LZ4, Zstandard, MIT Kerberos, mingw-w64 winpthreads, Microsoft Visual C++ runtime | Apache-2.0, Unicode-3.0, MIT, Zlib, BSD, podmienky redistribúcie | používa ich PostgreSQL |
+| GNU libiconv, GNU gettext (libintl) | LGPL-2.1-or-later | PostgreSQL ich používa nezmenené ako samostatné knižnice; licenčný text a odkazy na zdrojový kód sú v licenčných textoch aplikácie |
+
+Zostavenie sa zastaví, ak programy PostgreSQL prinesú knižnicu, ktorú `postgres-notices.mjs`
+nepozná – najprv musí človek overiť jej licenciu. `proc-macro-error` (neudržiavaný) prichádza s
+väzbami Tauri na GTK v Linuxe ako makro pri zostavovaní a je výnimkou v `deny.toml`.
+
 ## Prototyp v0.1 (Python)
 
 | Súčasť | Licencia | Poznámka |

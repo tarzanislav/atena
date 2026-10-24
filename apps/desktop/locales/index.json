@@ -1,0 +1,7 @@
+[
+  { "code": "sk", "intl": "sk", "draft": false },
+  { "code": "en", "intl": "en", "draft": true },
+  { "code": "cs", "intl": "cs", "draft": true },
+  { "code": "ru", "intl": "ru", "draft": true },
+  { "code": "zh", "intl": "zh-Hans", "draft": true }
+]

@@ -1,0 +1,33 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main",
+  "description": "The main window may call the commands of ATENA and nothing else: no files, no shell, no network of its own.",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "allow-startup",
+    "allow-overview",
+    "allow-sources",
+    "allow-taxonomy",
+    "allow-search",
+    "allow-newest",
+    "allow-document",
+    "allow-import-addresses",
+    "allow-proposals",
+    "allow-decision-options",
+    "allow-confirm-proposal",
+    "allow-reject-proposal",
+    "allow-pending-share",
+    "allow-handed-over",
+    "allow-receive-list",
+    "allow-sync-shared-register",
+    "allow-forget",
+    "allow-crawl-start",
+    "allow-crawl-stop",
+    "allow-crawl-status",
+    "allow-get-settings",
+    "allow-set-settings",
+    "allow-open-link"
+  ]
+}
