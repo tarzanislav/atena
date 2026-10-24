@@ -143,10 +143,43 @@ jobs:
           $from = "pg/pgsql"
           $to = "apps/desktop/src-tauri/resources/postgres"
           New-Item -ItemType Directory -Force "$to/bin", "$to/lib" | Out-Null
-          # the three programs the app runs and the libraries they need; nothing else
-          foreach ($program in "initdb.exe", "pg_ctl.exe", "postgres.exe") { Copy-Item "$from/bin/$program" "$to/bin/" }
-          Copy-Item "$from/bin/*.dll" "$to/bin/"
-          Copy-Item "$from/lib/*.dll" "$to/lib/"
+          # the three programs the app runs, the modules of PostgreSQL, and exactly the libraries
+          # they load (read from their import tables) – not the ones of pgAdmin or StackBuilder
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $dumpbin = & $vswhere -latest -find "VC\Tools\MSVC\**\bin\Hostx64\x64\dumpbin.exe" | Select-Object -First 1
+          $queue = [System.Collections.Generic.Queue[string]]::new()
+          foreach ($program in "initdb.exe", "pg_ctl.exe", "postgres.exe") {
+            Copy-Item "$from/bin/$program" "$to/bin/"
+            $queue.Enqueue((Resolve-Path "$from/bin/$program").Path)
+          }
+          foreach ($module in Get-ChildItem "$from/lib" -Filter *.dll) {
+            Copy-Item $module.FullName "$to/lib/"
+            $queue.Enqueue($module.FullName)
+          }
+          $needed = @{}
+          $elsewhere = @{}
+          while ($queue.Count -gt 0) {
+            $file = $queue.Dequeue()
+            foreach ($line in & $dumpbin /nologo /dependents $file) {
+              if (-not ($line -match '^\s+(\S+\.dll)\s*$')) { continue }
+              $name = $Matches[1].ToLower()
+              $path = Join-Path "$from/bin" $Matches[1]
+              if (Test-Path $path) {
+                if (-not $needed.ContainsKey($name)) { $needed[$name] = $path; $queue.Enqueue((Resolve-Path $path).Path) }
+              } else {
+                $elsewhere[$name] = $true
+              }
+            }
+          }
+          foreach ($path in $needed.Values) { Copy-Item $path "$to/bin/" }
+          # the C++ runtime is not part of every Windows: it comes with the app (as Microsoft allows)
+          foreach ($runtime in $elsewhere.Keys | Where-Object { $_ -match '^(vcruntime140(_1)?|msvcp140(_\w+)?|concrt140)\.dll$' }) {
+            $source = & $vswhere -latest -find "VC\Redist\MSVC\*\x64\Microsoft.VC14*.CRT\$runtime" | Select-Object -First 1
+            if (-not $source) { Write-Output "::error::$runtime not found"; exit 1 }
+            Copy-Item $source "$to/bin/"
+          }
+          $outside = ($elsewhere.Keys | Sort-Object) -join ", "
+          Write-Output "::notice::loaded from Windows or not needed by the app: $outside"
           Copy-Item "$from/share" $to -Recurse
           Remove-Item "$to/share/doc" -Recurse -ErrorAction SilentlyContinue
           # the licences of the libraries, as EnterpriseDB ships them with the programs

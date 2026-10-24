@@ -24,6 +24,7 @@ const TEXTS = {
   zstd: { url: "https://raw.githubusercontent.com/facebook/zstd/dev/LICENSE" },
   winpthreads: { url: "https://raw.githubusercontent.com/mingw-w64/mingw-w64/master/mingw-w64-libraries/winpthreads/COPYING" },
   kerberos: { url: "https://raw.githubusercontent.com/krb5/krb5/master/NOTICE" },
+  curl: { url: "https://raw.githubusercontent.com/curl/curl/master/COPYING" },
 };
 
 const KNOWN = [
@@ -36,6 +37,7 @@ const KNOWN = [
   { match: /^icu(dt|in|uc|io|tu)\d*\.dll$/i, project: "ICU", licence: "Unicode-3.0", source: "https://github.com/unicode-org/icu", text: "icu" },
   { match: /^liblz4\.dll$/i, project: "LZ4", licence: "BSD-2-Clause", source: "https://github.com/lz4/lz4", text: "lz4" },
   { match: /^libzstd\.dll$/i, project: "Zstandard", licence: "BSD-3-Clause", source: "https://github.com/facebook/zstd", text: "zstd" },
+  { match: /^libcurl(-\d+)?(-x64)?\.dll$/i, project: "curl (libcurl)", licence: "curl (MIT-style)", source: "https://curl.se/", text: "curl" },
   { match: /^zlib1?\.dll$/i, project: "zlib", licence: "Zlib", source: "https://zlib.net/", text: "zlib" },
   { match: /^(krb5|comerr|gssapi|k5sprt|xpprof|krbcc)\d*\.dll$/i, project: "MIT Kerberos", licence: "MIT", source: "https://web.mit.edu/kerberos/", text: "kerberos" },
   { match: /^(vcruntime140(_1)?|msvcp140(_\d+|_atomic_wait|_codecvt_ids)?|concrt140)\.dll$/i, project: "Microsoft Visual C++ runtime", licence: "redistributed as allowed by the Microsoft Visual C++ redistribution terms", source: "https://learn.microsoft.com/cpp/windows/redistributing-visual-cpp-files" },
