@@ -712,3 +712,42 @@ async fn sources_can_be_restricted_to_metadata_or_purged() {
     assert_eq!(scalar_i64(s, "SELECT count(*) FROM endpoint").await, 0);
     db.drop().await;
 }
+
+#[tokio::test]
+async fn no_source_grows_without_bound() {
+    let Some(db) = TestDb::new().await else {
+        return;
+    };
+    let s = &db.store;
+    s.sync_register(&[RegisterSource {
+        source: source("SK01", true),
+        endpoints: vec![endpoint(
+            "https://sk01.example.sk/",
+            EndpointKind::Page,
+            Origin::Register,
+        )],
+    }])
+    .await
+    .unwrap();
+    // fill the source up to its quota directly
+    sqlx::query(
+        "INSERT INTO endpoint (source_id, host_id, url, kind, origin, follow_links, interval_s)
+         SELECT 'SK01', host_id, 'https://sk01.example.sk/p/' || n, 'page', 'sitemap', false, 86400
+         FROM endpoint, generate_series(2, $1) AS n WHERE source_id = 'SK01'",
+    )
+    .bind(atena_store::MAX_ENDPOINTS_PER_SOURCE)
+    .execute(s.pool())
+    .await
+    .unwrap();
+    let more = endpoint(
+        "https://sk01.example.sk/new",
+        EndpointKind::Page,
+        Origin::Link,
+    );
+    assert_eq!(s.add_endpoints("SK01", None, &[more]).await.unwrap(), 0);
+    assert_eq!(
+        scalar_i64(s, "SELECT count(*) FROM endpoint").await,
+        atena_store::MAX_ENDPOINTS_PER_SOURCE
+    );
+    db.drop().await;
+}

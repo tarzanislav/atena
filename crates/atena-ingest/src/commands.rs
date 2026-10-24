@@ -525,6 +525,12 @@ pub async fn shared_register(url: Option<&str>) -> Result<String, String> {
         .map(str::to_string)
         .unwrap_or_else(|| env_or("ATENA_SHARED_REGISTER", DEFAULT_SHARED_REGISTER));
     let url = Url::parse(&text).map_err(|e| format!("{text}: {e}"))?;
+    // the register decides licences and terms: it travels encrypted or not at all
+    if url.scheme() != "https" {
+        return Err(format!(
+            "{url}: the shared register is read over https only"
+        ));
+    }
     let body = service()?.get(&url, &[]).await.map_err(|e| e.to_string())?;
     String::from_utf8(body.to_vec()).map_err(|_| format!("{url}: not UTF-8 text"))
 }

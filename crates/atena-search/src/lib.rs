@@ -23,7 +23,9 @@ use std::path::PathBuf;
 
 pub use document::{SearchDocument, authority_weight, searchable};
 pub use index::SearchIndex;
-pub use query::{FacetCount, Hit, MAX_LIMIT, RecognisedConcept, Results, SearchRequest, Snippet};
+pub use query::{
+    FacetCount, Hit, MAX_LIMIT, MAX_OFFSET, RecognisedConcept, Results, SearchRequest, Snippet,
+};
 pub use stem::Slavic;
 pub use update::{DEFAULT_BATCH, UpdateReport, rebuild, update};
 

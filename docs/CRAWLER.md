@@ -88,7 +88,7 @@ resource (after decompression), only the content types it can process. It sends 
 * **A failure never turns into a loop.** When the database cannot store a result, the check counts as
   failed and the address waits at least an hour, like after any other failure.
 
-Known limits of this version: per-host state is kept in memory without pruning (fine for thousands of
-hosts); feeds in encodings other than UTF-8 are read with replacement characters. HTML `<meta>` rules and
+Growth is bounded: a source may have at most 100,000 addresses, and per-host state in memory is
+pruned beyond 10,000 hosts. Known limits of this version: feeds in encodings other than UTF-8 are read with replacement characters. HTML `<meta>` rules and
 TDMRep in HTML and PDF are read by `atena-extract` and merged with the HTTP rules in the processing
 pipeline; EPUB is not read yet.

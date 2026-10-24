@@ -50,6 +50,8 @@ const FRESHNESS: f64 = 0.25;
 const HALF_LIFE_DAYS: f64 = 365.0;
 /// Most hits per page.
 pub const MAX_LIMIT: usize = 100;
+/// Most hits skipped: nobody reads past this, and the index would have to rank them all.
+pub const MAX_OFFSET: usize = 10_000;
 /// Most values counted per facet namespace.
 const FACET_VALUES: usize = 20;
 /// Longer searches are cut (in characters): a search is a few words, not a document.
@@ -317,7 +319,7 @@ impl SearchIndex {
         }
         let limit = request.limit.clamp(1, MAX_LIMIT);
         let top = TopDocs::with_limit(limit)
-            .and_offset(request.offset)
+            .and_offset(request.offset.min(MAX_OFFSET))
             .tweak_score(rank(Timestamp::now().as_second()));
         let (top, total, counts) = searcher.search(&*query, &(top, Count, facets))?;
 

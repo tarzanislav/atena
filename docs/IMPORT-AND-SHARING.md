@@ -55,7 +55,7 @@ every installation:    atena-ingest sync --shared  (only on this explicit comman
   proposals `via shared`. After `confirm`, `atena-ingest publish` appends the entry with its rights
   record to `data/sources.yaml`; the pull request and its CI check the register as usual.
 * **Everyone**: `atena-ingest sync --shared` downloads the shared register from the repository – only
-  when a user gives this command. Imports the register now lists are taken over by it (`merged`).
+  when a user gives this command, and only over `https`. Imports the register now lists are taken over by it (`merged`).
 * **Later**: when the operator runs a server of its own in the EU, which stores no IP addresses,
   installations will send their lists there directly.
 

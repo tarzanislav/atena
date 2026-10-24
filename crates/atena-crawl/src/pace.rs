@@ -12,6 +12,9 @@ use std::time::Duration;
 use tokio::sync::{Mutex as AsyncMutex, OwnedMutexGuard};
 use tokio::time::Instant;
 
+/// Hosts and origins kept in memory before idle ones are forgotten.
+const MAX_TRACKED: usize = 10_000;
+
 #[derive(Debug)]
 struct HostState {
     next: Instant,
@@ -49,6 +52,16 @@ impl Pacer {
     pub(crate) async fn turn(&self, host: &str, delay: Duration) -> Result<Turn, Duration> {
         let cell = {
             let mut hosts = lock(&self.hosts);
+            if hosts.len() >= MAX_TRACKED {
+                // forget hosts nobody waits for and that need no pause any more
+                let now = Instant::now();
+                hosts.retain(|_, cell| {
+                    Arc::strong_count(cell) > 1
+                        || cell.try_lock().map_or(true, |s| {
+                            s.next > now || s.backoff_until.is_some_and(|u| u > now)
+                        })
+                });
+            }
             let state = HostState {
                 next: Instant::now(),
                 backoff_until: None,
@@ -103,7 +116,20 @@ impl<T: Clone> OriginCache<T> {
         F: FnOnce(Option<T>) -> Fut,
         Fut: Future<Output = (T, Duration)>,
     {
-        let cell = Arc::clone(lock(&self.cells).entry(origin.to_string()).or_default());
+        let cell = {
+            let mut cells = lock(&self.cells);
+            if cells.len() >= MAX_TRACKED {
+                // forget expired entries nobody is filling
+                let now = Instant::now();
+                cells.retain(|_, cell| {
+                    Arc::strong_count(cell) > 1
+                        || cell
+                            .try_lock()
+                            .map_or(true, |s| s.as_ref().is_some_and(|e| e.expires > now))
+                });
+            }
+            Arc::clone(cells.entry(origin.to_string()).or_default())
+        };
         let mut slot = cell.lock().await;
         match slot.as_ref() {
             Some(entry) if entry.expires > Instant::now() => entry.value.clone(),
@@ -123,6 +149,27 @@ impl<T: Clone> OriginCache<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[tokio::test(start_paused = true)]
+    async fn idle_hosts_are_forgotten() {
+        let pacer = Pacer::default();
+        for i in 0..MAX_TRACKED + 5 {
+            drop(
+                pacer
+                    .turn(&format!("h{i}.example"), Duration::ZERO)
+                    .await
+                    .unwrap(),
+            );
+        }
+        assert!(lock(&pacer.hosts).len() < MAX_TRACKED);
+        let cache = OriginCache::<u8>::default();
+        for i in 0..MAX_TRACKED + 5 {
+            cache
+                .get(&format!("o{i}"), |_| async { (1, Duration::ZERO) })
+                .await;
+        }
+        assert!(lock(&cache.cells).len() < MAX_TRACKED);
+    }
 
     #[tokio::test(start_paused = true)]
     async fn turns_are_spaced_and_back_off_is_reported() {

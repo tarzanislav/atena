@@ -64,7 +64,7 @@ každá inštalácia:    atena-ingest sync --shared  (len na tento výslovný pr
   Po `confirm` príkaz `atena-ingest publish` pridá záznam aj so záznamom o overení do
   `data/sources.yaml`. Pull request a jeho CI register skontrolujú ako obvykle.
 - **Všetci:** `atena-ingest sync --shared` stiahne spoločný register z repozitára, a to len vtedy, keď
-  to používateľ výslovne zadá. Importy, ktoré register medzičasom obsahuje, prevezme (`merged`).
+  to používateľ výslovne zadá, a len cez šifrované `https`. Importy, ktoré register medzičasom obsahuje, prevezme (`merged`).
 - **Neskôr:** keď bude mať prevádzkovateľ vlastný server v EÚ, ktorý IP adresy neukladá, inštalácie
   budú zoznamy posielať priamo tam.
 
