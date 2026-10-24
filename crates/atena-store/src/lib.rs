@@ -9,6 +9,8 @@ mod blob;
 mod documents;
 mod register;
 mod schedule;
+#[cfg(feature = "testing")]
+pub mod testing;
 
 use std::path::PathBuf;
 use std::time::Duration;
@@ -69,7 +71,12 @@ impl Store {
         let pool = PgPoolOptions::new()
             .max_connections(max_connections)
             .acquire_timeout(Duration::from_secs(30))
-            .connect_with(options.application_name("atena"))
+            // server notices ("already exists, skipping") are not worth logging
+            .connect_with(
+                options
+                    .application_name("atena")
+                    .options([("client_min_messages", "warning")]),
+            )
             .await?;
         Ok(Self::from_pool(pool, BlobStore::new(blob_root)))
     }

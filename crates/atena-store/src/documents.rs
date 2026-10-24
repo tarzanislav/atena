@@ -413,6 +413,17 @@ impl Store {
         })
     }
 
+    /// Records that the endpoint's document was confirmed unchanged by the server (`304`).
+    pub async fn mark_seen(&self, endpoint_id: i64) -> Result<()> {
+        sqlx::query(
+            "UPDATE document SET last_seen_at = now(), status = 'active' WHERE endpoint_id = $1",
+        )
+        .bind(endpoint_id)
+        .execute(&self.pool)
+        .await?;
+        Ok(())
+    }
+
     /// Marks the endpoint's document as no longer available (HTTP 404/410); its history stays.
     pub async fn mark_gone(&self, endpoint_id: i64) -> Result<()> {
         sqlx::query("UPDATE document SET status = 'gone' WHERE endpoint_id = $1")

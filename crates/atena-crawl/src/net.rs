@@ -116,6 +116,9 @@ const RESERVED_SUFFIXES: [&str; 8] = [
     "onion",
 ];
 
+/// Time allowed for one DNS lookup.
+pub const DNS_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(10);
+
 /// Longest accepted URL.
 pub const MAX_URL_LEN: usize = 4096;
 
@@ -241,8 +244,17 @@ impl Resolve for VettingResolver {
         let policy = Arc::clone(&self.policy);
         Box::pin(async move {
             let host = name.as_str().to_string();
-            let found: Vec<SocketAddr> =
-                tokio::net::lookup_host((host.as_str(), 0)).await?.collect();
+            // a DNS server that does not answer must not hold a worker for minutes
+            let lookup = tokio::net::lookup_host((host.as_str(), 0));
+            let found: Vec<SocketAddr> = tokio::time::timeout(DNS_TIMEOUT, lookup)
+                .await
+                .map_err(|_| {
+                    std::io::Error::new(
+                        std::io::ErrorKind::TimedOut,
+                        format!("DNS lookup of {host} timed out"),
+                    )
+                })??
+                .collect();
             let allowed = policy.vet(&host, found)?;
             Ok(Box::new(allowed.into_iter()) as Addrs)
         })

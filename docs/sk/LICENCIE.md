@@ -29,6 +29,7 @@ Novú závislosť pridaj až po doplnení do tohto zoznamu; celý strom knižní
 | lingua (len 9 jazykov) | Apache-2.0 | rozpoznanie jazyka |
 | sqlx 0.8 (PostgreSQL, migrácie) | MIT OR Apache-2.0 | prístup k databáze (0.9 vyžaduje Rust 1.94) |
 | jiff-sqlx | Unlicense OR MIT | dátumy v databáze |
+| tracing, tracing-subscriber | MIT | záznam o behu zberača |
 
 ## Prototyp v0.1 (Python)
 

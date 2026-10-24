@@ -31,6 +31,7 @@ The full tree is checked by `cargo deny` on every pull request (`deny.toml`).
 | lingua (9 languages only) | Apache-2.0 | language detection |
 | sqlx 0.8 (PostgreSQL, migrations) | MIT OR Apache-2.0 | database access (0.9 needs Rust 1.94) |
 | jiff-sqlx | Unlicense OR MIT | dates in the database |
+| tracing, tracing-subscriber | MIT | log of the crawler |
 
 ## Prototype v0.1 (Python)
 
