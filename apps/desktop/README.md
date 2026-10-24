@@ -67,4 +67,9 @@ and tests without a web view.
    an unknown library stops the build);
 4. builds the NSIS installer (installation for the current user, no administrator rights).
 
+A release is made on GitHub: **Releases → Draft a new release**, a new tag `vX.Y.Z` (the version of
+`tauri.conf.json`), marked as a pre-release while ATENA is tried out. The new tag starts the same
+build, and its last job attaches the installer and `SHA256SUMS.txt` to the release (and the notes
+of `release-notes.md` when the release has none). Pushing a tag works the same way.
+
 The installer is not signed yet: Windows SmartScreen asks once whether to run it.
