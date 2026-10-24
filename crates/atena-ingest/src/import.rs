@@ -116,7 +116,6 @@ pub fn decision(
             terms: parsed_terms,
         },
         false,
-        false,
     )
     .crawl;
     Ok((

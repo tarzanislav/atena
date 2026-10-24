@@ -125,7 +125,7 @@ fn rights(page: &Page, doc: &Document) -> (Rights, bool) {
 
 /// What the legality principle allows for this endpoint's source (and document).
 /// Values read back from the database that are not understood count as the strictest.
-fn permitted(ep: &Endpoint, tdm_reserved: bool, file_document: bool) -> Permission {
+fn permitted(ep: &Endpoint, tdm_reserved: bool) -> Permission {
     let licence = Licence::parse(&ep.source_licence);
     legality::permission(
         SourceFacts {
@@ -134,7 +134,6 @@ fn permitted(ep: &Endpoint, tdm_reserved: bool, file_document: bool) -> Permissi
             terms: Terms::parse(&ep.source_terms),
         },
         tdm_reserved,
-        file_document,
     )
 }
 
@@ -219,7 +218,7 @@ impl Pipeline {
         let mut backoff = None;
 
         // the legality principle comes first: a source that may not be crawled is not contacted
-        let allowed = permitted(ep, false, false);
+        let allowed = permitted(ep, false);
         if !allowed.crawl {
             check.outcome = "not_permitted".into();
             check.detail = Some(allowed.reasons.join("; "));
@@ -430,6 +429,15 @@ impl Pipeline {
                     ..Processed::failed("unsupported", what)
                 });
             }
+            // nothing is read from a program or a document with active content, and the address
+            // is not tried again
+            Ok(Err(ExtractError::Dangerous(what))) => {
+                tracing::warn!(endpoint = ep.id, url = %ep.url, %what, "dangerous file refused");
+                return Ok(Processed {
+                    disable: true,
+                    ..Processed::failed("dangerous", what)
+                });
+            }
             Ok(Err(e)) => return Ok(Processed::failed("extract_error", e.to_string())),
             Err(e) => return Ok(Processed::failed("extract_error", e.to_string())),
         };
@@ -454,11 +462,7 @@ impl Pipeline {
 
         let (rights, nofollow) = rights(page, &doc);
         // the legality principle decides what may be kept (and later shown)
-        let permission = permitted(
-            ep,
-            rights.tdm_reserved,
-            matches!(doc.format, Format::Pdf | Format::Docx | Format::Odt),
-        );
+        let permission = permitted(ep, rights.tdm_reserved);
         let keep_text = permission.store_text;
         let fingerprint = parse_hex(&atena_core::text::fingerprint(&doc.text))
             .expect("fingerprints are 64 hex digits");
@@ -507,11 +511,6 @@ impl Pipeline {
             (Some(_), _) => ("changed", 0, 0, false),
         };
 
-        if permission.keep_original {
-            self.store
-                .put_blob(page.body.to_vec(), page.content_type.as_deref())
-                .await?;
-        }
         let language = doc.language.as_ref();
         let title = doc.title.clone().unwrap_or_default();
         let classified_text = if keep_text { doc.text.as_str() } else { "" };
@@ -551,7 +550,7 @@ impl Pipeline {
             paragraphs_added: added,
             paragraphs_removed: removed,
             numbers_changed,
-            content_type: page.content_type.clone(),
+            content_type: Some(doc.format.media_type().to_string()),
             encoding: doc.encoding.map(str::to_string),
             title: doc.title.clone(),
             description: doc.description.clone().filter(|_| keep_text),

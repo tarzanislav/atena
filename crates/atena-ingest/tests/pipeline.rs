@@ -239,9 +239,13 @@ async fn register_to_versions_and_classification() {
         "{labels:?}"
     );
     assert_eq!(
-        count(store, "SELECT count(*) FROM blob").await,
+        count(
+            store,
+            "SELECT count(*) FROM document_version WHERE content_type <> 'text/html' AND format = 'html'"
+        )
+        .await,
         0,
-        "of web pages only the cleaned text is kept"
+        "the type ATENA recognised is recorded, not the server's claim"
     );
 
     // the publisher reserved text and data mining: metadata only

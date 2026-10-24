@@ -52,6 +52,9 @@ async fn site() -> Server {
                 "",
             ),
         ),
+        // a "document" that is a program
+        "/program.pdf" => reply(200, &b"MZ\x90\x00\x03\x00\x00\x00%PDF-1.7"[..])
+            .header("content-type", "application/pdf"),
         // openly licensed, no terms page
         "/oer/" => reply(
             200,
@@ -152,6 +155,15 @@ async fn a_feed_is_judged_by_its_site() {
     assert_eq!(a.title.as_deref(), Some("Oznamy školy"));
     assert_eq!(a.proposal.terms, "allowed");
     assert!(a.legal_pages[0].path().ends_with("/podmienky-pouzivania"));
+}
+
+#[tokio::test]
+async fn an_address_serving_a_program_is_forbidden() {
+    let server = site().await;
+    let a = assess(&server, "/program.pdf", "SK").await;
+    assert_eq!(a.problem, Some(Problem::Dangerous));
+    assert_eq!(a.proposal.terms, "forbidden");
+    assert!(a.proposal.reasons.contains(&Reason::DangerousContent));
 }
 
 #[tokio::test]

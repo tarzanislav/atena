@@ -4,21 +4,19 @@
 //! `postgres://postgres@localhost/postgres`. Without it [`TestDb::new`] returns `None` and the
 //! calling test is expected to return early (the test is skipped).
 
-use std::path::PathBuf;
 use std::sync::atomic::{AtomicU32, Ordering};
 
 use sqlx::postgres::{PgConnectOptions, PgPoolOptions};
 use sqlx::{Connection, Executor, PgConnection};
 
-use crate::{BlobStore, Store};
+use crate::Store;
 
 static COUNTER: AtomicU32 = AtomicU32::new(0);
 
-/// A temporary database and file store; remove them with [`TestDb::drop`].
+/// A temporary database; remove it with [`TestDb::drop`].
 pub struct TestDb {
     admin: String,
     name: String,
-    root: PathBuf,
     /// The store on the temporary database.
     pub store: Store,
 }
@@ -48,18 +46,12 @@ impl TestDb {
             .connect_with(options.database(&name))
             .await
             .expect("test database");
-        let root = std::env::temp_dir().join(format!("atena-store-{name}"));
-        let store = Store::from_pool(pool, BlobStore::new(&root));
+        let store = Store::from_pool(pool);
         store.migrate().await.expect("migrations");
-        Some(Self {
-            admin,
-            name,
-            root,
-            store,
-        })
+        Some(Self { admin, name, store })
     }
 
-    /// Drops the database and the files.
+    /// Drops the database.
     pub async fn drop(self) {
         self.store.pool().close().await;
         let mut conn = PgConnection::connect(&self.admin)
@@ -68,6 +60,5 @@ impl TestDb {
         conn.execute(format!("DROP DATABASE {} WITH (FORCE)", self.name).as_str())
             .await
             .ok();
-        let _ = std::fs::remove_dir_all(&self.root);
     }
 }

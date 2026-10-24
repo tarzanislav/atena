@@ -64,7 +64,7 @@ pub fn register_entries(sources: &[Source]) -> Vec<RegisterSource> {
                     licence: s.licence.as_str().to_string(),
                     terms: s.terms.as_str().to_string(),
                     // the legality principle decides whether the source is crawled at all
-                    enabled: permission(SourceFacts::from(s), false, false).crawl,
+                    enabled: permission(SourceFacts::from(s), false).crawl,
                 },
                 endpoints,
             }

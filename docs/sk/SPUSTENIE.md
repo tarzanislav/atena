@@ -12,7 +12,6 @@
 ## Príkazy
 ```sh
 export ATENA_DATABASE_URL=postgres://atena@localhost/atena
-export ATENA_FILES=/var/lib/atena/files          # úložisko pôvodných súborov
 
 cargo run --release -p atena-ingest -- migrate   # vytvorí alebo aktualizuje tabuľky
 cargo run --release -p atena-ingest -- sync      # načíta register zdrojov data/sources.yaml

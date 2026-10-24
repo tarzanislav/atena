@@ -301,8 +301,6 @@ pub struct Permission {
     pub crawl: bool,
     /// Keep the text (for change detection and classification); otherwise metadata only.
     pub store_text: bool,
-    /// Keep original files (PDF and office documents only).
-    pub keep_original: bool,
     /// Show the full text to users.
     pub show_full_text: bool,
     /// Offer a full translation.
@@ -316,7 +314,6 @@ impl Permission {
         Self {
             crawl: false,
             store_text: false,
-            keep_original: false,
             show_full_text: false,
             translate: false,
             reasons: vec![reason],
@@ -325,8 +322,12 @@ impl Permission {
 }
 
 /// Decides what ATENA may do. `tdm_reserved`: the publisher reserved text and data mining for this
-/// document; `file_document`: the document is a PDF or office file.
-pub fn permission(source: SourceFacts<'_>, tdm_reserved: bool, file_document: bool) -> Permission {
+/// document.
+///
+/// Original files are never kept, whatever the licence (the author's decision of 24 Oct 2026): a
+/// file may carry harmful content or personal data that cannot be removed from it reliably. The
+/// cleaned text and a fingerprint of the original are kept; the original stays with its publisher.
+pub fn permission(source: SourceFacts<'_>, tdm_reserved: bool) -> Permission {
     let here = profile(OPERATOR_COUNTRY).expect("the operator's country has a profile");
     let Some(there) = profile(source.country) else {
         return Permission::nothing("no legal profile for the source's country");
@@ -369,7 +370,6 @@ pub fn permission(source: SourceFacts<'_>, tdm_reserved: bool, file_document: bo
     Permission {
         crawl: true,
         store_text,
-        keep_original: show_full_text && file_document,
         show_full_text,
         translate: show_full_text,
         reasons,
@@ -467,43 +467,36 @@ mod tests {
             for licence in all_licences() {
                 for terms in ALL_TERMS {
                     for reserved in [false, true] {
-                        for file in [false, true] {
-                            let perm =
-                                permission(facts(p.country, &licence, terms), reserved, file);
-                            let case =
-                                format!("{} {licence:?} {terms:?} reserved={reserved}", p.country);
-                            // forbidden terms: nothing at all
-                            if terms == Terms::Forbidden {
-                                assert!(!perm.crawl && !perm.store_text, "{case}");
-                            }
-                            // a reservation is always respected, wherever it is expressed
-                            if reserved || terms == Terms::Reserved {
-                                assert!(!perm.store_text && !perm.show_full_text, "{case}");
-                            }
-                            // strict data protection: never texts
-                            if p.personal_data == PersonalData::Strict {
-                                assert!(!perm.store_text, "{case}");
-                            }
-                            // copyrighted content is never shown in full and never kept as an original
-                            if licence == Licence::Copyrighted {
-                                assert!(!perm.show_full_text && !perm.keep_original, "{case}");
-                                // and kept as text only with verified terms where both laws allow mining
-                                if perm.store_text {
-                                    assert!(
-                                        terms == Terms::Allowed && p.mining == Mining::Allowed,
-                                        "{case}"
-                                    );
-                                }
-                            }
-                            // showing requires keeping, keeping originals requires showing
-                            assert!(!perm.show_full_text || perm.store_text, "{case}");
-                            assert!(
-                                !perm.keep_original || (perm.show_full_text && file),
-                                "{case}"
-                            );
-                            // whatever is not allowed is explained
-                            assert!(perm.store_text || !perm.reasons.is_empty(), "{case}");
+                        let perm = permission(facts(p.country, &licence, terms), reserved);
+                        let case =
+                            format!("{} {licence:?} {terms:?} reserved={reserved}", p.country);
+                        // forbidden terms: nothing at all
+                        if terms == Terms::Forbidden {
+                            assert!(!perm.crawl && !perm.store_text, "{case}");
                         }
+                        // a reservation is always respected, wherever it is expressed
+                        if reserved || terms == Terms::Reserved {
+                            assert!(!perm.store_text && !perm.show_full_text, "{case}");
+                        }
+                        // strict data protection: never texts
+                        if p.personal_data == PersonalData::Strict {
+                            assert!(!perm.store_text, "{case}");
+                        }
+                        // copyrighted content is never shown in full
+                        if licence == Licence::Copyrighted {
+                            assert!(!perm.show_full_text, "{case}");
+                            // and kept as text only with verified terms where both laws allow mining
+                            if perm.store_text {
+                                assert!(
+                                    terms == Terms::Allowed && p.mining == Mining::Allowed,
+                                    "{case}"
+                                );
+                            }
+                        }
+                        // showing requires keeping
+                        assert!(!perm.show_full_text || perm.store_text, "{case}");
+                        // whatever is not allowed is explained
+                        assert!(perm.store_text || !perm.reasons.is_empty(), "{case}");
                     }
                 }
             }
@@ -516,21 +509,19 @@ mod tests {
         let official = Licence::Official;
         let open = Licence::Open("CC-BY-4.0".into());
         // a Slovak ministry page, terms not verified yet: metadata only
-        let p = permission(facts("SK", &copyrighted, Terms::Unknown), false, false);
+        let p = permission(facts("SK", &copyrighted, Terms::Unknown), false);
         assert!(p.crawl && !p.store_text);
         // the same with verified terms: kept for change detection, never shown in full
-        let p = permission(facts("SK", &copyrighted, Terms::Allowed), false, true);
-        assert!(p.store_text && !p.show_full_text && !p.keep_original);
-        // Slov-Lex: official texts, shown in full, originals kept
-        let p = permission(facts("SK", &official, Terms::Unknown), false, true);
-        assert!(p.store_text && p.show_full_text && p.keep_original);
+        let p = permission(facts("SK", &copyrighted, Terms::Allowed), false);
+        assert!(p.store_text && !p.show_full_text);
+        // Slov-Lex: official texts, shown in full
+        let p = permission(facts("SK", &official, Terms::Unknown), false);
+        assert!(p.store_text && p.show_full_text);
         // UK and US copyrighted content: metadata only even with verified terms
-        assert!(
-            !permission(facts("GB-ENG", &copyrighted, Terms::Allowed), false, false).store_text
-        );
-        assert!(!permission(facts("US", &copyrighted, Terms::Allowed), false, false).store_text);
+        assert!(!permission(facts("GB-ENG", &copyrighted, Terms::Allowed), false).store_text);
+        assert!(!permission(facts("US", &copyrighted, Terms::Allowed), false).store_text);
         // UK government content needs its open licence (OGL), "official" is not enough
-        assert!(!permission(facts("GB-ENG", &official, Terms::Allowed), false, false).store_text);
+        assert!(!permission(facts("GB-ENG", &official, Terms::Allowed), false).store_text);
         assert!(
             permission(
                 facts(
@@ -538,17 +529,16 @@ mod tests {
                     &Licence::Open("OGL-UK-3.0".into()),
                     Terms::Unknown
                 ),
-                false,
                 false
             )
             .show_full_text
         );
         // Japan has a mining exception
-        assert!(permission(facts("JP", &copyrighted, Terms::Allowed), false, false).store_text);
+        assert!(permission(facts("JP", &copyrighted, Terms::Allowed), false).store_text);
         // China and Russia: metadata only, even for official and open texts
         for country in ["CN", "RU"] {
             for licence in [&official, &open, &copyrighted] {
-                let p = permission(facts(country, licence, Terms::Allowed), false, true);
+                let p = permission(facts(country, licence, Terms::Allowed), false);
                 assert!(
                     p.crawl && !p.store_text && !p.show_full_text,
                     "{country} {licence:?}"
@@ -556,10 +546,10 @@ mod tests {
             }
         }
         // terms that reserve mining: crawled, metadata only – even for an open licence
-        let p = permission(facts("SK", &open, Terms::Reserved), false, false);
+        let p = permission(facts("SK", &open, Terms::Reserved), false);
         assert!(p.crawl && !p.store_text);
         // a country without a profile: nothing
-        assert!(!permission(facts("XX", &open, Terms::Allowed), false, false).crawl);
+        assert!(!permission(facts("XX", &open, Terms::Allowed), false).crawl);
     }
 
     #[test]

@@ -36,8 +36,8 @@ itself.
    refusing AI crawlers in robots.txt. (German courts have not settled whether a reservation written
    only in the terms of use counts – OLG Hamburg, Dec 2025, left it open for the future – so the terms
    must be read, and every such reservation is respected.)
-4. **Full text, full translations and originals** only for official texts free under both laws and
-   for openly licensed content.
+4. **Full text and full translations** only for official texts free under both laws and for openly
+   licensed content. Original files are never kept, whatever the licence ([DATABASE.md](DATABASE.md)).
 5. **Strict data protection** (China – PIPL, Russia – 152-FZ, South Korea – PIPA treated as strict):
    metadata only, even for official and open texts.
 6. **Retroactive**: every `atena-ingest sync` reduces sources to metadata, or removes them completely,

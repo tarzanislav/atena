@@ -43,10 +43,11 @@ personal data as possible:
 | Measure | Where |
 |---|---|
 | **E-mail addresses and telephone numbers are removed** from texts, titles, descriptions and link texts before anything is fingerprinted or stored (also obfuscated forms such as `name(at)school.sk`) | `atena-ingest/src/privacy.rs` |
-| **No originals of web pages** – only the cleaned text. Originals are kept only for PDF/office documents whose text may be shown in full (official texts, open licences) | `legality::permission` |
+| **No original files at all** – no web pages, PDFs or office documents; only the cleaned text and a fingerprint of the original | pipeline, migration 0007 |
+| **No programs and no active content**: programs, disguised files, PDFs with JavaScript, launch actions or embedded files and office documents with macros, ActiveX, OLE objects or remote templates are refused as a whole – nothing of them is kept | `atena-extract/src/danger.rs` |
 | **Pages about people are not followed**: photo galleries, staff lists, contacts, profiles, accounts | `urls::is_personal_page` |
 | **Authors of web pages are not stored** (usually the webmaster); authors of documents are | pipeline |
-| **Erasure on request** (Art. 17): `atena-ingest forget URL --reason …` removes documents, versions, links, check records and unshared originals and blocks the URL (or everything below a prefix) for good | `Store::forget`, `blocked_url`, `erasure_log` |
+| **Erasure on request** (Art. 17): `atena-ingest forget URL --reason …` removes documents, versions, links and check records and blocks the URL (or everything below a prefix) for good | `Store::forget`, `blocked_url`, `erasure_log` |
 | **Storage limitation**: the check log is deleted after 90 days | worker |
 | No images, no cookies, no tracking of visitors of the sites | crawler |
 | **Search** never finds a document marked `noindex` or of a source ATENA may not collect; snippets only where the text may be shown, and only such texts are stored in the index; an erased document leaves the index with the next update ([SEARCH.md](SEARCH.md)) | `atena_search::searchable`, `search_queue` |
