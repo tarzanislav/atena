@@ -23,6 +23,12 @@ The full tree is checked by `cargo deny` on every pull request (`deny.toml`).
 | jiff | Unlicense OR MIT | dates |
 | flate2 | MIT OR Apache-2.0 | gzip sitemaps |
 | bytes | MIT | response bodies |
+| scraper, ego-tree | ISC | HTML document tree (built on html5ever, MIT OR Apache-2.0) |
+| encoding_rs | (Apache-2.0 OR MIT) AND BSD-3-Clause | legacy encodings (windows-1250, ISO-8859-2, windows-1251, KOI8-R…) |
+| chardetng | Apache-2.0 OR MIT | guessing an undeclared encoding |
+| pdf-extract (with lopdf) | MIT | PDF text and metadata; lopdf's unmaintained ttf-parser is only used for writing PDFs and is excepted in `deny.toml` (PDFium may replace it later) |
+| zip | MIT | DOCX and ODT archives |
+| lingua (9 languages only) | Apache-2.0 | language detection |
 
 ## Prototype v0.1 (Python)
 

@@ -1,0 +1,29 @@
+[package]
+name = "atena-extract"
+description = "ATENA content extraction: main text, metadata and language from HTML, PDF, DOCX and ODT"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[dependencies]
+chardetng = "1.0.0"
+ego-tree = "0.11.1"
+encoding_rs = "0.8.42"
+jiff = "0.2.38"
+# only the languages ATENA works with: taxonomy languages plus Ukrainian, so it is not taken for Russian
+lingua = { version = "1.8.0", default-features = false, features = ["chinese", "czech", "english", "german", "hungarian", "polish", "russian", "slovak", "ukrainian"] }
+pdf-extract = "0.12.1"
+quick-xml = "0.42.0"
+scraper = "0.29.0"
+thiserror.workspace = true
+url = "2.5.8"
+zip = { version = "9.0.5", default-features = false, features = ["deflate"] }
+
+[lints]
+workspace = true
+
+[dev-dependencies]
+encoding_rs = "0.8.42"

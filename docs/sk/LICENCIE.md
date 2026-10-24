@@ -21,6 +21,12 @@ Novú závislosť pridaj až po doplnení do tohto zoznamu; celý strom knižní
 | jiff | Unlicense OR MIT | dátumy |
 | flate2 | MIT OR Apache-2.0 | zbalené sitemapy (gzip) |
 | bytes | MIT | obsah odpovedí |
+| scraper, ego-tree | ISC | strom dokumentu HTML (nad html5ever, MIT OR Apache-2.0) |
+| encoding_rs | (Apache-2.0 OR MIT) AND BSD-3-Clause | staré kódovania (windows-1250, ISO-8859-2, windows-1251, KOI8-R…) |
+| chardetng | Apache-2.0 OR MIT | odhad neuvedeného kódovania |
+| pdf-extract (s lopdf) | MIT | text a metadáta z PDF; neudržiavaný ttf-parser v lopdf sa používa len pri tvorbe PDF, preto má výnimku v `deny.toml` (neskôr ho môže nahradiť PDFium) |
+| zip | MIT | archívy DOCX a ODT |
+| lingua (len 9 jazykov) | Apache-2.0 | rozpoznanie jazyka |
 
 ## Prototyp v0.1 (Python)
 

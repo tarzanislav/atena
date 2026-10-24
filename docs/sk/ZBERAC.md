@@ -58,5 +58,6 @@ Z jedného zdroja najviac 50 MiB po rozbalení a len typy obsahu, ktoré vie spr
 * **Šifrovanie** cez rustls s úložiskom certifikátov operačného systému.
 
 Obmedzenia tejto verzie: stav jednotlivých serverov sa drží v pamäti bez čistenia (stačí pre tisíce
-serverov); kanály v inom kódovaní ako UTF-8 sa čítajú s náhradnými znakmi; pravidlá z HTML `<meta>` a
-údaje TDMRep v PDF/EPUB doplní modul na spracovanie obsahu, ktorý príde na rad ako ďalší.
+serverov); kanály v inom kódovaní ako UTF-8 sa čítajú s náhradnými znakmi. Pravidlá z HTML `<meta>` a
+TDMRep v HTML a PDF číta modul `atena-extract` a pri spracovaní sa spoja s pravidlami z hlavičiek HTTP;
+EPUB sa zatiaľ nečíta.
