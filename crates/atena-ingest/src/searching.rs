@@ -6,6 +6,7 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 use atena_core::Taxonomy;
+use atena_core::safety::for_terminal;
 use atena_search::{DEFAULT_BATCH, Results, SearchIndex, SearchRequest, Snippet, rebuild, update};
 use atena_store::Store;
 use tokio::sync::watch;
@@ -157,16 +158,18 @@ fn marked(snippet: &Snippet) -> String {
     } else {
         ("*", "*")
     };
+    let safe = |text: &str| for_terminal(text).into_owned();
     let mut out = String::new();
     let mut at = 0;
     for range in &snippet.highlighted {
-        out.push_str(&snippet.text[at..range.start]);
+        out.push_str(&safe(&snippet.text[at..range.start]));
         out.push_str(open);
-        out.push_str(&snippet.text[range.clone()]);
+        out.push_str(&safe(&snippet.text[range.clone()]));
         out.push_str(close);
         at = range.end;
     }
-    out.push_str(&snippet.text[at..]);
+    out.push_str(&safe(&snippet.text[at..]));
+    // the markers are added after the text is made safe, so they are the only control codes
     out.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
@@ -195,7 +198,7 @@ fn print_results(results: &Results, offset: usize, facets: bool) {
         } else {
             &hit.title
         };
-        println!("\n{}. {title}", offset + n + 1);
+        println!("\n{}. {}", offset + n + 1, for_terminal(title));
         println!("   {}", hit.url);
         let mut about = vec![
             hit.source_name.clone(),
@@ -204,7 +207,7 @@ fn print_results(results: &Results, offset: usize, facets: bool) {
         ];
         about.extend(hit.language.clone());
         about.extend(hit.published.map(|p| p.strftime("%Y-%m-%d").to_string()));
-        println!("   {}", about.join(" · "));
+        println!("   {}", for_terminal(&about.join(" · ")));
         let labels: Vec<&String> = hit
             .labels
             .iter()

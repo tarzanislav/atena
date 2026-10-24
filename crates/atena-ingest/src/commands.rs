@@ -4,6 +4,7 @@ use std::sync::Arc;
 
 use atena_assess::{Assessment, Assessor, Item, MAX_ITEMS, Target, parse_input};
 use atena_core::Taxonomy;
+use atena_core::safety::for_terminal;
 use atena_core::source::load_sources;
 use atena_crawl::{Config, Fetcher, ServiceClient};
 use atena_ingest::import::{decision, to_import};
@@ -108,7 +109,7 @@ async fn assess_and_store(
             auto.terms,
             source.url
         );
-        println!("      {}", auto.finding);
+        println!("      {}", for_terminal(&auto.finding));
         if matches!(outcome, ImportOutcome::New | ImportOutcome::Reassessed) {
             shareable.push(share_line(a));
         }
@@ -180,7 +181,7 @@ pub async fn import(store: &Store, args: &[String]) -> Result<(), String> {
         }
     }
     for r in &parsed.rejected {
-        eprintln!("line {}: {:?}: {}", r.line, r.reason, r.text);
+        eprintln!("line {}: {:?}: {}", r.line, r.reason, for_terminal(&r.text));
     }
     let lines = assess_and_store(store, &parsed.items, Via::Local, concurrency).await?;
     println!(
@@ -241,7 +242,7 @@ pub async fn list(store: &Store, args: &[String]) -> Result<(), String> {
             s.url
         );
         if let Some(p) = &s.proposal {
-            println!("              {}", p.finding);
+            println!("              {}", for_terminal(&p.finding));
         }
     }
     println!("\n{} sources", sources.len());
@@ -371,7 +372,7 @@ pub async fn proposals(store: &Store, args: &[String]) -> Result<(), String> {
         for chunk in lines.chunks(MAX_ITEMS) {
             let parsed = parse_input(&chunk.join("\n"));
             for r in &parsed.rejected {
-                eprintln!("{:?}: {}", r.reason, r.text);
+                eprintln!("{:?}: {}", r.reason, for_terminal(&r.text));
             }
             assess_and_store(store, &parsed.items, Via::Shared, 4).await?;
             accepted += parsed.items.len();

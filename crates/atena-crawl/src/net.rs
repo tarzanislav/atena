@@ -120,7 +120,7 @@ const RESERVED_SUFFIXES: [&str; 8] = [
 pub const DNS_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(10);
 
 /// Longest accepted URL.
-pub const MAX_URL_LEN: usize = 4096;
+pub const MAX_URL_LEN: usize = 2_000;
 
 /// Why a URL was refused before any connection was made.
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]

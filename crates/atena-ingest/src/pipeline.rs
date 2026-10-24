@@ -9,6 +9,7 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use atena_core::legality::{self, Permission, SourceFacts};
+use atena_core::safety::is_storable_url;
 use atena_core::{ChangeKind, Licence, Taxonomy, Terms, compare, suggest};
 use atena_crawl::{FetchError, Fetched, Fetcher, Page, Validators, parse_feed, parse_sitemap};
 use atena_extract::{Document, ExtractError, Format, LanguageSource, extract, video_url};
@@ -183,6 +184,9 @@ impl Pipeline {
         origin: Origin,
     ) -> Option<NewEndpoint> {
         let url = normalize(url);
+        if !is_storable_url(url.as_str()) {
+            return None;
+        }
         Some(NewEndpoint {
             host: host(&url)?,
             url: url.to_string(),
@@ -237,11 +241,49 @@ impl Pipeline {
                 backoff: None,
             });
         };
+        // a failure of the store must not leave the endpoint due: it would be fetched again and
+        // again, every few seconds
+        if let Err(error) = self
+            .fetch_and_process(ep, &url, &mut check, &mut backoff)
+            .await
+        {
+            tracing::error!(endpoint = ep.id, %error, "storing the result failed");
+            check.outcome = "store_error".into();
+            check.detail = Some(error.to_string());
+            check.failed = true;
+            check.validators = None;
+            check.next_in = Self::retry_in(ep);
+        }
+        if check.failed && ep.fail_count + 1 >= self.config.disable_after_failures {
+            check.disable = true;
+        }
+        // register endpoints are chosen by people: they back off, but are never switched off
+        if ep.origin == Origin::Register {
+            check.disable = false;
+        }
+        check.elapsed = started.elapsed();
+        self.store.record_check(ep.id, &check).await?;
+        tracing::info!(endpoint = ep.id, url = %ep.url, outcome = %check.outcome, detail = ?check.detail, "checked");
+        Ok(Outcome {
+            outcome: check.outcome,
+            detail: check.detail,
+            backoff,
+        })
+    }
+
+    /// Fetches the endpoint and processes what came back; the result goes into `check`.
+    async fn fetch_and_process(
+        &self,
+        ep: &Endpoint,
+        url: &Url,
+        check: &mut Check,
+        backoff: &mut Option<Duration>,
+    ) -> Result<(), StoreError> {
         let validators = Validators {
             etag: ep.etag.clone(),
             last_modified: ep.last_modified.clone(),
         };
-        match self.fetcher.fetch(&url, &validators).await {
+        match self.fetcher.fetch(url, &validators).await {
             Ok(Fetched::NotModified { .. }) => {
                 self.store.mark_seen(ep.id).await?;
                 check.outcome = "not_modified".into();
@@ -276,7 +318,7 @@ impl Pipeline {
                     FetchError::RobotsUnreachable { .. } => ("robots_unreachable", true, false),
                     FetchError::RetryLater { after, .. } => {
                         check.next_in = *after;
-                        backoff = Some(*after);
+                        *backoff = Some(*after);
                         ("retry_later", false, false)
                     }
                     FetchError::Status {
@@ -306,21 +348,7 @@ impl Pipeline {
                 }
             }
         }
-        if check.failed && ep.fail_count + 1 >= self.config.disable_after_failures {
-            check.disable = true;
-        }
-        // register endpoints are chosen by people: they back off, but are never switched off
-        if ep.origin == Origin::Register {
-            check.disable = false;
-        }
-        check.elapsed = started.elapsed();
-        self.store.record_check(ep.id, &check).await?;
-        tracing::info!(endpoint = ep.id, url = %ep.url, outcome = %check.outcome, detail = ?check.detail, "checked");
-        Ok(Outcome {
-            outcome: check.outcome,
-            detail: check.detail,
-            backoff,
-        })
+        Ok(())
     }
 
     async fn feed(&self, ep: &Endpoint, page: &Page) -> Result<Processed, StoreError> {

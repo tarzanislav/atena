@@ -155,6 +155,7 @@ dependencies = [
 name = "atena-extract"
 version = "0.2.0"
 dependencies = [
+ "atena-core",
  "chardetng",
  "ego-tree",
  "encoding_rs",
