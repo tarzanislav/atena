@@ -25,8 +25,9 @@ pub enum Review {
     New,
 }
 
-/// Open licences accepted in the register (SPDX identifiers and their IGO variants).
-pub const OPEN_LICENCES: [&str; 9] = [
+/// Open licences accepted in the register (SPDX identifiers and their IGO variants). Each allows
+/// copying, adaptation and commercial use with attribution at most.
+pub const OPEN_LICENCES: [&str; 10] = [
     "CC0-1.0",
     "CC-BY-4.0",
     "CC-BY-SA-4.0",
@@ -36,6 +37,7 @@ pub const OPEN_LICENCES: [&str; 9] = [
     "ODC-By-1.0",
     "ODbL-1.0",
     "OGL-UK-3.0",
+    "etalab-2.0",
 ];
 
 /// Under what terms a source's content may be shown.
@@ -93,15 +95,20 @@ impl Licence {
     }
 }
 
-/// What the publisher's terms of use say about automated access.
+/// What the publisher's terms of use say about automated access and text and data mining.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum Terms {
-    /// Automated access is allowed (or the content is under an open licence).
+    /// The terms were read: they neither forbid automated access nor reserve text and data mining.
+    /// Silent terms and plain copyright notices ("all rights reserved") are not a reservation in
+    /// the sense of Art. 4(3) of Directive (EU) 2019/790.
     Allowed,
-    /// Automated access is forbidden: the source is not crawled at all.
+    /// The terms forbid automated access (robots, scrapers, indexing) or allow access only for
+    /// personal use: the source is not crawled at all.
     Forbidden,
-    /// Not yet verified; robots.txt and TDMRep decide.
+    /// The terms reserve text and data mining or AI use: metadata only.
+    Reserved,
+    /// Not verified; robots.txt and TDMRep decide, and only metadata is kept.
     #[default]
     Unknown,
 }
@@ -112,6 +119,7 @@ impl Terms {
         match text {
             "allowed" => Self::Allowed,
             "forbidden" => Self::Forbidden,
+            "reserved" => Self::Reserved,
             _ => Self::Unknown,
         }
     }
@@ -121,9 +129,22 @@ impl Terms {
         match self {
             Self::Allowed => "allowed",
             Self::Forbidden => "forbidden",
+            Self::Reserved => "reserved",
             Self::Unknown => "unknown",
         }
     }
+}
+
+/// The record of a rights review: where and when the licence and terms of a source were read.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Rights {
+    /// Day of the review, `YYYY-MM-DD`.
+    pub checked: String,
+    /// The page that states the licence or terms (for official texts, the law that frees them).
+    pub page: String,
+    /// What it says, briefly and with quotes where they matter.
+    pub finding: String,
 }
 
 /// One source.
@@ -155,9 +176,12 @@ pub struct Source {
     /// Licence of the content (default: copyrighted).
     #[serde(default)]
     pub licence: Licence,
-    /// The terms of use on automated access (default: unknown).
+    /// The terms of use on automated access and mining (default: unknown).
     #[serde(default)]
     pub terms: Terms,
+    /// The rights review behind `licence` and `terms`; required unless both are the defaults.
+    #[serde(default)]
+    pub rights: Option<Rights>,
 }
 
 #[derive(Deserialize)]
@@ -234,9 +258,11 @@ mod tests {
         let slovlex = sources.iter().find(|s| s.id == "SK03").unwrap();
         assert!(slovlex.licence.allows_full_text());
         assert_eq!(nivam.licence, Licence::Copyrighted);
-        assert_eq!(nivam.terms, Terms::Unknown);
+        assert_eq!(nivam.terms, Terms::Allowed);
         let youtube = sources.iter().find(|s| s.id == "N39").unwrap();
         assert_eq!(youtube.terms, Terms::Forbidden);
+        // every source went through the rights review
+        assert!(sources.iter().all(|s| s.rights.is_some()));
     }
 
     #[test]
@@ -245,7 +271,8 @@ mod tests {
         let entry = |licence: &str| {
             format!(
                 "sources:\n- id: X1\n  name: X\n  url: https://x.example/\n  country: SK\n  languages: [sk]\n  \
-                 authority: A2\n  priority: P0\n  connector: html\n  interval_s: 3600\n  review: new\n  licence: {licence}\n"
+                 authority: A2\n  priority: P0\n  connector: html\n  interval_s: 3600\n  review: new\n  licence: {licence}\n  \
+                 rights:\n    checked: 2026-10-24\n    page: https://x.example/licence\n    finding: Open licence.\n"
             )
         };
         let open = load_sources(&entry("CC-BY-4.0"), &t).unwrap();

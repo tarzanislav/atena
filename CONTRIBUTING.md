@@ -20,5 +20,7 @@ wins; what is uncertain is not done. Every decision on fetching, keeping and sho
 a legal review recorded in the pull request. Changes must also keep these true:
 * never sign in, bypass access controls, ignore robots.txt, TDM reservations or terms of use;
 * a new source starts as `licence: copyrighted`, `terms: unknown` until its licence and terms are verified;
+  any other value needs a `rights` record – the date, the page that was read and what it says (the
+  register refuses the entry otherwise; see [docs/SOURCE-RIGHTS.md](docs/SOURCE-RIGHTS.md));
 * never store more personal data than the purpose needs – no contact details, no originals of web pages,
   no pages about people – and keep erasure (`Store::forget`) complete when adding tables.

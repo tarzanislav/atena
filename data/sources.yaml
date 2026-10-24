@@ -1,6 +1,10 @@
 # ATENA source register. Licence: CC0 1.0. Reviewed 24 Oct 2026 (see docs/sk and the review workbook).
 # licence: official (legal acts and official texts) | copyrighted (default) | an open licence (SPDX id)
-# terms:   what the terms of use say about automated access: allowed | forbidden | unknown (default)
+# terms:   what the terms of use say about automated access and text and data mining:
+#          allowed (read; neither forbidden nor reserved) | forbidden (no automated access: not crawled)
+#          | reserved (mining reserved: metadata only) | unknown (default: not verified, metadata only)
+# rights:  the review behind licence and terms – checked (date), page (what was read), finding.
+#          Required whenever licence or terms differ from the defaults. Rights review: 24 Oct 2026.
 version: 2
 sources:
 - id: SK01
@@ -15,6 +19,12 @@ sources:
   interval_s: 3600
   review: keep
   feed: https://www.minedu.sk/rss/
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.minedu.sk/
+    finding: >-
+      No terms of use, copyright or licence statement; RSS offered.
   note:
     sk: Overený RSS kanál tlačových správ (50 položiek). Sekcia kurikulárnej reformy sledovať ako HTML denne.
 - id: SK02
@@ -28,6 +38,12 @@ sources:
   connector: html
   interval_s: 43200
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.minedu.sk/
+    finding: >-
+      Same site as SK01; no terms of use.
   note:
     sk: Kľúčové pre termíny školského roka – sledovať zmenu obsahu a príloh (PDF).
 - id: SK03
@@ -42,6 +58,13 @@ sources:
   interval_s: 86400
   review: adjusted
   licence: official
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.slov-lex.sk/ezbierky/pravne-predpisy/SK/ZZ/2015/185/
+    finding: >-
+      Legal acts are not subject of copyright (§ 5 of Act 185/2015, Slovak Copyright Act);
+      Slov-Lex robots.txt allows all.
   note:
     sk: Rozšíriť na zoznam sledovaných predpisov (min. 245/2008, 596/2003, 138/2019, 61/2015, 448/2008). robots.txt Slov-Lexu povoľuje všetko;
       statické časové znenia na static.slov-lex.sk. Sitemapy majú zastarané lastmod – nespoliehať sa na ne.
@@ -56,6 +79,12 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.minedu.sk/
+    finding: >-
+      Same site as SK01; no terms of use.
   note:
     sk: Úradné ŠVP podľa druhov škôl; sledovať prílohy.
 - id: SK05
@@ -70,6 +99,12 @@ sources:
   interval_s: 3600
   review: keep
   feed: https://vzdelavanie21.sk/feed/
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://vzdelavanie21.sk/
+    finding: >-
+      No terms of use, copyright or licence statement.
   note:
     sk: Overený RSS kanál.
 - id: SK06
@@ -84,6 +119,12 @@ sources:
   interval_s: 3600
   review: keep
   feed: https://ucime.vzdelavanie21.sk/feed/
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://ucime.vzdelavanie21.sk/
+    finding: >-
+      No terms of use or licence; privacy and accessibility only.
   note:
     sk: Overený RSS kanál; jadro metodickej podpory reformy.
 - id: SK07
@@ -98,6 +139,12 @@ sources:
   interval_s: 3600
   review: adjusted
   feed: https://nivam.sk/feed/
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://nivam.sk/
+    finding: >-
+      No terms of use or licence; footer "© Národný inštitút vzdelávania a mládeže".
   note:
     sk: 'Overený RSS kanál. NIVaM od 1. 7. 2022 zlúčil ŠPÚ, NÚCEM, MPC, IUVENTU a Slovenskú pedagogickú knižnicu – pridať vstupy: Merania (Testovanie
       9, maturita, medzinárodné merania), Profesijný rozvoj, Práca s mládežou.'
@@ -113,6 +160,12 @@ sources:
   interval_s: 3600
   review: keep
   feed: https://siov.sk/feed/
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://siov.sk/
+    finding: >-
+      No terms of use; footer "© Všetky práva vyhradené | ŠIOV".
   note:
     sk: Overený RSS kanál.
 - id: SK09
@@ -126,6 +179,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.cvtisr.sk/
+    finding: >-
+      No terms of use or licence found.
   note:
     sk: Štatistické ročenky – ukladať ako dataset s rokom a metodikou.
 - id: SK10
@@ -140,6 +199,12 @@ sources:
   interval_s: 3600
   review: keep
   feed: https://www.ssi.sk/feed/
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.ssi.sk/
+    finding: >-
+      No terms of use or licence in the footer.
   note:
     sk: Overený RSS kanál; správy o stave výchovy a vzdelávania.
 - id: SK11
@@ -153,6 +218,12 @@ sources:
   connector: html
   interval_s: 604800
   review: adjusted
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://vudpap.sk/
+    finding: >-
+      No terms of use or licence found.
   note:
     sk: robots.txt zakazuje /feed/ – zber len povolených HTML stránok a rešpektovať robots.
 - id: SK12
@@ -166,6 +237,12 @@ sources:
   connector: html
   interval_s: 604800
   review: merged-endpoint
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://nivam.sk/
+    finding: >-
+      Same site as SK07.
   note:
     sk: Zlúčiť ako vstup vydavateľa SK07 (NIVaM).
 - id: SK13
@@ -179,6 +256,12 @@ sources:
   connector: katalog
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://nivam.sk/
+    finding: >-
+      Same site as SK07.
   note:
     sk: Knižničný katalóg – len metadáta a odkazy.
 - id: SK14
@@ -192,6 +275,12 @@ sources:
   connector: html
   interval_s: 7776000
   review: archive
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.statpedu.sk/sk/
+    finding: >-
+      No terms of use or licence; footer "© Národný inštitút vzdelávania a mládeže".
   note:
     sk: Neaktualizované od 1/2023; ŠPÚ je od 7/2022 súčasťou NIVaM. Historické kurikulá – označiť ako archív, nie aktuálne znenie.
 - id: SK15
@@ -206,6 +295,13 @@ sources:
   interval_s: 86400
   review: keep
   feed: https://www.inklucentrum.sk/feed/
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://inklucentrum.sk/vseobecne-obchodne-podmienky/
+    finding: >-
+      Terms cover trainings only (no recordings); nothing on website content; footer "©
+      Inklucentrum".
   note:
     sk: Overený RSS kanál.
 - id: SK16
@@ -219,6 +315,12 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://zivica.sk/
+    finding: >-
+      No terms of use; footer "© Živica. Všetky práva vyhradené."
 - id: SK17
   name: Lepšia geografia
   url: https://lepsiageografia.sk/materialy-na-vyucbu/
@@ -230,6 +332,13 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://lepsiageografia.sk/materialy-na-vyucbu/
+    finding: >-
+      No licence; materials need paid registration (https://lepsiageografia.sk/obchod/) – only the
+      public listing may be read.
 - id: SK18
   name: Človek v ohrození globálne vzdelávanie
   url: https://clovekvohrozeni.sk/co-robime/globalne-vzdelavanie/
@@ -241,6 +350,12 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://clovekvohrozeni.sk/
+    finding: >-
+      No terms of use or licence; footer "Človek v ohrození ©".
 - id: SK19
   name: Slovenský skauting
   url: https://skauting.sk/
@@ -252,6 +367,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://skauting.sk/
+    finding: >-
+      No terms of use or licence; footer "© Slovenský skauting".
 - id: SK20
   name: Rada mládeže Slovenska
   url: https://mladez.sk/
@@ -263,6 +384,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://mladez.sk/
+    finding: >-
+      No terms of use; footer "© Rada mládeže Slovenska, všetky práva vyhradené".
 - id: SK21
   name: PDCO service learning
   url: https://www.dobrovolnickecentra.sk/sk/treningy/service-learning/inovacne-vzdelavanie
@@ -274,6 +401,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.dobrovolnickecentra.sk/
+    finding: >-
+      No terms of use; footer "Copyright © PDCO. Všetky práva vyhradené."
 - id: SK22
   name: NBS 5peňazí
   url: https://5penazi.sk/
@@ -285,6 +418,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://5penazi.sk/
+    finding: >-
+      No terms of use or licence; footer "© Národná banka Slovenska".
   note:
     sk: Národná banka Slovenska – finančná gramotnosť.
 - id: SK23
@@ -299,6 +438,12 @@ sources:
   interval_s: 86400
   review: merged-endpoint
   feed: https://vzdelavanie21.sk/feed/
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://vzdelavanie21.sk/
+    finding: >-
+      Same site as SK05.
   note:
     sk: Zlúčiť ako vstup vydavateľa SK05.
 - id: SK24
@@ -312,6 +457,12 @@ sources:
   connector: html
   interval_s: 86400
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://ucime.vzdelavanie21.sk/
+    finding: >-
+      Same site as SK06.
   note:
     sk: Digitálny ŠVP – najdôležitejší kurikulárny zdroj; ukladať verzie a štandardy na úrovni položiek.
 - id: CZ01
@@ -325,6 +476,13 @@ sources:
   connector: html
   interval_s: 86400
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://msmt.gov.cz/
+    finding: >-
+      No terms of use; page metadata "Copyright © MŠMT. Všechna práva vyhrazena."; information
+      provided under Act 106/1999.
   note:
     sk: Adresa /rss neexistuje – HTML zber aktualít a dokumentov.
 - id: CZ02
@@ -339,6 +497,12 @@ sources:
   interval_s: 3600
   review: keep
   feed: https://edu.gov.cz/feed/
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://edu.gov.cz/
+    finding: >-
+      No terms of use or licence; footer "Copyright © MŠMT".
   note:
     sk: Overený RSS kanál.
 - id: CZ03
@@ -352,6 +516,12 @@ sources:
   connector: html
   interval_s: 86400
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.npi.cz/
+    finding: >-
+      No terms of use or licence; footer "NPI ČR ©".
   note:
     sk: RSS nepotvrdený.
 - id: CZ04
@@ -365,6 +535,12 @@ sources:
   connector: html
   interval_s: 31536000
   review: archive
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://revize.rvp.cz/
+    finding: >-
+      NPI ČR site; no terms of use or licence; footer "NPI ČR ©".
   note:
     sk: Modul AudioVideo je archivovaný (posledné položky 2020) – jednorazovo zozbierať metadáta 86 virtuálnych hospitácií, nesledovať.
 - id: CZ05
@@ -378,6 +554,12 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://revize.rvp.cz/
+    finding: >-
+      No terms of use or licence; footer "NPI ČR ©".
 - id: CZ06
   name: ČT edu
   url: https://edu.ceskatelevize.cz/
@@ -389,6 +571,13 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.ceskatelevize.cz/
+    finding: >-
+      No terms of use readable; page metadata names Česká televize as rights holder (1996–2026);
+      no TDM reservation found.
   note:
     sk: Verejnoprávna ČT – vzdelávací portál; videá iba odkaz/vloženie.
 - id: CZ07
@@ -402,6 +591,13 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.jsns.cz/
+    finding: >-
+      No terms of use or licence; footer "© JSNS Člověk v tísni"; films played for non-commercial
+      educational purposes.
 - id: CZ08
   name: AI dětem kurikulum
   url: https://kurikulum.aidetem.cz/
@@ -413,6 +609,12 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://kurikulum.aidetem.cz/
+    finding: >-
+      No terms or licence; materials announced as free to access on the site.
 - id: CZ09
   name: Učíme venku
   url: https://ucimesevenku.cz/
@@ -424,6 +626,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://ucimesevenku.cz/obchodni-podminky/
+    finding: >-
+      Only terms of sale; footer "© Učíme venku"; reuse requests to tym@ucimesevenku.cz.
 - id: CZ10
   name: ČŠI inšpirácie zo škôl
   url: https://www.csicr.cz/cz/Dokumenty/Publikace-a-ostatni-vystupy/Publikace-Skoly%2C-do-kterych-se-zaci-tesi%2C-Inspirac
@@ -435,6 +643,12 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.csicr.cz/
+    finding: >-
+      No terms of use or licence; footer "© Česká školní inspekce".
 - id: PL01
   name: Ministerstwo Edukacji Narodowej
   url: https://www.gov.pl/web/edukacja
@@ -446,6 +660,14 @@ sources:
   connector: html
   interval_s: 86400
   review: keep
+  licence: CC-BY-SA-4.0
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.gov.pl/web/gov/warunki-korzystania
+    finding: >-
+      gov.pl: texts under CC BY-SA 4.0, audiovisual material CC BY-NC-ND 4.0 unless stated
+      otherwise; nothing on automated access or TDM.
 - id: PL02
   name: Zintegrowana Platforma Edukacyjna
   url: https://zpe.gov.pl/
@@ -457,6 +679,14 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://zpe.gov.pl/a/regulamin/D165C4tTy
+    finding: >-
+      Regulamin: materials only for educational and informational purposes, use only as far as
+      copyright law permits; no public licence; nothing on automated access or TDM (site needs
+      JavaScript).
 - id: PL03
   name: Ośrodek Rozwoju Edukacji
   url: https://ore.edu.pl/
@@ -468,6 +698,12 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://ore.edu.pl/2026/06/regulaminy-2/
+    finding: >-
+      No licence or terms of use for website content found; nothing on automated access.
 - id: PL04
   name: Instytut Badań Edukacyjnych
   url: https://ibe.edu.pl/pl/
@@ -479,6 +715,12 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://ibe.edu.pl/pl/
+    finding: >-
+      No licence or terms of use in the footer (BIP, RODO, privacy, accessibility only).
 - id: PL05
   name: Centrum Edukacji Obywatelskiej
   url: https://ceo.org.pl/programy/
@@ -490,6 +732,13 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://ceo.org.pl/sites/default/files/regulamin_serwisu_ceo.pdf
+    finding: >-
+      Texts under CC BY-NC-SA 4.0 unless stated otherwise (photos, films, graphics excluded); no
+      ban on automated access, only on disrupting the service.
 - id: DE01
   name: Deutscher Bildungsserver
   url: https://www.bildungsserver.de/
@@ -501,6 +750,11 @@ sources:
   connector: rss
   interval_s: 86400
   review: keep
+  rights:
+    checked: 2026-10-24
+    page: https://www.bildungsserver.de/impressum.html
+    finding: >-
+      robots.txt blocked our reading tool (AI user agents disallowed); terms not reviewed.
   note:
     sk: DIPF; preveriť RSS kanály Bildungsservera.
 - id: DE02
@@ -514,6 +768,11 @@ sources:
   connector: api
   interval_s: 604800
   review: keep
+  rights:
+    checked: 2026-10-24
+    page: https://www.bildungsserver.de/impressum.html
+    finding: >-
+      Same publisher as DE01; robots.txt blocked our reading tool; terms not reviewed.
   note:
     sk: Preveriť dátové rozhranie Elixier (výmena metadát OER).
 - id: DE03
@@ -527,6 +786,14 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.kmk.org/impressum.html
+    finding: >-
+      Any use not permitted by German copyright law needs prior written consent; copying or
+      passing on pages prohibited, private non-commercial copies allowed; nothing on crawling or
+      TDM (statutory uses such as § 44b UrhG are not excluded).
 - id: DE04
   name: Fachportal Pädagogik
   url: https://www.fachportal-paedagogik.de/
@@ -538,6 +805,11 @@ sources:
   connector: katalog
   interval_s: 2592000
   review: keep
+  rights:
+    checked: 2026-10-24
+    page: https://www.fachportal-paedagogik.de/impressum.html
+    finding: >-
+      robots.txt blocked our reading tool (AI user agents disallowed); terms not reviewed.
 - id: DE05
   name: peDOCS
   url: https://www.pedocs.de/index.php?la=en
@@ -550,6 +822,13 @@ sources:
   connector: oai
   interval_s: 604800
   review: adjusted
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.pedocs.de/
+    finding: >-
+      Documents carry individual licences (licence and terms pages did not load); metadata via
+      OAI-PMH.
   note:
     sk: Repozitár – zber cez OAI-PMH namiesto HTML.
 - id: AT01
@@ -563,6 +842,14 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.bmb.gv.at/Ministerium/impressum.html
+    finding: >-
+      Copyright with the ministry; unchanged non-commercial copies allowed with source "BMB";
+      commercial use and modified or translated content need written approval; nothing on crawling
+      or TDM.
 - id: AT02
   name: RIS učebný plán základnej školy
   url: https://www.ris.bka.gv.at/NormDokument.wxe?Abfrage=Bundesnormen&Anlage=1&Artikel=&Gesetzesnummer=10009275&Paragraf=&Uebergangsrecht=
@@ -575,6 +862,14 @@ sources:
   interval_s: 86400
   review: adjusted
   licence: official
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://ris.bka.gv.at/UI/Ogd.aspx
+    finding: >-
+      Laws are free works (§ 7 Austrian UrhG); RIS data CC BY 4.0 via OGD; bulk use must go
+      through the OGD API at most 0.5 requests/s at night or weekends, after notice – one page a
+      day is a small query.
   note:
     sk: RIS má oficiálne rozhranie Open Government Data – použiť API namiesto HTML.
 - id: AT03
@@ -588,6 +883,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.schule.at/impressum
+    finding: >-
+      No terms of use or licence; footer "© Education Group GmbH".
   note:
     sk: Education Group (nie úrad) – len sprievodné informácie.
 - id: AT04
@@ -602,6 +903,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://oead.at/en/legal-notice
+    finding: >-
+      Publishing excerpts permitted with acknowledgement (not multimedia); direct access to OeAD
+      databases via external websites only with express permission; nothing on crawling or TDM.
 - id: HU01
   name: Oktatási Hivatal kerettantervek
   url: https://www.oktatas.hu/kozneveles/kerettantervek
@@ -613,6 +921,11 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  rights:
+    checked: 2026-10-24
+    page: https://www.oktatas.hu/impresszum
+    finding: >-
+      robots.txt blocked our reading tool (even robots.txt itself); terms not reviewed.
 - id: HU02
   name: Nemzeti Köznevelési Portál
   url: https://www.nkp.hu/
@@ -624,6 +937,11 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  rights:
+    checked: 2026-10-24
+    page: https://www.nkp.hu/
+    finding: >-
+      robots.txt blocked our reading tool; terms not reviewed.
 - id: HU03
   name: Oktatási Hivatal vzorové plány
   url: https://www.oktatas.hu/kozneveles/kerettantervek/2020_nat/mintatanmenetek
@@ -635,6 +953,11 @@ sources:
   connector: html
   interval_s: 2592000
   review: merged-endpoint
+  rights:
+    checked: 2026-10-24
+    page: https://www.oktatas.hu/impresszum
+    finding: >-
+      Same publisher as HU01; terms not reviewed.
   note:
     sk: Zlúčiť ako vstup vydavateľa HU01.
 - id: EU01
@@ -648,6 +971,14 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  licence: CC-BY-4.0
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://commission.europa.eu/legal-notice_en
+    finding: >-
+      Site uses the Commission legal notice: EU-owned content under CC BY 4.0 (Decision of 12 Dec
+      2011); nothing on automated access or TDM.
 - id: EU02
   name: European School Education Platform
   url: https://school-education.ec.europa.eu/en/teach/teaching-materials
@@ -659,6 +990,13 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://school-education.ec.europa.eu/en/terms_conditions_of_use
+    finding: >-
+      Commission legal notice applies to EU-owned content (CC BY 4.0), but much content is
+      user-generated with no stated licence; terms say nothing on automated access or TDM.
   note:
     sk: Zahŕňa eTwinning.
 - id: EU03
@@ -672,6 +1010,14 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  licence: CC-BY-4.0
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://epale.ec.europa.eu/en/epale-legal-notices
+    finding: >-
+      Content may be reproduced with acknowledgement except where otherwise stated; user
+      contributions are CC BY 4.0; nothing on automated access or TDM.
 - id: EU04
   name: Cedefop
   url: https://www.cedefop.europa.eu/en
@@ -683,6 +1029,13 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.cedefop.europa.eu/en/content/legal-noticedisclaimer
+    finding: >-
+      Reproduction authorised provided the source is acknowledged, save where otherwise stated;
+      nothing on automated access or TDM.
 - id: EU05
   name: European Agency for Special Needs and Inclusive Education
   url: https://www.european-agency.org/
@@ -694,6 +1047,14 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.european-agency.org/disclaimer
+    finding: >-
+      No reproduction without written permission "apart from any use permitted under the Copyright
+      Act"; publications CC BY-NC-SA / BY-NC-ND (non-commercial,
+      https://www.european-agency.org/open-access-policy); nothing on automated access or TDM.
 - id: EU06
   name: DigCompEdu
   url: https://joint-research-centre.ec.europa.eu/scientific-activities/key-competences-lifelong-learning/digcompedu_en
@@ -706,6 +1067,14 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  licence: CC-BY-4.0
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://commission.europa.eu/legal-notice_en
+    finding: >-
+      JRC site uses the Commission legal notice: EU-owned content under CC BY 4.0; nothing on
+      automated access or TDM.
   note:
     sk: Rámce DigComp/DigCompEdu – ukladať ako kompetenčný rámec s verziou.
 - id: EU07
@@ -719,6 +1088,13 @@ sources:
   connector: api
   interval_s: 604800
   review: adjusted
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.europeana.eu/en/rights/terms-of-use
+    finding: >-
+      Metadata CC0, blog and exhibition texts CC BY-SA (version not stated), objects under their
+      own rights statements; nothing on crawling the website (API keys personal/project).
   note:
     sk: Europeana má bezplatné API; práva každej položky podľa rights statement.
 - id: EU08
@@ -733,6 +1109,13 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.scientix.eu/terms-of-use
+    finding: >-
+      European Schoolnet and user content CC BY-SA 4.0, but the repository is largely third-party
+      material under its owners' terms; nothing on automated access or TDM.
 - id: EU09
   name: SALTO Youth Toolbox
   url: https://www.salto-youth.net/tools/toolbox/
@@ -745,6 +1128,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.salto-youth.net/about/legal-notice/
+    finding: >-
+      All rights reserved unless stated; non-commercial educational circulation welcome with URL;
+      commercial spreading forbidden without permission; nothing on automated access or TDM.
 - id: EU10
   name: Youthpass
   url: https://www.youthpass.eu/en/
@@ -756,6 +1146,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.youthpass.eu/en/extra/legal-notice/
+    finding: >-
+      All rights reserved unless noted; non-commercial educational distribution welcome with URL;
+      commercial distribution needs written approval; nothing on automated access or TDM.
 - id: EU11
   name: Ministère de l Éducation nationale
   url: https://www.education.gouv.fr/
@@ -767,6 +1164,14 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  licence: etalab-2.0
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.education.gouv.fr/mentions-legales-du-site-educationgouvfr-4526
+    finding: >-
+      Footer: unless stated otherwise all content is under Licence Ouverte etalab-2.0; nothing on
+      automated access or TDM.
 - id: EU12
   name: éduscol
   url: https://eduscol.education.gouv.fr/
@@ -778,6 +1183,14 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  licence: etalab-2.0
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://eduscol.education.gouv.fr/mentions-legales
+    finding: >-
+      Information and downloadable documents under etalab-2.0, third-party content excluded; links
+      allowed; nothing on automated access or TDM.
 - id: EU13
   name: Finnish National Agency for Education
   url: https://www.oph.fi/en
@@ -791,6 +1204,12 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.oph.fi/en
+    finding: >-
+      No terms of use or licence page; footer only "© Finnish National Agency for Education".
 - id: EU14
   name: Skolverket
   url: https://www.skolverket.se/
@@ -803,6 +1222,13 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.skolverket.se/om-skolverket/oppna-data
+    finding: >-
+      Public data free to use and reuse (Swedish Open Data Act, open APIs for curricula); no
+      licence or terms for website texts found.
 - id: UK01
   name: Department for Education
   url: https://www.gov.uk/government/organisations/department-for-education
@@ -814,6 +1240,14 @@ sources:
   connector: gov-uk
   interval_s: 86400
   review: adjusted
+  licence: OGL-UK-3.0
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.gov.uk/help/terms-conditions
+    finding: >-
+      All content under OGL v3.0 except where otherwise stated; no restriction on automated access
+      (only attacks on the service); feeds are offered for reuse.
   note:
     sk: GOV.UK poskytuje Content API a Atom kanály – použiť ich; obsah prevažne pod Open Government Licence.
 - id: UK02
@@ -827,6 +1261,13 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://educationendowmentfoundation.org.uk/terms-and-conditions
+    finding: >-
+      Commercial use or publication strictly prohibited; copies for non-commercial research and
+      education with acknowledgement, unmodified; nothing on automated access.
   note:
     sk: Kľúčová syntéza dôkazov.
 - id: UK03
@@ -840,6 +1281,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: merged-endpoint
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://educationendowmentfoundation.org.uk/terms-and-conditions
+    finding: >-
+      Same publisher as UK02.
   note:
     sk: Zlúčiť ako vstup vydavateľa UK02.
 - id: UK04
@@ -853,6 +1300,14 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.thenational.academy/legal/terms-and-conditions
+    finding: >-
+      Content published after 1 Sep 2022 under OGL v3.0 except where stated; older content only a
+      revocable non-commercial licence; no ban on automated access, only on unauthorised access or
+      disruption.
   note:
     sk: Oak je verejný orgán; preveriť licenciu (Open Government Licence) – umožnila by preklad a ďalšie použitie.
 - id: UK05
@@ -866,6 +1321,14 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://www.britishcouncil.org/terms
+    finding: >-
+      Content only for personal non-commercial use; no republishing, no copying into other
+      websites or products, and "you may not publish or otherwise use direct links to British
+      Council Content".
 - id: UK06
   name: NRICH University of Cambridge
   url: https://nrich.maths.org/
@@ -877,6 +1340,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: reserved
+  rights:
+    checked: 2026-10-24
+    page: https://nrich.maths.org/terms
+    finding: >-
+      "This content is not licensed for text and data mining"; no AI training; no storing by
+      extraction into any database; private study and teaching copies only.
 - id: GL01
   name: UNESCO AI vo vzdelávaní
   url: https://www.unesco.org/en/digital-education/artificial-intelligence
@@ -889,6 +1359,14 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://www.unesco.org/en/terms-use
+    finding: >-
+      Terms forbid accessing, scraping, crawling, harvesting or bulk-downloading Materials by any
+      automated system (only general search engines and real-time AI retrieval excepted); TDM and
+      AI training reserved; non-commercial reuse only.
 - id: GL02
   name: UNESCO kompetencie učiteľov v AI
   url: https://www.unesco.org/en/articles/ai-competency-framework-teachers
@@ -901,6 +1379,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: merged-endpoint
+  terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://www.unesco.org/en/terms-use
+    finding: >-
+      Same as GL01 (UNESCO terms of use).
   note:
     sk: Zlúčiť ako vstup vydavateľa GL01 (UNESCO).
 - id: GL03
@@ -915,6 +1399,13 @@ sources:
   connector: api
   interval_s: 2592000
   review: adjusted
+  terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://www.unesco.org/en/terms-use
+    finding: >-
+      UIS Data Browser links to the UNESCO terms of use, which forbid automated scraping, crawling
+      and bulk download; a separate data API would need its own terms.
   note:
     sk: UIS poskytuje dátové API – zber cez API.
 - id: GL04
@@ -929,6 +1420,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://www.unesco.org/en/terms-use
+    finding: >-
+      Same as GL01 (UNESCO terms of use).
 - id: GL05
   name: OECD PISA
   url: https://www.oecd.org/en/about/programmes/pisa.html
@@ -941,6 +1438,14 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://t4.oecd.org/termsandconditions
+    finding: >-
+      OECD material is copyrighted; written outputs may be used, copied and downloaded for
+      non-commercial purposes; PISA content under CC BY-NC-SA 3.0 IGO; nothing on automated access
+      except API rules.
 - id: GL06
   name: OECD TALIS 2024 databáza
   url: https://www.oecd.org/en/data/datasets/talis-2024-database.html
@@ -952,6 +1457,13 @@ sources:
   connector: html
   interval_s: 31536000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://t4.oecd.org/termsandconditions
+    finding: >-
+      OECD Data may be extracted, downloaded, copied, adapted and shared for any purpose with the
+      OECD citation; written outputs non-commercial; nothing on automated access except API rules.
 - id: GL07
   name: OECD Data Explorer
   url: https://data-explorer.oecd.org/
@@ -964,6 +1476,12 @@ sources:
   connector: api
   interval_s: 2592000
   review: adjusted
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://t4.oecd.org/termsandconditions
+    finding: >-
+      Same terms as GL06: data for any purpose with credit; the OECD may limit API access per IP.
   note:
     sk: SDMX API.
 - id: GL08
@@ -977,6 +1495,13 @@ sources:
   connector: api
   interval_s: 2592000
   review: adjusted
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://ec.europa.eu/eurostat/about-us/policies/copyright
+    finding: >-
+      Free reuse with attribution, commercial included, but exceptions (non-EU data, third-party
+      material) are not commercial; nothing on automated access.
   note:
     sk: Eurostat API (JSON/SDMX).
 - id: GL09
@@ -990,6 +1515,12 @@ sources:
   connector: html
   interval_s: 31536000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://timssandpirls.bc.edu/
+    finding: >-
+      No terms page; footer "© TIMSS & PIRLS International Study Center. All rights reserved."
 - id: GL10
   name: Campbell Collaboration
   url: https://www.campbellcollaboration.org/
@@ -1001,6 +1532,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.campbellcollaboration.org/
+    finding: >-
+      No terms of use or copyright statement found on the website (reviews are published
+      separately in an open-access journal).
 - id: GL11
   name: WHO Health promoting schools
   url: https://www.who.int/health-topics/health-promoting-schools
@@ -1012,6 +1550,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.who.int/about/policies/terms-of-use
+    finding: >-
+      Reproduction for research or private study only, not for commercial purposes; substantial
+      reproduction needs prior written authorization; nothing on automated access or TDM.
 - id: GL12
   name: World Organization of the Scout Movement
   url: https://www.scout.org/
@@ -1024,6 +1569,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.scout.org/
+    finding: >-
+      No terms of use or copyright page in the footer (privacy and cookies only); image credits
+      only.
 - id: GL13
   name: UNESCO IBE slovník kurikula
   url: https://unesdoc.unesco.org/ark%3A/48223/pf0000223059
@@ -1035,6 +1587,12 @@ sources:
   connector: html
   interval_s: 31536000
   review: keep
+  terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://www.unesco.org/en/terms-use
+    finding: >-
+      Same as GL01 (UNESCO terms of use cover UNESDOC).
   note:
     sk: Terminológia – importovať do modulu Pojmy so zdrojom a rokom.
 - id: GL14
@@ -1050,6 +1608,13 @@ sources:
   connector: html
   interval_s: 31536000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.cedefop.europa.eu/en/content/legal-noticedisclaimer
+    finding: >-
+      Same publisher as EU04: reproduction authorised with acknowledgement; nothing on automated
+      access or TDM.
   note:
     sk: Terminológia – importovať do modulu Pojmy.
 - id: US01
@@ -1063,6 +1628,14 @@ sources:
   connector: html
   interval_s: 604800
   review: adjusted
+  licence: official
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.ed.gov/about/ed-overview/required-notices/website-policies/copyright-status-notice
+    finding: >-
+      Unless stated otherwise all information on www.ed.gov is public domain and may be reproduced
+      without permission (banner photos excepted); no restriction on automated access.
   note:
     sk: Federálne ministerstvo sa od 2025 výrazne zmenšuje – sledovať, ale nespoliehať sa na kontinuitu.
 - id: US02
@@ -1076,6 +1649,13 @@ sources:
   connector: api
   interval_s: 604800
   review: adjusted
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://eric.ed.gov/?copyright
+    finding: >-
+      ERIC copyright page did not render; IES notes authors and publishers gave ERIC permission to
+      display full texts, so they stay with their owners.
   note:
     sk: ERIC API; po zrušení zmlúv IES (2/2025) sledovať kontinuitu služby.
 - id: US03
@@ -1089,6 +1669,15 @@ sources:
   connector: html
   interval_s: 2592000
   review: adjusted
+  licence: official
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://ies.ed.gov/ncee/WWC/PermissionsAndDisclaimers
+    finding: >-
+      Unless stated otherwise WWC content is in the public domain and may be reproduced,
+      published, linked to or otherwise used without permission; original studies belong to their
+      authors.
   note:
     sk: Riziko kontinuity (zrušené zmluvy IES 2025). Doplniť Evidence for ESSA (N22) ako nezávislý zdroj hodnotení.
 - id: US04
@@ -1102,6 +1691,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: merged-endpoint
+  licence: official
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://ies.ed.gov/ncee/WWC/PermissionsAndDisclaimers
+    finding: >-
+      Same as US03 (WWC practice guides are public domain unless stated otherwise).
   note:
     sk: Zlúčiť ako vstup vydavateľa US03.
 - id: US05
@@ -1115,6 +1711,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: adjusted
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://pz.harvard.edu/resources/see-think-wonder
+    finding: >-
+      Thinking routines under CC BY-NC-ND 4.0 (non-commercial); "© President and Fellows of
+      Harvard College and Project Zero".
   note:
     sk: Preveriť licenciu pomôcok (časť pod licenciou s obmedzením NC) pred prekladom.
 - id: US06
@@ -1128,6 +1731,14 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://colorincolorado.org/node/49
+    finding: >-
+      WETA terms for its websites (Reading Rockets listed among them): one copy for personal
+      non-commercial home use; use on any other web site or networked computer environment
+      prohibited without written consent.
 - id: US07
   name: Reading Rockets Reciprocal Teaching
   url: https://www.readingrockets.org/classroom/classroom-strategies/reciprocal-teaching
@@ -1139,6 +1750,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: merged-endpoint
+  terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://colorincolorado.org/node/49
+    finding: >-
+      Same as US06 (WETA terms).
   note:
     sk: Zlúčiť ako vstup vydavateľa US06.
 - id: US08
@@ -1152,6 +1769,13 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://www.glef.org/terms-of-use
+    finding: >-
+      Users may not "programmatically or manually copy, scrape, or appropriate data, including
+      text and images, from content pages"; no high-volume crawlers.
   note:
     sk: Videá iba odkaz/vloženie.
 - id: US09
@@ -1165,6 +1789,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://www.pbslearningmedia.org/help/terms-of-use/
+    finding: >-
+      "You may not create, recreate, distribute, or advertise an index of any of the Content or
+      Site"; no harvesting of personal data; all rights reserved.
   note:
     sk: Časť obsahu viazaná na prihlásenie a USA.
 - id: US10
@@ -1178,6 +1809,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://iris.peabody.vanderbilt.edu/terms-of-use
+    finding: >-
+      No "robot, spider, or other automatic device, process, or means to access the website for
+      any purpose"; content CC BY-NC-ND 4.0, no commercial use.
 - id: US11
   name: CAST UDL Guidelines
   url: https://udlguidelines.cast.org/
@@ -1191,6 +1829,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://www.cast.org/site/terms-of-use
+    finding: >-
+      CAST sites: no "robot, spider or other automatic device, process or means to access Our
+      Sites" other than to make them appear in web searches; copying needs prior written consent.
 - id: US12
   name: National Association for Gifted Children
   url: https://www.nagc.org/
@@ -1202,6 +1847,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.nagc.org/legal
+    finding: >-
+      Legal page has no terms on reuse or automated access; footer "Copyright © National
+      Association for Gifted Children".
 - id: US13
   name: CASEL
   url: https://casel.org/fundamentals-of-sel/
@@ -1213,6 +1865,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://casel.org/terms-of-use/
+    finding: >-
+      Access to Service Contents "only for your own personal, non-commercial use"; copying and
+      redistribution need permission; nothing explicit on automated access.
 - id: US14
   name: Common Sense digitálne občianstvo
   url: https://www.commonsense.org/education/digital-citizenship
@@ -1224,6 +1883,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://www.commonsense.org/education/terms-of-use
+    finding: >-
+      No "robot, spider, site search/retrieval application ... to retrieve, index" the site; no
+      scraping or data mining; no AI training.
 - id: US15
   name: Digital Inquiry Group Civic Online Reasoning
   url: https://cor.inquirygroup.org/
@@ -1235,6 +1901,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://cor.inquirygroup.org/creative-commons/
+    finding: >-
+      Lessons and assessments under CC BY 4.0 or CC BY-NC-ND 4.0 per item; non-curricular material
+      copyrighted by its authors; nothing on automated access.
 - id: US16
   name: News Literacy Project
   url: https://newslit.org/
@@ -1246,6 +1919,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://newslit.org/terms-of-use/
+    finding: >-
+      Terms of use page says "Coming soon!" – no terms published.
 - id: US17
   name: AI4K12
   url: https://ai4k12.org/
@@ -1257,6 +1936,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://ai4k12.org/licensing-terms/
+    finding: >-
+      Licensed under CC BY-NC-SA 4.0 (non-commercial); nothing on automated access.
 - id: US18
   name: TeachAI AI literacy
   url: https://www.teachai.org/ailiteracy
@@ -1268,6 +1953,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.teachai.org/
+    finding: >-
+      No terms of use or licence; footer "© TeachAI".
 - id: US19
   name: ISTE a ASCD AI
   url: https://iste-ascd.org/ai
@@ -1279,6 +1970,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://iste-ascd.org/terms-of-service
+    finding: >-
+      No robots, spiders or scripts to data mine or scrape content; no caching or archiving;
+      access only through provided interfaces; no AI training.
   note:
     sk: Časť obsahu platená – len odkazy.
 - id: TO01
@@ -1292,6 +1990,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://phet.colorado.edu/en/licensing/html
+    finding: >-
+      Older HTML simulations under CC BY 4.0, newer ones under the licensing page; website "©
+      University of Colorado. All Rights Reserved."; nothing on automated access.
   note:
     sk: Simulácie pod CC BY 4.0 – vhodné aj na preklad a vloženie.
 - id: TO02
@@ -1305,6 +2010,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: adjusted
+  terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://www.geogebra.org/license
+    finding: >-
+      Materials and web services only under a personal non-commercial licence; any commercial use
+      needs a special licence; nothing on automated access.
   note:
     sk: Aplikácia GeoGebra má nekomerčnú licenciu; materiály spravidla CC BY-NC-SA – len odkaz, nie prevzatie.
 - id: TO03
@@ -1318,6 +2030,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://mitscratch.freshdesk.com/en/support/solutions/articles/4000230291-scratch-foundation-terms
+    finding: >-
+      Licence to use the site "solely for your personal use"; may not reproduce or publicly
+      display the site; materials only as expressly authorised.
   note:
     sk: CC BY-SA.
 - id: TO04
@@ -1332,6 +2051,14 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  licence: CC-BY-4.0
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://h5p.org/licensing
+    finding: >-
+      "All the content available on h5p.org is licensed under Creative Commons Attribution 4.0
+      International" unless specified; software MIT; nothing on automated access.
 - id: TO05
   name: LearningApps
   url: https://learningapps.org/
@@ -1343,6 +2070,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://learningapps.org/rechtliches.php
+    finding: >-
+      Published apps may be freely used, copied and adapted for education without attribution; use
+      outside education may be limited; nothing on automated access.
 - id: TO06
   name: iCivics
   url: https://vision.icivics.org/
@@ -1354,6 +2088,14 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://vision.icivics.org/terms-of-use
+    finding: >-
+      No "robot, spider, or other automatic device ... to access the Website for any purpose", no
+      web scraping, no LLM training; access only for non-commercial personal, teaching or research
+      use.
   note:
     sk: Americký kontext.
 - id: TO07
@@ -1368,6 +2110,14 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://oercommons.org/terms
+    finding: >-
+      No "robot, spider, site search/retrieval application, or other automated device ... to
+      access, retrieve, scrape, or index any portion of the site" (quoted via tostracker.app; the
+      terms page did not load for us).
 - id: RU01
   name: Ministerstvo osvety Ruskej federácie
   url: https://edu.gov.ru/
@@ -1379,6 +2129,11 @@ sources:
   connector: html
   interval_s: 604800
   review: adjusted
+  rights:
+    checked: 2026-10-24
+    page: https://edu.gov.ru/
+    finding: >-
+      robots.txt blocked our reading tool; terms not reviewed.
   note:
     sk: Z EÚ môže byť prístup obmedzený; ponechať ako zahraničný kontext.
 - id: RU02
@@ -1392,6 +2147,11 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  rights:
+    checked: 2026-10-24
+    page: https://docs.edu.gov.ru/
+    finding: >-
+      robots.txt blocked our reading tool; terms not reviewed.
 - id: RU03
   name: Jednotný obsah všeobecného vzdelávania
   url: https://edsoo.ru/
@@ -1403,6 +2163,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://edsoo.ru/
+    finding: >-
+      "Все права защищены"; use of materials allowed only with an active link to the original
+      source; no terms of use page.
 - id: RU04
   name: Register federálnych programov
   url: https://fgosreestr.edsoo.ru/
@@ -1414,6 +2181,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://edsoo.ru/
+    finding: >-
+      Same publisher as RU03.
 - id: RU05
   name: Ruská elektronická škola
   url: https://resh.edu.ru/
@@ -1425,6 +2198,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://resh.edu.ru/
+    finding: >-
+      No terms of use or licence found.
 - id: CN01
   name: Ministerstvo školstva Číny
   url: https://en.moe.gov.cn/
@@ -1437,6 +2216,13 @@ sources:
   connector: html
   interval_s: 604800
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: http://en.moe.gov.cn/statement/
+    finding: >-
+      Content property of MOE; authorised reuse must cite the source; no commercial reprinting or
+      modification; nothing on automated access.
 - id: CN02
   name: Čínske kurikulárne štandardy
   url: https://www.moe.gov.cn/srcsite/A26/s8001/202204/t20220420_619921.html
@@ -1448,6 +2234,12 @@ sources:
   connector: html
   interval_s: 31536000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: http://www.moe.gov.cn/jyb_sy/s3634/201005/t20100504_87292.html
+    finding: >-
+      No commercial reprinting in original form, no distortion; nothing on automated access.
 - id: CN03
   name: Smart Education of China
   url: https://www.smartedu.cn/
@@ -1459,6 +2251,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.smartedu.cn/
+    finding: >-
+      JavaScript application; no terms readable without running scripts.
 - id: CN04
   name: Národná platforma pre školské vzdelávanie
   url: https://www.zxx.edu.cn/
@@ -1470,6 +2268,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://basic.smartedu.cn/
+    finding: >-
+      Redirects to the Smart Education platform (JavaScript application); no terms readable.
 - id: MD01
   name: OpenAlex
   url: https://help.openalex.org/api/
@@ -1482,6 +2286,14 @@ sources:
   connector: api
   interval_s: 86400
   review: adjusted
+  licence: CC0-1.0
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://help.openalex.org/hc/en-us/articles/24397762024087-Pricing
+    finding: >-
+      "The data is licensed as CC0 so it is free to use and distribute"; free API limit 100,000
+      calls a day, at most 10 per second.
   note:
     sk: Dáta CC0; API od 2025/26 s bezplatným účtom a denným limitom ($1/deň) – pre veľký objem použiť bezplatne stiahnuteľný snapshot.
 - id: MD02
@@ -1496,6 +2308,15 @@ sources:
   connector: api
   interval_s: 86400
   review: adjusted
+  licence: CC-BY-4.0
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.crossref.org/documentation/retrieve-metadata/rest-api/
+    finding: >-
+      Website content under CC BY 4.0; REST API metadata "almost none ... subject to copyright,
+      and you may use it for any purpose" (some abstracts are copyrighted); polite pool with
+      mailto.
   note:
     sk: Pridať kontrolu stiahnutých článkov cez otvorené dáta Retraction Watch (Crossref).
 - id: AL01
@@ -1510,6 +2331,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://montessori-ami.org/impressum
+    finding: >-
+      Impressum has no copyright or reuse terms; footer "Association Montessori Internationale |
+      ©".
 - id: AL02
   name: American Montessori Society trieda
   url: https://amshq.org/about-us/inside-the-montessori-classroom/
@@ -1521,6 +2349,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://amshq.org/about-montessori/ams-terms-and-conditions/
+    finding: >-
+      Apart from your own content you may not "copy, store, modify, translate, publish" any
+      Website Content for any purpose; all rights reserved.
 - id: AL03
   name: Waldorf International zoznam škôl
   url: https://www.waldorf-international.org/en/waldorf-world-list-2026/
@@ -1533,6 +2368,13 @@ sources:
   connector: html
   interval_s: 31536000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.waldorf-international.org/en/imprint/
+    finding: >-
+      "All rights reserved"; reproduction or modification of the website in total or in parts
+      forbidden without written permission.
 - id: AL04
   name: Waldorfská pedagogika na Slovensku
   url: https://www.waldorf.sk/?page_id=2
@@ -1544,6 +2386,11 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  rights:
+    checked: 2026-10-24
+    page: https://www.waldorf.sk/?page_id=2
+    finding: >-
+      robots.txt blocked our reading tool; terms not reviewed.
 - id: AL05
   name: FIMEM Freinet
   url: https://www.fimem-freinet.org/en/node/11
@@ -1557,6 +2404,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.fimem-freinet.org/en/node/11
+    finding: >-
+      No terms of use or copyright statement.
 - id: AL06
   name: ICEM Freinet voľný text
   url: https://www.icem-pedagogie-freinet.org/accueil-texte-libre
@@ -1568,6 +2421,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.icem-pedagogie-freinet.org/mentions-legales
+    finding: >-
+      Mentions légales name no copyright, licence or reuse terms.
 - id: AL07
   name: Dalton International
   url: https://daltoninternational.org/dalton-education/
@@ -1579,6 +2438,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://daltoninternational.org/dalton-education/
+    finding: >-
+      Footer "Copyrights Dalton International – All rights reserved"; no terms page.
 - id: AL08
   name: Jenaplan základné princípy
   url: https://jenaplan.nl/userfiles/files/2018/basisprincipes.pdf
@@ -1590,6 +2455,12 @@ sources:
   connector: html
   interval_s: 31536000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://jenaplan.nl/
+    finding: >-
+      No terms of use; footer "© Nederlandse Jenaplan Vereniging".
 - id: AL09
   name: Reggio Children
   url: https://www.reggiochildren.it/en/reggio-emilia-approach/
@@ -1602,6 +2473,11 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  rights:
+    checked: 2026-10-24
+    page: https://www.reggiochildren.it/en/legal-notes/
+    finding: >-
+      robots.txt blocked our reading tool; terms not reviewed.
 - id: AL10
   name: HighScope
   url: https://highscope.org/our-approach/
@@ -1613,6 +2489,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://highscope.org/terms-and-conditions/
+    finding: >-
+      Personal non-commercial use only; "the use of the Material on any other website or in a
+      networked computer environment" is prohibited for any purpose.
 - id: AL11
   name: EUDEC demokratické vzdelávanie
   url: https://eudec.org/democratic-education/what-is-democratic-education/
@@ -1625,6 +2508,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://eudec.org/about-us/legal-notice/
+    finding: >-
+      Legal notice has no copyright, reuse or automated-access terms.
 - id: AL12
   name: Summerhill School
   url: https://www.summerhillschool.co.uk/
@@ -1636,6 +2525,12 @@ sources:
   connector: html
   interval_s: 31536000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.summerhillschool.co.uk/statutory-documents/
+    finding: >-
+      No website terms of use or copyright notice.
   note:
     sk: Jedna konkrétna škola – opis praxe, nie všeobecný dôkaz.
 - id: AL13
@@ -1649,6 +2544,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://issa.nl/terms-and-conditions
+    finding: >-
+      Material is ISSA copyright unless stated; permission to copy must be obtained; nothing on
+      automated access or TDM.
 - id: AL14
   name: Začít spolu centrá aktivít
   url: https://www.zacitspolu.eu/centra-aktivit-v-zacit-spolu/
@@ -1660,6 +2562,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.zacitspolu.eu/
+    finding: >-
+      Only terms of sale for courses; footer "© Step by Step Česká republika".
 - id: AL15
   name: PBLWorks zdroje projektového učenia
   url: https://www.pblworks.org/resources-overview
@@ -1671,6 +2579,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.pblworks.org/terms
+    finding: >-
+      Platform may not be copied, framed or mirrored; materials only for subscribers' educational
+      use; nothing explicit on automated access.
 - id: AL16
   name: Forest School Association
   url: https://forestschoolassociation.org/full-principles-and-criteria-for-good-practice/
@@ -1682,6 +2597,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://forestschoolassociation.org/full-principles-and-criteria-for-good-practice/
+    finding: >-
+      No terms of use or copyright statement found.
 - id: AL17
   name: The Philosophy Foundation
   url: https://www.philosophy-foundation.org/become-a-member
@@ -1693,6 +2614,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: adjusted
+  terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://www.philosophy-foundation.org/terms-of-use
+    finding: >-
+      Any redistribution or reproduction prohibited; may not store content in any other website or
+      electronic retrieval system without written permission; lesson plans for members only.
   note:
     sk: Vstupná URL smeruje na stránku členstva – zmeniť na stránku zdrojov organizácie.
 - id: AL18
@@ -1706,6 +2634,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://flippedlearning.org/definition-of-flipped-learning/
+    finding: >-
+      Definition available under CC BY-NC-ND 4.0 (non-commercial); no terms page.
 - id: AL19
   name: Association for Experiential Education
   url: https://www.aee.org/what-is-experiential-education
@@ -1717,6 +2651,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.aee.org/legal
+    finding: >-
+      Content is the property of the Company; nothing on reuse permissions or automated access.
 - id: AL20
   name: Alliance for Self Directed Education
   url: https://www.self-directed.org/
@@ -1728,6 +2668,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.self-directed.org/
+    finding: >-
+      No terms of use; footer "Copyright © Alliance for Self-Directed Education".
 - id: AL21
   name: Campbell prehľad výskumu Montessori
   url: https://www.campbellcollaboration.org/review/montessori-impact-on-academic-and-nonacademic-outcomes/
@@ -1739,6 +2685,12 @@ sources:
   connector: html
   interval_s: 31536000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.campbellcollaboration.org/review/montessori-impact-on-academic-and-nonacademic-outcomes/
+    finding: >-
+      Same site as GL10; no terms found.
   note:
     sk: Systematický prehľad – dôkazová úroveň E4 pre Montessori.
 - id: AL22
@@ -1752,6 +2704,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  licence: CC0-1.0
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://kritickemysleni.cz/
+    finding: >-
+      Footer: "Kritickemysleni.cz je poskytováno pod licencí CC0 1.0 Universal".
 - id: AL23
   name: Učitel21
   url: https://www.ucitel21.cz/
@@ -1763,6 +2722,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: keep
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.ucitel21.cz/
+    finding: >-
+      No terms of use; footer "© Pedagogická fakulta Univerzity Palackého v Olomouci".
 - id: AL24
   name: Cult of Pedagogy stratégie
   url: https://www.cultofpedagogy.com/tag/teaching-strategies/
@@ -1775,6 +2740,13 @@ sources:
   interval_s: 86400
   review: keep
   feed: https://www.cultofpedagogy.com/feed/
+  terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://www.cultofpedagogy.com/terms-of-use/
+    finding: >-
+      "You specifically agree not to access (or attempt to access) any of our Resources through
+      any automated" means; copying strictly prohibited.
   note:
     sk: Overený RSS kanál.
 - id: AL25
@@ -1789,6 +2761,12 @@ sources:
   interval_s: 86400
   review: keep
   feed: https://teacherhead.com/feed/
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://teacherhead.com/about/
+    finding: >-
+      WordPress.com blog without terms of use or licence.
   note:
     sk: Overený RSS kanál.
 - id: N01
@@ -1802,6 +2780,12 @@ sources:
   connector: html
   interval_s: 604800
   review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://nivam.sk/
+    finding: >-
+      Same site as SK07.
   note:
     sk: Bývalý NÚCEM; výsledky meraní a uvoľnené úlohy.
 - id: N02
@@ -1815,6 +2799,12 @@ sources:
   connector: html
   interval_s: 604800
   review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://nivam.sk/
+    finding: >-
+      Same site as SK07.
   note:
     sk: Kontinuálne vzdelávanie, atestácie, profesijné štandardy.
 - id: N03
@@ -1828,6 +2818,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://indicia.sk/
+    finding: >-
+      No terms of use or licence; footer "Copyright © Indicia".
   note:
     sk: Hejného metóda, Comenia Script, bádateľské vyučovanie ExpEdícia.
 - id: N04
@@ -1841,6 +2837,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://todarozum.sk/
+    finding: >-
+      No terms of use or licence found.
   note:
     sk: Rozsiahla analýza slovenského vzdelávacieho systému.
 - id: N05
@@ -1855,6 +2857,12 @@ sources:
   interval_s: 86400
   review: new
   feed: https://eduin.cz/feed/
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://eduin.cz/
+    finding: >-
+      No terms of use or licence; footer "Copyright © EDUin, o. p. s.".
   note:
     sk: Nezávislá analýza českej vzdelávacej politiky; kanál existuje, aktuálne bez položiek – kombinovať s HTML.
 - id: N06
@@ -1869,6 +2877,13 @@ sources:
   interval_s: 86400
   review: new
   licence: official
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://e-sbirka.gov.cz/
+    finding: >-
+      Legal acts are official works excluded from copyright (§ 3 a) of Czech Act 121/2000 Sb.); no
+      terms of use found on the site.
   note:
     sk: Otvorené dáta sú obmedzené – preveriť rozhranie.
 - id: N07
@@ -1882,6 +2897,11 @@ sources:
   connector: html
   interval_s: 2592000
   review: new
+  rights:
+    checked: 2026-10-24
+    page: https://cke.gov.pl/
+    finding: >-
+      robots.txt blocked our reading tool; terms not reviewed. ATENA obeys robots.txt at run time.
   note:
     sk: Poľské skúšky a ich výsledky.
 - id: N08
@@ -1895,6 +2915,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.iqb.hu-berlin.de/impressum/
+    finding: >-
+      Impressum has no copyright, reuse or automated-access terms.
   note:
     sk: Nemecké vzdelávacie štandardy a IQB-Bildungstrend.
 - id: N09
@@ -1908,6 +2934,14 @@ sources:
   connector: rss
   interval_s: 86400
   review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.bpb.de/die-bpb/faq/184955/nutzungsrechte/
+    finding: >-
+      Texts usually under a Creative Commons licence shown at the end of each text, most often CC
+      BY-NC-ND (non-commercial); older texts under other terms; nothing on automated access or
+      TDM.
   note:
     sk: Občianska a mediálna výchova, metodiky.
 - id: N10
@@ -1921,6 +2955,14 @@ sources:
   connector: api
   interval_s: 604800
   review: new
+  licence: CC-BY-SA-4.0
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://unterrichten.zum.de/wiki/ZUM-Unterrichten:Impressum
+    finding: >-
+      Wiki content under CC BY-SA 4.0 (licence badge in every footer); nothing restricting
+      automated access.
   note:
     sk: Obsah pod otvorenou licenciou (CC BY-SA); MediaWiki API.
 - id: N11
@@ -1934,6 +2976,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: new
+  terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://www.klicksafe.de/impressum
+    finding: >-
+      Any duplication by third parties, electronic or otherwise, prohibited without written
+      consent of Medienanstalt Rheinland-Pfalz; mirroring prohibited; nothing on TDM.
   note:
     sk: Mediálna a digitálna gramotnosť.
 - id: N12
@@ -1947,6 +2996,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.iqs.gv.at/impressum
+    finding: >-
+      All rights reserved; unchanged non-commercial copies allowed with source "IQS"; commercial
+      use and modified content need written approval; nothing on crawling or TDM.
   note:
     sk: PISA, PIRLS a štandardy v Rakúsku.
 - id: N13
@@ -1960,6 +3016,11 @@ sources:
   connector: html
   interval_s: 2592000
   review: new
+  rights:
+    checked: 2026-10-24
+    page: https://eduthek.at/impressum
+    finding: >-
+      robots.txt blocked our reading tool; terms not reviewed.
   note:
     sk: Oficiálne digitálne vzdelávacie zdroje Rakúska.
 - id: N14
@@ -1974,6 +3035,13 @@ sources:
   interval_s: 604800
   review: new
   licence: official
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://njt.jog.gov.hu/kezikonyv
+    finding: >-
+      Legal acts are not protected by copyright (Hungarian Act LXXVI of 1999, § 1(4)); terms page
+      not reachable, our tool blocked by robots.txt on njt.hu.
   note:
     sk: Maďarské právne predpisy (aj pre školy s VJM na Slovensku ako kontext).
 - id: N15
@@ -1988,6 +3056,13 @@ sources:
   interval_s: 86400
   review: new
   licence: official
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://eur-lex.europa.eu/content/help/content/legal-notice/legal-notice.html
+    finding: >-
+      Legal documents reusable for commercial or non-commercial purposes (Decision 2011/833/EU);
+      editorial content CC BY 4.0, metadata CC0; nothing on automated access.
   note:
     sk: Právo EÚ (AI Act, GDPR, autorské právo); webová služba a SPARQL.
 - id: N16
@@ -2003,6 +3078,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.ecml.at/Portals/1/ECML_Copyright_Guidelines_22122025_1.pdf
+    finding: >-
+      Copyright of ECML publications belongs to the Council of Europe; absence of a notice does
+      not mean free use; linking needs no permission; nothing on automated access or TDM.
   note:
     sk: Praktické zdroje pre výučbu jazykov, viacjazyčný glosár.
 - id: N17
@@ -2017,6 +3099,14 @@ sources:
   connector: html
   interval_s: 31536000
   review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.coe.int/en/web/portal/disclaimer
+    finding: >-
+      Reproduction permitted with source indicated and no charge, for private, informational or
+      educational use; commercial use needs written authorisation; nothing on automated access or
+      TDM.
   note:
     sk: Úrovne B1/B2 a deskriptory – priama väzba na osnovy cudzích jazykov.
 - id: N18
@@ -2030,6 +3120,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://better-internet-for-kids.europa.eu/en/terms-of-service
+    finding: >-
+      EU-owned content CC BY 4.0 unless indicated, resources of national centres and contributors
+      are not; nothing on automated access or TDM.
   note:
     sk: Bezpečnosť online a mediálna gramotnosť.
 - id: N19
@@ -2043,6 +3140,14 @@ sources:
   connector: html
   interval_s: 2592000
   review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.slo.nl/disclaimer/
+    finding: >-
+      "Alle rechten voorbehouden", but copying and other reproduction allowed without prior
+      permission if the source is credited, unless explicitly marked otherwise; nothing on
+      automated access or TDM.
   note:
     sk: Kerndoelen, nástroje a príručky ku kurikulu.
 - id: N20
@@ -2056,6 +3161,11 @@ sources:
   connector: html
   interval_s: 2592000
   review: new
+  rights:
+    checked: 2026-10-24
+    page: https://ncca.ie/en/copyright/
+    finding: >-
+      robots.txt blocked our reading tool; terms not reviewed.
   note:
     sk: Prehľadne spracované kurikulum v angličtine.
 - id: N21
@@ -2069,6 +3179,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: new
+  rights:
+    checked: 2026-10-24
+    page: https://auth.hundred.org/en/terms
+    finding: >-
+      Footer "© HundrED.org All rights reserved"; the terms page is blocked to our reading tool by
+      robots.txt.
   note:
     sk: Kurátorované vzdelávacie inovácie; označovať ako opis praxe (E1).
 - id: N22
@@ -2082,6 +3198,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: new
+  terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://www.evidenceforessa.org/privacy-policy/
+    finding: >-
+      Access only for "noncommercial personal use and for no other purpose"; may not incorporate
+      the website or its content into any information retrieval system.
   note:
     sk: Hodnotenie programov podľa dôkazov; pravidlá aktualizované 8/2026.
 - id: N23
@@ -2095,6 +3218,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.learningscientists.org/downloadable-materials
+    finding: >-
+      Materials under CC BY-NC-ND 4.0, not for commercial use; nothing on automated access.
   note:
     sk: Kognitívne stratégie učenia (vybavovanie, rozložené opakovanie).
 - id: N24
@@ -2108,6 +3237,14 @@ sources:
   connector: html
   interval_s: 2592000
   review: new
+  terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://www.commonlit.org/terms
+    finding: >-
+      No spiders, robots, scrapers, crawlers or data mining tools to scrape or download data
+      (public search engines excepted, per robots.txt); no inclusion of content in a database; no
+      generative AI use.
   note:
     sk: Texty a úlohy pre čitateľskú gramotnosť.
 - id: N25
@@ -2121,6 +3258,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://dayofai.org/terms-of-use
+    finding: >-
+      Materials under CC BY-NC-SA 4.0 (no selling or profiting); nothing on automated access.
   note:
     sk: Bezplatné scenáre AI gramotnosti podľa veku.
 - id: N26
@@ -2135,6 +3278,14 @@ sources:
   connector: html
   interval_s: 2592000
   review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.ontario.ca/copyright
+    finding: >-
+      Non-commercial reproduction allowed with credit and Crown copyright acknowledgement,
+      unchanged; commercial use needs a King's Printer licence (legal materials and OGL-Ontario
+      pages excepted); nothing on automated access.
   note:
     sk: Kanada – kurikulum provincie Ontário.
 - id: N27
@@ -2148,6 +3299,13 @@ sources:
   connector: html
   interval_s: 2592000
   review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www2.gov.bc.ca/gov/content?id=1AAACC9C65754E4D89A118B875E0FBDA
+    finding: >-
+      "May not be reproduced or redistributed without the prior written permission of the Province
+      of British Columbia"; nothing on automated access.
   note:
     sk: Kompetenčne orientované kurikulum.
 - id: N28
@@ -2161,6 +3319,14 @@ sources:
   connector: html
   interval_s: 2592000
   review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.moe.gov.sg/terms-of-use
+    finding: >-
+      All rights reserved; apart from fair dealing for private study, research, criticism or
+      review, no commercial reproduction or reuse without approval; modification prohibited;
+      nothing on automated access.
   note:
     sk: Krajina s najvyššími výsledkami PISA.
 - id: N29
@@ -2174,6 +3340,14 @@ sources:
   connector: html
   interval_s: 2592000
   review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.aitsl.edu.au/terms-and-conditions
+    finding: >-
+      Content may be accessed, viewed and reproduced only for non-commercial educational or
+      research use; no public or commercial distribution; framing or linking needs prior written
+      consent.
   note:
     sk: Profesijné štandardy učiteľov a vedúcich.
 - id: N30
@@ -2187,6 +3361,11 @@ sources:
   connector: api
   interval_s: 2592000
   review: new
+  rights:
+    checked: 2026-10-24
+    page: https://e-koolikott.ee/
+    finding: >-
+      robots.txt blocked our reading tool; terms not reviewed.
   note:
     sk: Štátny repozitár digitálnych materiálov.
 - id: N31
@@ -2200,6 +3379,12 @@ sources:
   connector: html
   interval_s: 2592000
   review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://fipi.ru/
+    finding: >-
+      Footer "© ФИПИ. Все права защищены."; no terms of use page.
   note:
     sk: Otvorená banka úloh čitateľskej a prírodovednej gramotnosti (7.–9. roč.).
 - id: N32
@@ -2213,6 +3398,13 @@ sources:
   connector: api
   interval_s: 604800
   review: new
+  rights:
+    checked: 2026-10-24
+    page: https://doaj.org/terms/
+    finding: >-
+      Journal and article metadata CC0 (via API, OAI-PMH and dumps); website footer CC BY-SA 4.0
+      but terms say the site defaults to all rights reserved and reproducing site content needs
+      permission; nothing on automated access.
   note:
     sk: Otvorené časopisy; bezplatné API, metadáta CC0.
 - id: N33
@@ -2226,6 +3418,13 @@ sources:
   connector: api
   interval_s: 604800
   review: new
+  terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://core.ac.uk/terms
+    finding: >-
+      "Unauthorised extraction, scraping, or acquisition of CORE data" through channels not meant
+      for distribution is prohibited; the API and most datasets need a CORE licence.
   note:
     sk: Bezplatný prístup s limitom; rýchlejší prístup platený – použiť len bezplatný režim.
 - id: N34
@@ -2239,6 +3438,13 @@ sources:
   connector: oai
   interval_s: 604800
   review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://about.zenodo.org/terms/
+    finding: >-
+      Metadata CC0 unless specified; deposited files keep their own licences; access open to all
+      for non-military purposes; nothing restricting automated access.
   note:
     sk: OAI-PMH; mnoho materiálov pod CC licenciou.
 - id: N35
@@ -2252,6 +3458,14 @@ sources:
   connector: api
   interval_s: 604800
   review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://osf.io/terms-of-use/
+    finding: >-
+      OSF hosts EdArXiv: public content available for commercial and non-commercial use under the
+      licence chosen per preprint; public API offered; only unreasonable traffic loads and
+      harvesting personal data are prohibited.
   note:
     sk: Nerecenzované – povinne označiť.
 - id: N36
@@ -2265,6 +3479,13 @@ sources:
   connector: api
   interval_s: 604800
   review: new
+  licence: CC-BY-4.0
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.crossref.org/documentation/retrieve-metadata/rest-api/
+    finding: >-
+      Same publisher as MD02: website CC BY 4.0, metadata usable for any purpose.
   note:
     sk: Kontrola stiahnutých štúdií.
 - id: N37
@@ -2278,6 +3499,13 @@ sources:
   connector: api
   interval_s: 2592000
   review: new
+  licence: CC0-1.0
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://www.wikidata.org/wiki/Wikidata:Licensing
+    finding: >-
+      Structured data in the main, property and lexeme namespaces under CC0; other text CC BY-SA.
   note:
     sk: CC0 – identifikátory organizácií, krajín a pojmov pre prepojenie entít.
 - id: N38
@@ -2291,6 +3519,14 @@ sources:
   connector: api
   interval_s: 2592000
   review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-24
+    page: https://commoncrawl.org/terms-of-use
+    finding: >-
+      Narrow non-exclusive licence; users must obey the law and respect third parties' rights;
+      crawled content may carry its owners' terms; no harvesting of personal data. ATENA uses only
+      URLs from the index.
   note:
     sk: Bezplatný index webu na objavovanie kandidátov – nie zdroj obsahu.
 - id: N39
@@ -2305,5 +3541,13 @@ sources:
   interval_s: 86400
   review: new
   terms: forbidden
+  rights:
+    checked: 2026-10-24
+    page: https://www.youtube.com/static?template=terms
+    finding: >-
+      Terms forbid access by automated means (robots, scrapers) except public search engines per
+      robots.txt or with prior written permission. Video links are taken from institutions' own
+      pages instead.
   note:
-    sk: Kanál /feeds/videos.xml je zakázaný v robots.txt – použiť oficiálne YouTube Data API (bezplatná kvóta); videá len odkaz/vloženie.
+    sk: Na YouTube ATENA nechodí, lebo jeho podmienky zakazujú automatizovaný prístup. Odkazy na videá inštitúcií berie
+      z ich vlastných stránok (odkazy aj vložené prehrávače) – rozhodnutie autora 24. 10. 2026.

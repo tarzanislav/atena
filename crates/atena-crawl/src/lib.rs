@@ -28,7 +28,9 @@ pub use fetch::{
     Config, DEFAULT_TYPES, FetchError, Fetched, Fetcher, PRODUCT_TOKEN, Page, Validators,
 };
 pub use net::{Blocked, DNS_TIMEOUT, IpRange, MAX_URL_LEN, NetPolicy, VettingResolver, is_public};
-pub use robots::{AgentRules, MAX_ROBOTS_BYTES, RobotsPolicy, RobotsTxt};
+pub use robots::{
+    AgentRules, MAX_ROBOTS_BYTES, MINING_AGENTS, MiningRules, RobotsPolicy, RobotsTxt,
+};
 pub use sitemap::{
     ChangeFreq, MAX_SITEMAP_BYTES, MAX_SITEMAP_URLS, Sitemap, SitemapError, SitemapRef, SitemapUrl,
     parse_sitemap,

@@ -13,9 +13,17 @@ právnikovi a urobiť posúdenie vplyvu na ochranu údajov (DPIA, čl. 35 GDPR).
 * Dodržiava **robots.txt** (RFC 9309). Keď sa nedá stiahnuť, nestiahne sa nič.
 * Dodržiava **výhradu vyťažovania textov a dát** (TDMRep, čl. 4 smernice (EÚ) 2019/790). Pri výhrade
   sa uložia len metadáta: názov, adresa, dátumy a odtlačky.
-* Každý zdroj má v registri **podmienky používania** (`terms`): `allowed` (povolené), `forbidden`
-  (zakázané) alebo `unknown` (neoverené). Zdroj, ktorého podmienky automatický prístup zakazujú, sa
-  vôbec nezbiera. Z tohto dôvodu je napríklad vypnutý YouTube.
+* Web, ktorý v **robots.txt zakazuje roboty zbierajúce pre umelú inteligenciu** (GPTBot, CCBot,
+  ClaudeBot, Google-Extended a ďalšie), si tým vyhradzuje aj vyťažovanie. ATENA jeho stránky smie
+  stiahnuť, ale uloží z nich len metadáta.
+* Každý zdroj má v registri **podmienky používania** (`terms`):
+  - `allowed`: podmienky sme prečítali a automatický prístup nezakazujú ani si nevyhradzujú vyťažovanie;
+  - `forbidden`: automatický prístup zakazujú, takže sa zdroj vôbec nezbiera (napríklad YouTube
+    alebo UNESCO);
+  - `reserved`: vyťažovanie si vyhradzujú, takže sa ukladajú len metadáta;
+  - `unknown`: podmienky nie sú overené, takže sa ukladajú len metadáta.
+
+  Každá hodnota okrem `unknown` má v registri zapísané overenie ([PRAVA-ZDROJOV.md](PRAVA-ZDROJOV.md)).
 
 ## 2. Čo sa smie zobraziť
 Každý zdroj má v registri **licenciu** (`licence`):
@@ -23,7 +31,7 @@ Každý zdroj má v registri **licenciu** (`licence`):
 | Licencia | Príklady | Čo uvidí používateľ |
 |---|---|---|
 | `official` | zákony, vyhlášky a úradné dokumenty v zbierkach predpisov (Slov-Lex, e-Sbírka, RIS, Nemzeti Jogszabálytár, EUR-Lex). Nie sú chránené autorským právom (napr. § 5 autorského zákona) | celý text |
-| otvorená licencia (`CC0-1.0`, `CC-BY-4.0`, `CC-BY-SA-4.0` a ďalšie) | otvorené vzdelávacie zdroje, otvorené dáta | celý text s uvedením autora podľa licencie |
+| otvorená licencia (`CC0-1.0`, `CC-BY-4.0`, `CC-BY-SA-4.0`, OGL, `etalab-2.0` a ďalšie) | otvorené vzdelávacie zdroje, otvorené dáta | celý text s uvedením autora podľa licencie |
 | `copyrighted` (**predvolené**) | všetko, čo nie je overené | názov, údaje o dokumente, zaradenie podľa ATENY a odkaz na originál, **bez celého textu** |
 
 O tom, či si ATENA smie ponechať text chráneného obsahu (na zistenie zmien a zaradenie), rozhoduje
@@ -56,7 +64,8 @@ poskytovaní overených informácií o vzdelávaní. Test proporcionality treba 
 Prevádzkovateľ zverejní informácie o spracúvaní (čl. 14) s kontaktom na námietky a žiadosti o výmaz.
 
 ## 4. Kontrolný zoznam pred verejným spustením
-1. Overiť licenciu a podmienky každého zdroja v `data/sources.yaml` a zapísať dátum a stránku s podmienkami.
+1. Udržiavať overenie práv zdrojov v `data/sources.yaml` aktuálne. Pri všetkých zdrojoch sa urobilo
+   24. 10. 2026; opakovať ho aspoň raz za rok a pred spustením v novej krajine.
 2. Urobiť DPIA, dať riešenie posúdiť právnikovi a viesť záznamy o spracovateľských činnostiach (čl. 30).
 3. Zverejniť informácie o spracúvaní a kontakt na žiadosti o výmaz; žiadosti vybavovať príkazom `forget`.
 4. Rozhranie zobrazí celý text len pri úradných textoch a otvorených licenciách a dodrží `noindex`,

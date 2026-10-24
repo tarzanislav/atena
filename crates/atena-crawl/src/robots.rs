@@ -3,6 +3,10 @@
 //! The crawler obeys the group that names its product token; when there is none it obeys the
 //! `*` group, and when that is missing too, nothing is restricted. Within the chosen rules the
 //! longest matching pattern decides and `allow` wins a tie.
+//!
+//! A site that shuts out the crawlers which collect for AI training and text and data mining
+//! ([`MINING_AGENTS`]) expresses, in a machine-readable way, that it reserves mining. ATENA is not
+//! one of them, but it respects that wish too: such pages are kept as metadata only.
 
 use std::time::Duration;
 
@@ -10,6 +14,25 @@ use crate::pattern::{Pattern, normalize_path};
 
 /// Parsing limit; RFC 9309 asks crawlers to parse at least 500 KiB.
 pub const MAX_ROBOTS_BYTES: usize = 500 * 1024;
+
+/// Product tokens of crawlers that collect content for AI training or text and data mining. A
+/// group naming one of them that disallows a page counts as a reservation of mining for it.
+pub const MINING_AGENTS: [&str; 14] = [
+    "gptbot",
+    "ccbot",
+    "claudebot",
+    "anthropic-ai",
+    "google-extended",
+    "applebot-extended",
+    "meta-externalagent",
+    "bytespider",
+    "cohere-ai",
+    "cohere-training-data-crawler",
+    "ai2bot",
+    "diffbot",
+    "omgilibot",
+    "imagesiftbot",
+];
 
 #[derive(Debug, Clone)]
 struct Rule {
@@ -163,6 +186,33 @@ impl RobotsTxt {
                 .collect(),
             crawl_delay: chosen.iter().filter_map(|g| g.crawl_delay).max(),
         }
+    }
+
+    /// The rules of every group that names one of the [`MINING_AGENTS`] – one entry per agent.
+    /// The `*` group does not count: it says nothing specific about mining.
+    pub fn mining_rules(&self) -> MiningRules {
+        MiningRules(
+            MINING_AGENTS
+                .iter()
+                .filter(|agent| {
+                    self.groups
+                        .iter()
+                        .any(|g| g.agents.iter().any(|a| a == *agent))
+                })
+                .map(|agent| self.rules_for(agent))
+                .collect(),
+        )
+    }
+}
+
+/// What robots.txt says to the crawlers that collect for AI training and text and data mining.
+#[derive(Debug, Clone, Default)]
+pub struct MiningRules(Vec<AgentRules>);
+
+impl MiningRules {
+    /// `true` when any of those crawlers is refused the path: the site reserves mining for it.
+    pub fn reserves(&self, path_and_query: &str) -> bool {
+        self.0.iter().any(|rules| !rules.is_allowed(path_and_query))
     }
 }
 
@@ -318,5 +368,30 @@ mod tests {
         assert!(rules(&text).is_allowed("/late"));
         assert!(parse_delay("-1").is_none() && parse_delay("NaN").is_none());
         assert_eq!(parse_delay("0.5"), Some(Duration::from_millis(500)));
+    }
+
+    #[test]
+    fn refusing_ai_crawlers_reserves_mining() {
+        let robots = RobotsTxt::parse(
+            "User-agent: *\nDisallow: /admin\n\n\
+             User-agent: GPTBot\nUser-agent: CCBot\nDisallow: /\n\n\
+             User-agent: Google-Extended\nDisallow: /articles/\nAllow: /articles/open/\n",
+        );
+        let mining = robots.mining_rules();
+        // ATENA itself may fetch the page (only the `*` group applies to it) …
+        assert!(robots.rules_for("ATENA").is_allowed("/articles/a"));
+        // … but the site refuses the AI crawlers, so mining is reserved
+        assert!(mining.reserves("/articles/a"));
+        assert!(mining.reserves("/anything"));
+        // the `*` group alone reserves nothing: it is not about mining
+        let general = RobotsTxt::parse("User-agent: *\nDisallow: /admin\n").mining_rules();
+        assert!(!general.reserves("/admin") && !general.reserves("/a"));
+        // a group allowing everything reserves nothing; a narrower refusal only its paths
+        let partial = RobotsTxt::parse(
+            "User-agent: GPTBot\nAllow: /\n\nUser-agent: ClaudeBot\nDisallow: /private/\n",
+        )
+        .mining_rules();
+        assert!(!partial.reserves("/public"));
+        assert!(partial.reserves("/private/x"));
     }
 }

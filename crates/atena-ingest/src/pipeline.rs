@@ -112,7 +112,7 @@ fn rights(page: &Page, doc: &Document) -> (Rights, bool) {
         index.add_list(list);
     }
     let rights = Rights {
-        tdm_reserved: tdm.reserved == Some(true),
+        tdm_reserved: tdm.is_reserved(),
         tdm_policy: tdm.policy,
         noindex: index.noindex,
         noarchive: index.noarchive,

@@ -322,6 +322,8 @@ pub fn permission(source: SourceFacts<'_>, tdm_reserved: bool, file_document: bo
         return Permission::nothing("the terms of use forbid automated access");
     }
     let mut reasons = Vec::new();
+    // a reservation in the terms of use counts like a machine-readable one
+    let reserved = tdm_reserved || source.terms == Terms::Reserved;
     // content that may be copied and shown by anyone: openly licensed, or official texts free of
     // copyright under both laws
     let reusable = match source.licence {
@@ -334,14 +336,14 @@ pub fn permission(source: SourceFacts<'_>, tdm_reserved: bool, file_document: bo
     let minable = here.mining == Mining::Allowed
         && there.mining == Mining::Allowed
         && source.terms == Terms::Allowed;
-    if !reusable && !minable {
+    if !reusable && !minable && !(reserved && there.mining == Mining::Allowed) {
         reasons.push(match there.mining {
             Mining::Allowed => "copyrighted content: the terms of use are not verified",
             Mining::ResearchOnly => "copyrighted content: the source country allows mining only for non-commercial research",
             Mining::NotAllowed => "copyrighted content: the source country has no text and data mining exception",
         });
     }
-    if tdm_reserved {
+    if reserved {
         reasons.push("the publisher reserved text and data mining");
     }
     let strict_privacy = there.personal_data == PersonalData::Strict;
@@ -349,7 +351,7 @@ pub fn permission(source: SourceFacts<'_>, tdm_reserved: bool, file_document: bo
         reasons
             .push("the source country's data protection law does not allow keeping texts abroad");
     }
-    let store_text = (reusable || minable) && !tdm_reserved && !strict_privacy;
+    let store_text = (reusable || minable) && !reserved && !strict_privacy;
     let show_full_text = store_text && reusable;
     Permission {
         crawl: true,
@@ -361,8 +363,26 @@ pub fn permission(source: SourceFacts<'_>, tdm_reserved: bool, file_document: bo
     }
 }
 
-/// Checks a register entry against the principle: its country must have a profile, and only
-/// countries whose law frees official texts may have sources marked `official`.
+/// `YYYY-MM-DD` with a plausible month and day.
+fn is_date(text: &str) -> bool {
+    let parts: Vec<&str> = text.split('-').collect();
+    let number = |s: &str, len: usize| {
+        (s.len() == len && s.bytes().all(|b| b.is_ascii_digit()))
+            .then(|| s.parse::<u32>().ok())
+            .flatten()
+    };
+    match parts.as_slice() {
+        [y, m, d] => matches!(
+            (number(y, 4), number(m, 2), number(d, 2)),
+            (Some(2000..), Some(1..=12), Some(1..=31))
+        ),
+        _ => false,
+    }
+}
+
+/// Checks a register entry against the principle: its country must have a profile, only countries
+/// whose law frees official texts may have sources marked `official`, and any licence or terms
+/// other than the defaults must be backed by a recorded rights review.
 pub fn check_source(source: &Source) -> Result<(), String> {
     let Some(p) = profile(&source.country) else {
         return Err(format!(
@@ -376,7 +396,27 @@ pub fn check_source(source: &Source) -> Result<(), String> {
             source.id, source.country
         ));
     }
-    Ok(())
+    let defaults = source.licence == Licence::Copyrighted && source.terms == Terms::Unknown;
+    match &source.rights {
+        None if defaults => Ok(()),
+        None => Err(format!(
+            "source {}: licence {} and terms {} need a rights review (rights: checked, page, finding)",
+            source.id,
+            source.licence.as_str(),
+            source.terms.as_str()
+        )),
+        Some(r) => {
+            let web = |u: &str| u.starts_with("https://") || u.starts_with("http://");
+            if !is_date(&r.checked) || !web(&r.page) || r.finding.trim().is_empty() {
+                return Err(format!(
+                    "source {}: the rights review needs a date (YYYY-MM-DD), the http(s) page \
+                     that was read and a finding",
+                    source.id
+                ));
+            }
+            Ok(())
+        }
+    }
 }
 
 #[cfg(test)]
@@ -393,7 +433,12 @@ mod tests {
         }
     }
 
-    const ALL_TERMS: [Terms; 3] = [Terms::Allowed, Terms::Forbidden, Terms::Unknown];
+    const ALL_TERMS: [Terms; 4] = [
+        Terms::Allowed,
+        Terms::Forbidden,
+        Terms::Reserved,
+        Terms::Unknown,
+    ];
 
     fn all_licences() -> [Licence; 3] {
         [
@@ -418,8 +463,8 @@ mod tests {
                             if terms == Terms::Forbidden {
                                 assert!(!perm.crawl && !perm.store_text, "{case}");
                             }
-                            // a reservation is always respected
-                            if reserved {
+                            // a reservation is always respected, wherever it is expressed
+                            if reserved || terms == Terms::Reserved {
                                 assert!(!perm.store_text && !perm.show_full_text, "{case}");
                             }
                             // strict data protection: never texts
@@ -497,8 +542,51 @@ mod tests {
                 );
             }
         }
+        // terms that reserve mining: crawled, metadata only – even for an open licence
+        let p = permission(facts("SK", &open, Terms::Reserved), false, false);
+        assert!(p.crawl && !p.store_text);
         // a country without a profile: nothing
         assert!(!permission(facts("XX", &open, Terms::Allowed), false, false).crawl);
+    }
+
+    #[test]
+    fn non_default_rights_need_a_recorded_review() {
+        let t = Taxonomy::bundled().unwrap();
+        let entry = |extra: &str| {
+            format!(
+                "sources:\n- id: X1\n  name: X\n  url: https://x.example/\n  country: SK\n  \
+                 languages: [sk]\n  authority: A2\n  priority: P0\n  connector: html\n  \
+                 interval_s: 3600\n  review: new\n{extra}"
+            )
+        };
+        // defaults need nothing
+        assert!(load_sources(&entry(""), &t).is_ok());
+        // a licence or terms without a review are refused
+        assert!(load_sources(&entry("  terms: allowed\n"), &t).is_err());
+        assert!(load_sources(&entry("  licence: CC-BY-4.0\n"), &t).is_err());
+        let review = |date: &str, page: &str| {
+            format!(
+                "  terms: allowed\n  rights:\n    checked: {date}\n    page: {page}\n    \
+                 finding: No terms restrict automated access.\n"
+            )
+        };
+        let ok =
+            load_sources(&entry(&review("2026-10-24", "https://x.example/terms")), &t).unwrap();
+        assert_eq!(ok[0].rights.as_ref().unwrap().checked, "2026-10-24");
+        assert!(
+            load_sources(&entry(&review("24.10.2026", "https://x.example/terms")), &t).is_err()
+        );
+        assert!(
+            load_sources(&entry(&review("2026-13-01", "https://x.example/terms")), &t).is_err()
+        );
+        assert!(load_sources(&entry(&review("2026-10-24", "x.example/terms")), &t).is_err());
+        // "reserved" is a valid value
+        let reserved =
+            entry(&review("2026-10-24", "https://x.example/terms").replace("allowed", "reserved"));
+        assert_eq!(
+            load_sources(&reserved, &t).unwrap()[0].terms,
+            Terms::Reserved
+        );
     }
 
     #[test]

@@ -205,8 +205,14 @@ async fn fetch_one(url: &str) -> Result<(), String> {
         None => println!("Language:     –"),
     }
     println!(
-        "TDM reserved: {:?} / {:?}",
-        page.tdm.reserved, doc.tdm_reservation
+        "TDM reserved: {:?} / {:?}{}",
+        page.tdm.reserved,
+        doc.tdm_reservation,
+        if page.tdm.refused_to_ai_crawlers {
+            " – robots.txt refuses AI crawlers"
+        } else {
+            ""
+        }
     );
     println!(
         "Links:        {}   Feeds: {}",

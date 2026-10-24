@@ -13,9 +13,12 @@ data protection impact assessment (DPIA, GDPR Art. 35).
 * **robots.txt** (RFC 9309) is obeyed; if it cannot be fetched, nothing is fetched.
 * A **reservation of text and data mining** (TDMRep, Art. 4 of Directive (EU) 2019/790) is obeyed:
   only metadata is kept (title, address, dates, fingerprints).
-* **Terms of use**: each source has `terms` in the register (`allowed`, `forbidden`, `unknown`).
-  A source whose terms forbid automated access is not crawled at all (YouTube, for example, is
-  disabled for this reason).
+* A site that **refuses AI crawlers in robots.txt** (GPTBot, CCBot, ClaudeBot, Google-Extended …)
+  reserves mining too: its pages are kept as metadata only, although ATENA itself may fetch them.
+* **Terms of use**: each source has `terms` in the register – `allowed` (read; neither forbidden nor
+  reserved), `forbidden` (no automated access: not crawled at all, e.g. YouTube or UNESCO), `reserved`
+  (mining reserved: metadata only) or `unknown` (not verified: metadata only). Every value but
+  `unknown` is backed by a recorded review ([SOURCE-RIGHTS.md](SOURCE-RIGHTS.md)).
 
 ## 2. What may be shown
 Each source has a `licence` in the register:
@@ -23,7 +26,7 @@ Each source has a `licence` in the register:
 | Licence | Examples | Shown to users |
 |---|---|---|
 | `official` | laws, decrees, official documents in legal databases (Slov-Lex, e-Sbírka, RIS, Nemzeti Jogszabálytár, EUR-Lex) – not protected by copyright (e.g. § 5 of the Slovak Copyright Act) | full text |
-| open licence (`CC0-1.0`, `CC-BY-4.0`, `CC-BY-SA-4.0`, IGO variants, ODC, OGL…) | open educational resources, open data | full text, with attribution as the licence requires |
+| open licence (`CC0-1.0`, `CC-BY-4.0`, `CC-BY-SA-4.0`, IGO variants, ODC, OGL, `etalab-2.0`) | open educational resources, open data | full text, with attribution as the licence requires |
 | `copyrighted` (**default**) | everything not verified | title, metadata, ATENA's classification and a link to the original – no full text |
 
 Keeping the text of copyrighted content (for change detection and classification) is decided by the
@@ -56,7 +59,8 @@ verified information about education, with the balancing test documented in the 
 publishes a privacy notice (Art. 14) naming a contact for objections and erasure requests.
 
 ## 4. Operator checklist before a public launch
-1. Verify `licence` and `terms` of every source in `data/sources.yaml` (record the date and the page of the terms).
+1. Keep the rights review of `data/sources.yaml` current – done for all sources on 24 Oct 2026; repeat it
+   at least yearly and before launch in a new country.
 2. DPIA and legal review; record of processing activities (Art. 30).
 3. Privacy notice and a contact address for erasure requests; process for handling them with `forget`.
 4. The user interface shows full text only for `official` and openly licensed sources and respects
