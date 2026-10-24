@@ -65,28 +65,6 @@ jobs:
         with:
           command: check
 
-  data:
-    name: Core languages in the taxonomy
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Report missing labels (not yet blocking – translations are in progress)
-        run: |
-          python3 - <<'PY'
-          import yaml
-          d = yaml.safe_load(open("data/taxonomy.yaml", encoding="utf-8"))
-          core = d["core_languages"]
-          missing = {l: 0 for l in core}
-          for s in d["schemes"].values():
-              for c in s["concepts"]:
-                  for l in core:
-                      if l not in c["labels"]:
-                          missing[l] += 1
-          print("Missing labels per core language:", missing)
-          PY
-
   prototype:
     name: Prototype v0.1 (Python)
     runs-on: ubuntu-latest

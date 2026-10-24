@@ -9,6 +9,10 @@ core_languages:
 - cs
 - ru
 - zh
+draft_label_languages:
+- cs
+- ru
+- zh
 languages:
 - sk
 - en
@@ -23,6 +27,9 @@ schemes:
     labels:
       sk: Sekcie
       en: Sections
+      cs: Sekce
+      ru: Разделы
+      zh: 栏目
     note:
       sk: Sekcie sú vstupné brány podľa toho, ČO používateľ potrebuje urobiť. Obsah nie je uväznený v jednej sekcii – každá položka môže byť vo
         viacerých cez fazety (téma, druh školy, typ obsahu…).
@@ -31,217 +38,349 @@ schemes:
       labels:
         sk: Prehľad dňa
         en: Today
+        cs: Přehled dne
+        ru: Сводка дня
+        zh: 今日概览
     - id: changes
       labels:
         sk: Zmeny a legislatíva
         en: Changes & legislation
+        cs: Změny a legislativa
+        ru: Изменения и законодательство
+        zh: 变化与法规
     - id: acts-regulations
       broader: changes
       labels:
         sk: Zákony, vyhlášky, nariadenia
         en: Acts and regulations
+        cs: Zákony, vyhlášky, nařízení
+        ru: Законы и подзаконные акты
+        zh: 法律、规章与条例
     - id: guidance-instructions
       broader: changes
       labels:
         sk: Usmernenia, pokyny, POP
         en: Guidance and instructions
+        cs: Metodické pokyny a doporučení
+        ru: Методические указания и рекомендации
+        zh: 指导意见与工作通知
     - id: drafts-consultations
       broader: changes
       labels:
         sk: Návrhy a pripomienkové konania
         en: Drafts and consultations
+        cs: Návrhy a připomínková řízení
+        ru: Проекты и общественные обсуждения
+        zh: 草案与征求意见
     - id: deadlines-school-year
       broader: changes
       labels:
         sk: Termíny a organizácia školského roka
         en: Deadlines and school year
+        cs: Termíny a organizace školního roku
+        ru: Сроки и организация учебного года
+        zh: 时间节点与学年安排
     - id: funding-calls-grants
       broader: changes
       labels:
         sk: Financovanie, výzvy a granty
         en: Funding, calls and grants
+        cs: Financování, výzvy a granty
+        ru: Финансирование, конкурсы и гранты
+        zh: 经费、项目申报与资助
     - id: foreign-regulations
       broader: changes
       labels:
         sk: Zahraničné predpisy (kontext)
         en: Foreign regulations (context)
+        cs: Zahraniční předpisy (kontext)
+        ru: Зарубежные нормативные акты (контекст)
+        zh: 境外法规（参考）
     - id: curriculum
       labels:
         sk: Kurikulum a reformy
         en: Curriculum & reforms
+        cs: Kurikulum a reformy
+        ru: Содержание образования и реформы
+        zh: 课程与改革
     - id: national-curriculum
       broader: curriculum
       labels:
         sk: ŠVP a vzdelávacie oblasti
         en: National curriculum and learning areas
+        cs: RVP a vzdělávací oblasti
+        ru: Образовательные стандарты и предметные области
+        zh: 国家课程方案与学习领域
     - id: standards-progressions
       broader: curriculum
       labels:
         sk: Štandardy a gradačné postupnosti
         en: Standards and progressions
+        cs: Standardy a progrese učení
+        ru: Стандарты и траектории освоения
+        zh: 标准与学习进阶
     - id: school-curriculum-design
       broader: curriculum
       labels:
         sk: Tvorba ŠkVP a učebných osnov
         en: School curriculum design
+        cs: Tvorba ŠVP a učebních osnov
+        ru: Разработка образовательной программы школы
+        zh: 校本课程与教学大纲编制
     - id: curriculum-reform
       broader: curriculum
       labels:
         sk: Kurikulárna reforma (Vzdelávanie 21)
         en: Curriculum reform
+        cs: Kurikulární reforma
+        ru: Реформа содержания образования
+        zh: 课程改革
     - id: foreign-curricula
       broader: curriculum
       labels:
         sk: Zahraničné kurikulá a reformy
         en: Foreign curricula and reforms
+        cs: Zahraniční kurikula a reformy
+        ru: Зарубежные учебные программы и реформы
+        zh: 国外课程与改革
     - id: competence-frameworks
       broader: curriculum
       labels:
         sk: Kompetenčné rámce (DigComp, CEFR…)
         en: Competence frameworks
+        cs: Kompetenční rámce (DigComp, SERR…)
+        ru: Рамки компетенций (DigComp, CEFR…)
+        zh: 能力框架（DigComp、CEFR等）
     - id: practice
       labels:
         sk: Vyučovanie v praxi
         en: Teaching in practice
+        cs: Výuka v praxi
+        ru: Преподавание на практике
+        zh: 教学实践
     - id: teaching-methods
       broader: practice
       labels:
         sk: Vyučovacie metódy
         en: Teaching methods
+        cs: Výukové metody
+        ru: Методы обучения
+        zh: 教学方法
     - id: active-learning-methods
       broader: practice
       labels:
         sk: Aktivizačné metódy
         en: Active learning methods
+        cs: Aktivizační metody
+        ru: Активные методы обучения
+        zh: 主动学习方法
     - id: teaching-strategies
       broader: practice
       labels:
         sk: Vyučovacie stratégie
         en: Teaching strategies
+        cs: Výukové strategie
+        ru: Стратегии обучения
+        zh: 教学策略
     - id: organisational-forms
       broader: practice
       labels:
         sk: Organizačné formy
         en: Organisational forms
+        cs: Organizační formy výuky
+        ru: Формы организации обучения
+        zh: 教学组织形式
     - id: lesson-phases
       broader: practice
       labels:
         sk: Fázy vyučovacej hodiny
         en: Lesson phases
+        cs: Fáze vyučovací hodiny
+        ru: Этапы урока
+        zh: 课堂教学环节
     - id: assessment-feedback
       broader: practice
       labels:
         sk: Hodnotenie a spätná väzba
         en: Assessment and feedback
+        cs: Hodnocení a zpětná vazba
+        ru: Оценивание и обратная связь
+        zh: 评价与反馈
     - id: lesson-plans
       broader: practice
       labels:
         sk: Scenáre a plány hodín
         en: Lesson plans
+        cs: Scénáře a přípravy hodin
+        ru: Сценарии и планы уроков
+        zh: 教案与课时计划
     - id: lesson-videos
       broader: practice
       labels:
         sk: Videoukážky hodín (hospitácie)
         en: Lesson videos
+        cs: Videoukázky hodin (hospitace)
+        ru: Видеозаписи уроков (посещение уроков)
+        zh: 课堂实录（观课）
     - id: worksheets-materials
       broader: practice
       labels:
         sk: Pracovné listy a materiály
         en: Worksheets and materials
+        cs: Pracovní listy a materiály
+        ru: Рабочие листы и материалы
+        zh: 学习单与教学材料
     - id: educational-games
       broader: practice
       labels:
         sk: Vzdelávacie hry
         en: Educational games
+        cs: Vzdělávací hry
+        ru: Образовательные игры
+        zh: 教育游戏
     - id: projects-inquiry
       broader: practice
       labels:
         sk: Projekty a bádanie
         en: Projects and inquiry
+        cs: Projekty a badatelská výuka
+        ru: Проекты и исследовательская деятельность
+        zh: 项目与探究
     - id: subject-didactics
       broader: practice
       labels:
         sk: Didaktiky predmetov
         en: Subject didactics
+        cs: Oborové didaktiky
+        ru: Методики преподавания предметов
+        zh: 学科教学法
     - id: literacies
       labels:
         sk: Gramotnosti a myslenie
         en: Literacies & thinking
+        cs: Gramotnosti a myšlení
+        ru: Грамотности и мышление
+        zh: 素养与思维
     - id: inclusion
       labels:
         sk: Inklúzia a podpora
         en: Inclusion & support
+        cs: Inkluze a podpora
+        ru: Инклюзия и поддержка
+        zh: 全纳与支持
     - id: digital
       labels:
         sk: Digitálne vzdelávanie a AI
         en: Digital learning & AI
+        cs: Digitální vzdělávání a AI
+        ru: Цифровое образование и ИИ
+        zh: 数字教育与人工智能
     - id: approaches
       labels:
         sk: Pedagogické smery a prístupy
         en: Pedagogical approaches
+        cs: Pedagogické směry a přístupy
+        ru: Педагогические направления и подходы
+        zh: 教育流派与理念
     - id: non-formal
       labels:
         sk: Neformálne a celoživotné vzdelávanie
         en: Non-formal & lifelong learning
+        cs: Neformální a celoživotní vzdělávání
+        ru: Неформальное и непрерывное образование
+        zh: 非正规教育与终身学习
     - id: leadership
       labels:
         sk: Riadenie školy
         en: School leadership
+        cs: Řízení školy
+        ru: Управление школой
+        zh: 学校管理
     - id: research
       labels:
         sk: Výskum, dáta a trendy
         en: Research, data & trends
+        cs: Výzkum, data a trendy
+        ru: Исследования, данные и тенденции
+        zh: 研究、数据与趋势
     - id: evidence-syntheses
       broader: research
       labels:
         sk: Syntézy dôkazov
         en: Evidence syntheses
+        cs: Syntézy důkazů
+        ru: Обобщения доказательных данных
+        zh: 证据综述
     - id: assessments
       broader: research
       labels:
         sk: Medzinárodné a národné merania
         en: Assessments (PISA, T9…)
+        cs: Mezinárodní a národní šetření
+        ru: Международные и национальные исследования качества
+        zh: 国际与国家测评
     - id: statistics
       broader: research
       labels:
         sk: Štatistiky
         en: Statistics
+        cs: Statistiky
+        ru: Статистика
+        zh: 统计
     - id: trend-radar
       broader: research
       labels:
         sk: Radar trendov
         en: Trend radar
+        cs: Radar trendů
+        ru: Радар трендов
+        zh: 趋势雷达
     - id: world
       labels:
         sk: Svet a inšpirácia
         en: World & inspiration
+        cs: Svět a inspirace
+        ru: Мир и вдохновение
+        zh: 国际视野与启示
     - id: glossary
       labels:
         sk: Pojmy
         en: Glossary
+        cs: Pojmy
+        ru: Термины
+        zh: 术语
     - id: calendar
       labels:
         sk: Kalendár
         en: Calendar
+        cs: Kalendář
+        ru: Календарь
+        zh: 日历
     - id: my-atena
       labels:
         sk: Moja ATENA
         en: My ATENA
+        cs: Moje ATENA
+        ru: Моя ATENA
+        zh: 我的 ATENA
   topic:
     labels:
       sk: Témy
       en: Topics
+      cs: Témata
+      ru: Темы
+      zh: 主题
     concepts:
     - id: trends
       labels:
         sk: Trendy a inovácie vo vzdelávaní
         en: Trends and innovation in education
-        cs: Trendy ve vzdělávání
+        cs: Trendy a inovace ve vzdělávání
+        ru: Тенденции и инновации в образовании
+        zh: 教育趋势与创新
         de: Bildungstrends
         pl: Trendy w edukacji
         hu: Oktatási trendek
-        ru: Тенденции в образовании
-        zh: 教育趋势
       keywords:
         sk:
         - trend
@@ -280,6 +419,9 @@ schemes:
       labels:
         sk: Zmeny vo vzdelávaní
         en: Changes in education
+        cs: Změny ve vzdělávání
+        ru: Изменения в образовании
+        zh: 教育领域的变化
       keywords:
         sk:
         - novel
@@ -320,11 +462,11 @@ schemes:
         sk: Aktivizačné metódy
         en: Active learning methods
         cs: Aktivizační metody
+        ru: Активные методы обучения
+        zh: 主动学习方法
         de: Aktivierende Methoden
         pl: Metody aktywizujące
         hu: Aktivizáló módszerek
-        ru: Активные методы обучения
-        zh: 主动学习方法
       keywords:
         sk:
         - aktivizačn
@@ -358,6 +500,9 @@ schemes:
       labels:
         sk: Ukážky vedenia vyučovacej hodiny
         en: Lesson demonstrations
+        cs: Ukázky vedení vyučovací hodiny
+        ru: Образцы проведения урока
+        zh: 示范课
       keywords:
         sk:
         - ukážková hodina
@@ -398,6 +543,9 @@ schemes:
       labels:
         sk: Vyučovacie metódy v praxi
         en: Teaching methods in practice
+        cs: Výukové metody v praxi
+        ru: Методы обучения на практике
+        zh: 教学方法实践
       keywords:
         sk:
         - vyučovacia metóda
@@ -436,6 +584,9 @@ schemes:
       labels:
         sk: Vyučovacie stratégie v praxi
         en: Teaching strategies in practice
+        cs: Výukové strategie v praxi
+        ru: Стратегии обучения на практике
+        zh: 教学策略实践
       keywords:
         sk:
         - vyučovacia stratégia
@@ -463,11 +614,11 @@ schemes:
         sk: Neformálne vzdelávanie
         en: Non-formal education
         cs: Neformální vzdělávání
+        ru: Неформальное образование
+        zh: 非正规教育
         de: Non-formale Bildung
         pl: Edukacja pozaformalna
         hu: Nem formális tanulás
-        ru: Неформальное образование
-        zh: 非正规教育
       keywords:
         sk:
         - neformáln
@@ -524,6 +675,9 @@ schemes:
       labels:
         sk: Mäkké zručnosti (soft skills)
         en: Soft skills
+        cs: Měkké dovednosti (soft skills)
+        ru: Гибкие навыки (soft skills)
+        zh: 软技能
       keywords:
         sk:
         - mäkké zručnosti
@@ -558,11 +712,11 @@ schemes:
         sk: Digitálne a online vzdelávanie
         en: Digital and online learning
         cs: Digitální a online vzdělávání
+        ru: Цифровое и онлайн-обучение
+        zh: 数字化与在线学习
         de: Digitales Lernen
         pl: Edukacja cyfrowa
         hu: Digitális oktatás
-        ru: Цифровое обучение
-        zh: 数字化学习
       keywords:
         sk:
         - e-learning
@@ -622,11 +776,11 @@ schemes:
         sk: Inkluzívne a špeciálne vzdelávanie
         en: Inclusive and special education
         cs: Inkluzivní a speciální vzdělávání
+        ru: Инклюзивное и специальное образование
+        zh: 全纳与特殊教育
         de: Inklusion und Sonderpädagogik
         pl: Edukacja włączająca i specjalna
         hu: Inkluzív és gyógypedagógiai nevelés
-        ru: Инклюзивное и специальное образование
-        zh: 全纳与特殊教育
       keywords:
         sk:
         - inklúzi
@@ -686,6 +840,9 @@ schemes:
       labels:
         sk: Nadaní a talentovaní žiaci
         en: Gifted and talented learners
+        cs: Nadaní a talentovaní žáci
+        ru: Одарённые и талантливые учащиеся
+        zh: 超常与特长学生
       keywords:
         sk:
         - nadan
@@ -720,11 +877,11 @@ schemes:
         sk: Kurikulárna reforma
         en: Curriculum reform
         cs: Kurikulární reforma
+        ru: Реформа содержания образования
+        zh: 课程改革
         de: Lehrplanreform
         pl: Reforma programowa
         hu: Tantervi reform
-        ru: Реформа содержания образования
-        zh: 课程改革
       keywords:
         sk:
         - kurikulárn
@@ -767,6 +924,9 @@ schemes:
       labels:
         sk: Vzdelávacie oblasti a predmety
         en: Learning areas and subjects
+        cs: Vzdělávací oblasti a předměty
+        ru: Предметные области и предметы
+        zh: 学习领域与学科
       keywords:
         sk:
         - vzdelávacia oblasť
@@ -806,12 +966,12 @@ schemes:
       labels:
         sk: Čitateľská gramotnosť a čítanie s porozumením
         en: Reading literacy and comprehension
-        cs: Čtenářská gramotnost
+        cs: Čtenářská gramotnost a čtení s porozuměním
+        ru: Читательская грамотность и понимание текста
+        zh: 阅读素养与阅读理解
         de: Lesekompetenz
         pl: Czytanie ze zrozumieniem
         hu: Szövegértés
-        ru: Читательская грамотность
-        zh: 阅读素养
       keywords:
         sk:
         - čitateľsk
@@ -853,6 +1013,9 @@ schemes:
       labels:
         sk: Úrovne porozumenia textu
         en: Levels of text comprehension
+        cs: Úrovně porozumění textu
+        ru: Уровни понимания текста
+        zh: 文本理解层次
       note:
         sk: Vždy ukladať konkrétny rámec (Barrett, PIRLS, PISA, Bloom…) a jeho verziu – pozri schému ramec-porozumenia.
       keywords:
@@ -890,11 +1053,11 @@ schemes:
         sk: Umelá inteligencia vo vzdelávaní
         en: AI in education
         cs: Umělá inteligence ve vzdělávání
+        ru: Искусственный интеллект в образовании
+        zh: 人工智能教育
         de: KI in der Bildung
         pl: Sztuczna inteligencja w edukacji
         hu: Mesterséges intelligencia az oktatásban
-        ru: Искусственный интеллект в образовании
-        zh: 人工智能教育
       keywords:
         sk:
         - umelá inteligencia
@@ -942,11 +1105,11 @@ schemes:
         sk: Kritické myslenie
         en: Critical thinking
         cs: Kritické myšlení
+        ru: Критическое мышление
+        zh: 批判性思维
         de: Kritisches Denken
         pl: Krytyczne myślenie
         hu: Kritikai gondolkodás
-        ru: Критическое мышление
-        zh: 批判性思维
       keywords:
         sk:
         - kritické myslenie
@@ -982,6 +1145,9 @@ schemes:
       labels:
         sk: Fázy vzdelávacieho procesu
         en: Phases of the learning process
+        cs: Fáze vzdělávacího procesu
+        ru: Этапы образовательного процесса
+        zh: 教学过程环节
       keywords:
         sk:
         - fázy vyučovacej hodiny
@@ -1023,12 +1189,12 @@ schemes:
       labels:
         sk: Legislatíva a úradné dokumenty
         en: Legislation and official documents
-        cs: Legislativa
+        cs: Legislativa a úřední dokumenty
+        ru: Законодательство и официальные документы
+        zh: 法规与官方文件
         de: Schulrecht
         pl: Prawo oświatowe
         hu: Oktatási jogszabályok
-        ru: Законодательство об образовании
-        zh: 教育法规
       keywords:
         sk:
         - zákon č
@@ -1081,6 +1247,9 @@ schemes:
       labels:
         sk: Terminológia v školstve a pedagogike
         en: Educational terminology
+        cs: Terminologie ve školství a pedagogice
+        ru: Терминология образования и педагогики
+        zh: 教育与教育学术语
       keywords:
         sk:
         - terminológi
@@ -1118,11 +1287,11 @@ schemes:
         sk: Vzdelávacie hry
         en: Educational games
         cs: Vzdělávací hry
+        ru: Образовательные игры
+        zh: 教育游戏
         de: Lernspiele
         pl: Gry edukacyjne
         hu: Oktatási játékok
-        ru: Образовательные игры
-        zh: 教育游戏
       keywords:
         sk:
         - vzdelávacia hra
@@ -1162,6 +1331,9 @@ schemes:
       labels:
         sk: Hodnotenie žiakov
         en: Student assessment
+        cs: Hodnocení žáků
+        ru: Оценивание учащихся
+        zh: 学生评价
       keywords:
         sk:
         - hodnoteni
@@ -1208,6 +1380,9 @@ schemes:
       labels:
         sk: Wellbeing, duševné zdravie a klíma
         en: Wellbeing, mental health and climate
+        cs: Wellbeing, duševní zdraví a klima
+        ru: Благополучие, психическое здоровье и климат
+        zh: 幸福感、心理健康与学校氛围
       keywords:
         sk:
         - wellbeing
@@ -1256,6 +1431,9 @@ schemes:
       labels:
         sk: Odlišný materinský jazyk, cudzinci, menšiny
         en: Second-language learners, migrants, minorities
+        cs: Odlišný mateřský jazyk, cizinci, menšiny
+        ru: Учащиеся с другим родным языком, мигранты, меньшинства
+        zh: 非母语学生、移民与少数民族
       keywords:
         sk:
         - odlišný materinský jazyk
@@ -1298,6 +1476,9 @@ schemes:
       labels:
         sk: Riadenie a kvalita školy
         en: School leadership and quality
+        cs: Řízení a kvalita školy
+        ru: Управление и качество школы
+        zh: 学校管理与质量
       keywords:
         sk:
         - riaditeľ
@@ -1346,6 +1527,9 @@ schemes:
       labels:
         sk: Profesijný rozvoj pedagógov
         en: Teacher professional development
+        cs: Profesní rozvoj pedagogů
+        ru: Профессиональное развитие педагогов
+        zh: 教师专业发展
       keywords:
         sk:
         - profesijný rozvoj
@@ -1390,6 +1574,9 @@ schemes:
       labels:
         sk: Pedagogický výskum a dôkazy
         en: Educational research and evidence
+        cs: Pedagogický výzkum a důkazy
+        ru: Педагогические исследования и доказательные данные
+        zh: 教育研究与证据
       keywords:
         sk:
         - výskum
@@ -1435,6 +1622,9 @@ schemes:
       labels:
         sk: Štatistiky a medzinárodné merania
         en: Statistics and international assessments
+        cs: Statistiky a mezinárodní šetření
+        ru: Статистика и международные исследования
+        zh: 统计与国际测评
       keywords:
         sk:
         - štatisti
@@ -1497,6 +1687,9 @@ schemes:
       labels:
         sk: Alternatívne pedagogické smery
         en: Alternative pedagogies
+        cs: Alternativní pedagogické směry
+        ru: Альтернативные педагогические направления
+        zh: 替代教育流派
       note:
         sk: Neutrálne označenie – nesmie znižovať poradie vo výsledkoch (kritérium A13).
       keywords:
@@ -1553,6 +1746,9 @@ schemes:
       labels:
         sk: Celoživotné vzdelávanie a vzdelávanie dospelých
         en: Lifelong and adult learning
+        cs: Celoživotní vzdělávání a vzdělávání dospělých
+        ru: Непрерывное образование и обучение взрослых
+        zh: 终身学习与成人教育
       keywords:
         sk:
         - celoživotn
@@ -1596,6 +1792,9 @@ schemes:
       labels:
         sk: Odborné vzdelávanie a príprava
         en: Vocational education and training
+        cs: Odborné vzdělávání a příprava
+        ru: Профессиональное образование и обучение
+        zh: 职业教育与培训
       keywords:
         sk:
         - odborné vzdelávanie
@@ -1635,6 +1834,9 @@ schemes:
       labels:
         sk: Spolupráca s rodinou
         en: Family and school partnership
+        cs: Spolupráce s rodinou
+        ru: Сотрудничество с семьёй
+        zh: 家校合作
       keywords:
         sk:
         - rodič
@@ -1668,11 +1870,17 @@ schemes:
     labels:
       sk: Gramotnosti a kompetencie
       en: Literacies and competences
+      cs: Gramotnosti a kompetence
+      ru: Грамотности и компетенции
+      zh: 素养与能力
     concepts:
     - id: reading
       labels:
         sk: Čitateľská
         en: Reading
+        cs: Čtenářská
+        ru: Читательская
+        zh: 阅读素养
       keywords:
         sk:
         - čitateľsk
@@ -1694,6 +1902,9 @@ schemes:
       labels:
         sk: Matematická
         en: Mathematical
+        cs: Matematická
+        ru: Математическая
+        zh: 数学素养
       keywords:
         sk:
         - matematick gramotn
@@ -1716,6 +1927,9 @@ schemes:
       labels:
         sk: Prírodovedná
         en: Scientific
+        cs: Přírodovědná
+        ru: Естественнонаучная
+        zh: 科学素养
       keywords:
         sk:
         - prírodovedn gramotn
@@ -1738,6 +1952,9 @@ schemes:
       labels:
         sk: Počítačová
         en: Computer
+        cs: Počítačová
+        ru: Компьютерная
+        zh: 计算机素养
       keywords:
         sk:
         - počítačov gramotn
@@ -1764,6 +1981,9 @@ schemes:
       labels:
         sk: Digitálna
         en: Digital
+        cs: Digitální
+        ru: Цифровая
+        zh: 数字素养
       keywords:
         sk:
         - digitáln gramotn
@@ -1792,6 +2012,9 @@ schemes:
       labels:
         sk: Informačná
         en: Information
+        cs: Informační
+        ru: Информационная
+        zh: 信息素养
       keywords:
         sk:
         - informačn gramotn
@@ -1814,6 +2037,9 @@ schemes:
       labels:
         sk: Mediálna
         en: Media
+        cs: Mediální
+        ru: Медийная
+        zh: 媒介素养
       keywords:
         sk:
         - mediáln gramotn
@@ -1846,6 +2072,9 @@ schemes:
       labels:
         sk: Finančná
         en: Financial
+        cs: Finanční
+        ru: Финансовая
+        zh: 财经素养
       keywords:
         sk:
         - finančn gramotn
@@ -1871,6 +2100,9 @@ schemes:
       labels:
         sk: Zdravotná
         en: Health
+        cs: Zdravotní
+        ru: В области здоровья
+        zh: 健康素养
       keywords:
         sk:
         - zdravotn gramotn
@@ -1894,6 +2126,9 @@ schemes:
       labels:
         sk: Kultúrna
         en: Cultural
+        cs: Kulturní
+        ru: Культурная
+        zh: 文化素养
       keywords:
         sk:
         - kultúrn gramotn
@@ -1917,6 +2152,9 @@ schemes:
       labels:
         sk: Emočná
         en: Emotional
+        cs: Emoční
+        ru: Эмоциональная
+        zh: 情绪素养
       keywords:
         sk:
         - emočn gramotn
@@ -1943,6 +2181,9 @@ schemes:
       labels:
         sk: Sociálna
         en: Social
+        cs: Sociální
+        ru: Социальная
+        zh: 社会素养
       keywords:
         sk:
         - sociáln gramotn
@@ -1966,6 +2207,9 @@ schemes:
       labels:
         sk: Občianska
         en: Civic
+        cs: Občanská
+        ru: Гражданская
+        zh: 公民素养
       keywords:
         sk:
         - občiansk
@@ -1989,6 +2233,9 @@ schemes:
       labels:
         sk: Environmentálna a udržateľnosť
         en: Environmental & sustainability
+        cs: Environmentální a udržitelnost
+        ru: Экологическая и устойчивое развитие
+        zh: 环境与可持续发展素养
       keywords:
         sk:
         - environmentáln
@@ -2020,6 +2267,9 @@ schemes:
       labels:
         sk: AI gramotnosť
         en: AI literacy
+        cs: AI gramotnost
+        ru: ИИ-грамотность
+        zh: 人工智能素养
       keywords:
         sk:
         - ai gramotn
@@ -2043,6 +2293,9 @@ schemes:
       labels:
         sk: Podnikavosť
         en: Entrepreneurship
+        cs: Podnikavost
+        ru: Предпринимательская
+        zh: 创业素养
       keywords:
         sk:
         - podnikav
@@ -2066,6 +2319,9 @@ schemes:
       labels:
         sk: Jazyková (CEFR)
         en: Language (CEFR)
+        cs: Jazyková (SERR)
+        ru: Языковая (CEFR)
+        zh: 语言素养（CEFR）
       keywords:
         sk:
         - spoločný európsky referenčný rámec
@@ -2095,6 +2351,9 @@ schemes:
       labels:
         sk: Kritické myslenie
         en: Critical thinking
+        cs: Kritické myšlení
+        ru: Критическое мышление
+        zh: 批判性思维
       keywords:
         sk:
         - kritické myslenie
@@ -2104,6 +2363,9 @@ schemes:
       labels:
         sk: Tvorivé myslenie
         en: Creative thinking
+        cs: Tvořivé myšlení
+        ru: Креативное мышление
+        zh: 创造性思维
       keywords:
         sk:
         - tvorivé myslenie
@@ -2130,11 +2392,17 @@ schemes:
     labels:
       sk: Vyučovacie metódy
       en: Teaching methods
+      cs: Výukové metody
+      ru: Методы обучения
+      zh: 教学方法
     concepts:
     - id: lecture
       labels:
         sk: Výklad a vysvetľovanie
         en: Lecture/explanation
+        cs: Výklad a vysvětlování
+        ru: Объяснение и рассказ
+        zh: 讲授与讲解
       keywords:
         sk:
         - výklad
@@ -2145,6 +2413,9 @@ schemes:
       labels:
         sk: Rozhovor (heuristický)
         en: Questioning dialogue
+        cs: Rozhovor (heuristický)
+        ru: Эвристическая беседа
+        zh: 启发式谈话
       keywords:
         sk:
         - heuristický rozhovor
@@ -2155,6 +2426,9 @@ schemes:
       labels:
         sk: Diskusia
         en: Discussion
+        cs: Diskuse
+        ru: Дискуссия
+        zh: 讨论
       keywords:
         sk:
         - diskusi
@@ -2173,6 +2447,9 @@ schemes:
       labels:
         sk: Demonštrácia a pozorovanie
         en: Demonstration/observation
+        cs: Demonstrace a pozorování
+        ru: Демонстрация и наблюдение
+        zh: 演示与观察
       keywords:
         sk:
         - demonštráci
@@ -2184,6 +2461,9 @@ schemes:
       labels:
         sk: Pokus a experiment
         en: Experiment
+        cs: Pokus a experiment
+        ru: Опыт и эксперимент
+        zh: 实验
       keywords:
         sk:
         - pokus
@@ -2201,6 +2481,9 @@ schemes:
       labels:
         sk: Práca s textom
         en: Working with text
+        cs: Práce s textem
+        ru: Работа с текстом
+        zh: 文本研读
       keywords:
         sk:
         - práca s textom
@@ -2216,6 +2499,9 @@ schemes:
       labels:
         sk: Problémová metóda
         en: Problem-solving method
+        cs: Problémová metoda
+        ru: Проблемный метод
+        zh: 问题解决法
       keywords:
         sk:
         - problémov úloh
@@ -2226,6 +2512,9 @@ schemes:
       labels:
         sk: Inscenačné metódy (rolové hry, simulácie, dramatizácia)
         en: Role play and simulation
+        cs: Inscenační metody (hraní rolí, simulace, dramatizace)
+        ru: Ролевые игры, симуляции и драматизация
+        zh: 角色扮演、模拟与戏剧化
       keywords:
         sk:
         - rolov hr
@@ -2246,6 +2535,9 @@ schemes:
       labels:
         sk: Brainstorming a myšlienková mapa
         en: Brainstorming and mind maps
+        cs: Brainstorming a myšlenková mapa
+        ru: Мозговой штурм и интеллект-карты
+        zh: 头脑风暴与思维导图
       keywords:
         sk:
         - brainstorming
@@ -2262,6 +2554,9 @@ schemes:
       labels:
         sk: Skladačka (jigsaw)
         en: Jigsaw
+        cs: Skládankové učení (jigsaw)
+        ru: Метод «пазл» (jigsaw)
+        zh: 拼图法
       keywords:
         sk:
         - skladačk
@@ -2277,6 +2572,9 @@ schemes:
       labels:
         sk: Mysli – páruj – zdieľaj
         en: Think-pair-share
+        cs: Mysli – sdílej ve dvojici – sděl ostatním
+        ru: Думай – обсуди в паре – поделись
+        zh: 思考—配对—分享
       keywords:
         sk:
         - mysli – páruj
@@ -2288,6 +2586,9 @@ schemes:
       labels:
         sk: Prípadová štúdia
         en: Case study
+        cs: Případová studie
+        ru: Кейс-метод
+        zh: 案例分析
       keywords:
         sk:
         - prípadov štúdi
@@ -2298,6 +2599,9 @@ schemes:
       labels:
         sk: Recipročné vyučovanie
         en: Reciprocal teaching
+        cs: Reciproční výuka
+        ru: Взаимное обучение (reciprocal teaching)
+        zh: 互惠教学
       keywords:
         sk:
         - recipročn
@@ -2309,6 +2613,9 @@ schemes:
       labels:
         sk: Rutiny myslenia (Viditeľné myslenie)
         en: Thinking routines
+        cs: Rutiny myšlení (Viditelné myšlení)
+        ru: Мыслительные рутины (видимое мышление)
+        zh: 思维常规（可见的思维）
       keywords:
         sk:
         - rutin myslenia
@@ -2323,6 +2630,9 @@ schemes:
       labels:
         sk: Viem – chcem vedieť – dozvedel som sa (VCHD/KWL)
         en: KWL chart
+        cs: Vím – chci vědět – dozvěděl jsem se (VCHD/KWL)
+        ru: Знаю – хочу узнать – узнал (ЗХУ/KWL)
+        zh: 已知—想知—已学（KWL表）
       keywords:
         sk:
         - vchd
@@ -2336,6 +2646,9 @@ schemes:
       labels:
         sk: Vybavovanie z pamäti (retrieval practice)
         en: Retrieval practice
+        cs: Vybavování z paměti (retrieval practice)
+        ru: Практика извлечения из памяти
+        zh: 提取练习
       keywords:
         sk:
         - vybavovanie z pamäti
@@ -2347,6 +2660,9 @@ schemes:
       labels:
         sk: Rozložené opakovanie a prekladanie
         en: Spacing and interleaving
+        cs: Rozložené opakování a prokládání
+        ru: Интервальное повторение и чередование
+        zh: 间隔练习与交错练习
       keywords:
         en:
         - spaced practice
@@ -2356,6 +2672,9 @@ schemes:
       labels:
         sk: Riešené príklady a modelovanie
         en: Worked examples and modelling
+        cs: Řešené příklady a modelování
+        ru: Разобранные примеры и моделирование
+        zh: 样例学习与示范
       keywords:
         sk:
         - riešen príklad
@@ -2368,6 +2687,9 @@ schemes:
       labels:
         sk: Lešenie (scaffolding)
         en: Scaffolding
+        cs: Lešení (scaffolding)
+        ru: Скаффолдинг (поддерживающие опоры)
+        zh: 支架式教学
       keywords:
         sk:
         - scaffolding
@@ -2378,6 +2700,9 @@ schemes:
       labels:
         sk: Metakognícia a sebaregulácia
         en: Metacognition and self-regulation
+        cs: Metakognice a seberegulace
+        ru: Метапознание и саморегуляция
+        zh: 元认知与自我调节
       keywords:
         sk:
         - metakogn
@@ -2395,6 +2720,9 @@ schemes:
       labels:
         sk: Výstupná kartička a rýchle overenie
         en: Exit ticket and checks for understanding
+        cs: Výstupní lístek a rychlé ověření
+        ru: Карточка на выходе и быстрая проверка понимания
+        zh: 出门条与理解检查
       keywords:
         sk:
         - výstupná kartičk
@@ -2408,6 +2736,9 @@ schemes:
       labels:
         sk: Hejného metóda
         en: Hejný method
+        cs: Hejného metoda
+        ru: Метод Гейни
+        zh: 赫伊内教学法
       keywords:
         sk:
         - hejného
@@ -2417,6 +2748,9 @@ schemes:
       labels:
         sk: Rovesnícke vyučovanie (peer instruction)
         en: Peer instruction
+        cs: Vrstevnická výuka (peer instruction)
+        ru: Обучение сверстниками (peer instruction)
+        zh: 同伴教学
       keywords:
         sk:
         - rovesníck
@@ -2427,11 +2761,17 @@ schemes:
     labels:
       sk: Vyučovacie stratégie
       en: Teaching strategies
+      cs: Výukové strategie
+      ru: Стратегии обучения
+      zh: 教学策略
     concepts:
     - id: project-based-learning
       labels:
         sk: Projektové vyučovanie
         en: Project-based learning
+        cs: Projektová výuka
+        ru: Проектное обучение
+        zh: 项目式学习
       keywords:
         sk:
         - projektov vyučovan
@@ -2455,6 +2795,9 @@ schemes:
       labels:
         sk: Bádateľsky orientované vyučovanie (IBSE)
         en: Inquiry-based learning
+        cs: Badatelsky orientovaná výuka (BOV)
+        ru: Исследовательское обучение (IBSE)
+        zh: 探究式学习
       keywords:
         sk:
         - bádateľsk
@@ -2476,6 +2819,9 @@ schemes:
       labels:
         sk: Problémové učenie
         en: Problem-based learning
+        cs: Problémové učení
+        ru: Проблемное обучение
+        zh: 基于问题的学习
       keywords:
         sk:
         - problémové učenie
@@ -2486,6 +2832,9 @@ schemes:
       labels:
         sk: Obrátené vyučovanie
         en: Flipped classroom
+        cs: Převrácená třída
+        ru: Перевёрнутый класс
+        zh: 翻转课堂
       keywords:
         sk:
         - obrátené vyučovanie
@@ -2509,6 +2858,9 @@ schemes:
       labels:
         sk: Kooperatívne učenie
         en: Cooperative learning
+        cs: Kooperativní učení
+        ru: Кооперативное обучение
+        zh: 合作学习
       keywords:
         sk:
         - kooperatívn
@@ -2531,6 +2883,9 @@ schemes:
       labels:
         sk: CLIL – integrované vyučovanie obsahu a jazyka
         en: CLIL
+        cs: CLIL – obsahově a jazykově integrované učení
+        ru: CLIL – предметно-языковое интегрированное обучение
+        zh: CLIL 内容与语言整合学习
       keywords:
         sk:
         - clil
@@ -2541,6 +2896,9 @@ schemes:
       labels:
         sk: Zážitkové učenie
         en: Experiential learning
+        cs: Zážitkové učení
+        ru: Обучение через опыт
+        zh: 体验式学习
       keywords:
         sk:
         - zážitkov
@@ -2554,6 +2912,9 @@ schemes:
       labels:
         sk: Učenie vonku
         en: Outdoor learning
+        cs: Učení venku
+        ru: Обучение на открытом воздухе
+        zh: 户外学习
       keywords:
         sk:
         - učenie vonku
@@ -2572,6 +2933,9 @@ schemes:
       labels:
         sk: Service learning
         en: Service learning
+        cs: Service learning (učení službou)
+        ru: Социальное проектное обучение (service learning)
+        zh: 服务学习
       keywords:
         sk:
         - service learning
@@ -2583,6 +2947,9 @@ schemes:
       labels:
         sk: Gamifikácia a učenie hrou
         en: Gamification and game-based learning
+        cs: Gamifikace a učení hrou
+        ru: Геймификация и игровое обучение
+        zh: 游戏化与游戏式学习
       keywords:
         sk:
         - gamifik
@@ -2593,6 +2960,9 @@ schemes:
       labels:
         sk: Kombinované učenie (blended)
         en: Blended learning
+        cs: Kombinované učení (blended)
+        ru: Смешанное обучение
+        zh: 混合式学习
       keywords:
         sk:
         - kombinovan učen
@@ -2604,6 +2974,9 @@ schemes:
       labels:
         sk: Personalizované a diferencované učenie
         en: Personalised and differentiated learning
+        cs: Personalizované a diferencované učení
+        ru: Персонализированное и дифференцированное обучение
+        zh: 个性化与差异化学习
       keywords:
         sk:
         - personalizovan
@@ -2622,6 +2995,9 @@ schemes:
       labels:
         sk: Explicitné (priame) vyučovanie
         en: Explicit instruction
+        cs: Explicitní (přímá) výuka
+        ru: Эксплицитное (прямое) обучение
+        zh: 显性教学（直接教学）
       keywords:
         sk:
         - explicitn vyučovan
@@ -2633,6 +3009,9 @@ schemes:
       labels:
         sk: Dialogické vyučovanie
         en: Dialogic teaching
+        cs: Dialogická výuka
+        ru: Диалогическое обучение
+        zh: 对话式教学
       keywords:
         sk:
         - dialogick
@@ -2646,6 +3025,9 @@ schemes:
       labels:
         sk: STEM/STEAM a medzipredmetové vyučovanie
         en: STEM/STEAM and cross-curricular
+        cs: STEM/STEAM a mezipředmětová výuka
+        ru: STEM/STEAM и межпредметное обучение
+        zh: STEM/STEAM 与跨学科教学
       keywords:
         sk:
         - stem
@@ -2663,6 +3045,9 @@ schemes:
       labels:
         sk: Učenie k zvládnutiu (mastery learning)
         en: Mastery learning
+        cs: Učení k zvládnutí (mastery learning)
+        ru: Обучение до полного усвоения
+        zh: 掌握学习
       keywords:
         en:
         - mastery learning
@@ -2670,11 +3055,17 @@ schemes:
     labels:
       sk: Organizačné formy
       en: Organisational forms
+      cs: Organizační formy výuky
+      ru: Формы организации обучения
+      zh: 教学组织形式
     concepts:
     - id: whole-class
       labels:
         sk: Frontálna
         en: Whole-class
+        cs: Frontální
+        ru: Фронтальная
+        zh: 全班教学
       keywords:
         sk:
         - frontáln
@@ -2686,6 +3077,9 @@ schemes:
       labels:
         sk: Skupinová
         en: Group work
+        cs: Skupinová
+        ru: Групповая
+        zh: 小组合作
       keywords:
         sk:
         - skupinov práca
@@ -2702,6 +3096,9 @@ schemes:
       labels:
         sk: Párová
         en: Pair work
+        cs: Párová (ve dvojicích)
+        ru: Парная
+        zh: 结对学习
       keywords:
         sk:
         - práca vo dvojiciach
@@ -2712,6 +3109,9 @@ schemes:
       labels:
         sk: Individuálna / samostatná
         en: Individual work
+        cs: Individuální / samostatná
+        ru: Индивидуальная / самостоятельная
+        zh: 个人独立学习
       keywords:
         sk:
         - samostatn práca
@@ -2723,6 +3123,9 @@ schemes:
       labels:
         sk: Centrá aktivít a stanovištia
         en: Learning centres and stations
+        cs: Centra aktivit a stanoviště
+        ru: Центры активности и станции
+        zh: 学习区与学习站
       keywords:
         sk:
         - centrá aktivít
@@ -2741,6 +3144,9 @@ schemes:
       labels:
         sk: Exkurzia a vychádzka
         en: Field trip
+        cs: Exkurze a vycházka
+        ru: Экскурсия и прогулка
+        zh: 实地考察与研学
       keywords:
         sk:
         - exkurzi
@@ -2752,6 +3158,9 @@ schemes:
       labels:
         sk: Bloková výučba
         en: Block teaching
+        cs: Bloková výuka
+        ru: Блочное обучение
+        zh: 连堂教学
       keywords:
         sk:
         - blokov výučb
@@ -2762,6 +3171,9 @@ schemes:
       labels:
         sk: Dištančná / online
         en: Distance / online
+        cs: Distanční / online
+        ru: Дистанционная / онлайн
+        zh: 远程 / 在线
       keywords:
         sk:
         - dištančn
@@ -2772,6 +3184,9 @@ schemes:
       labels:
         sk: Vekovo zmiešané skupiny
         en: Mixed-age groups
+        cs: Věkově smíšené skupiny
+        ru: Разновозрастные группы
+        zh: 混龄编组
       keywords:
         sk:
         - vekovo zmiešan
@@ -2782,11 +3197,17 @@ schemes:
     labels:
       sk: Rámce fáz vyučovacej hodiny
       en: Lesson phase frameworks
+      cs: Rámce fází vyučovací hodiny
+      ru: Модели этапов урока
+      zh: 课堂环节模式
     concepts:
     - id: classical
       labels:
         sk: Klasický slovenský model
         en: Classical model
+        cs: Klasický slovenský model
+        ru: Классическая словацкая модель
+        zh: 斯洛伐克传统模式
       note:
         sk: motivačná – expozičná – fixačná – diagnostická – aplikačná
     - id: classical.motivation
@@ -2794,206 +3215,335 @@ schemes:
       labels:
         sk: Motivačná fáza
         en: Motivation
+        cs: Motivační fáze
+        ru: Мотивационный этап
+        zh: 激发动机
     - id: classical.exposition
       broader: classical
       labels:
         sk: Expozičná fáza
         en: Exposition
+        cs: Expoziční fáze
+        ru: Этап изложения нового материала
+        zh: 新知讲授
     - id: classical.consolidation
       broader: classical
       labels:
         sk: Fixačná fáza
         en: Consolidation
+        cs: Fixační fáze
+        ru: Этап закрепления
+        zh: 巩固练习
     - id: classical.assessment
       broader: classical
       labels:
         sk: Diagnostická (hodnotiaca) fáza
         en: Assessment
+        cs: Diagnostická (hodnoticí) fáze
+        ru: Диагностический (оценочный) этап
+        zh: 诊断评价
     - id: classical.application
       broader: classical
       labels:
         sk: Aplikačná fáza
         en: Application
+        cs: Aplikační fáze
+        ru: Этап применения
+        zh: 迁移应用
     - id: err
       labels:
         sk: E–U–R (evokácia – uvedomenie – reflexia)
         en: ERR framework (RWCT)
+        cs: E–U–R (evokace – uvědomění – reflexe)
+        ru: Вызов – осмысление – рефлексия (ТРКМ)
+        zh: 唤起—领会—反思（RWCT）
     - id: err.evocation
       broader: err
       labels:
         sk: Evokácia
         en: Evocation
+        cs: Evokace
+        ru: Вызов
+        zh: 唤起
     - id: err.realisation
       broader: err
       labels:
         sk: Uvedomenie si významu
         en: Realisation of meaning
+        cs: Uvědomění si významu
+        ru: Осмысление содержания
+        zh: 领会意义
     - id: err.reflection
       broader: err
       labels:
         sk: Reflexia
         en: Reflection
+        cs: Reflexe
+        ru: Рефлексия
+        zh: 反思
     - id: 5e
       labels:
         sk: 5E (BSCS)
         en: 5E instructional model
+        cs: 5E (BSCS)
+        ru: Модель 5E (BSCS)
+        zh: 5E 教学模式（BSCS）
     - id: 5e.engage
       broader: 5e
       labels:
         sk: Zaujatie
         en: Engage
+        cs: Zaujetí
+        ru: Вовлечение
+        zh: 引入
     - id: 5e.explore
       broader: 5e
       labels:
         sk: Skúmanie
         en: Explore
+        cs: Zkoumání
+        ru: Исследование
+        zh: 探究
     - id: 5e.explain
       broader: 5e
       labels:
         sk: Vysvetlenie
         en: Explain
+        cs: Vysvětlení
+        ru: Объяснение
+        zh: 解释
     - id: 5e.elaborate
       broader: 5e
       labels:
         sk: Rozpracovanie
         en: Elaborate
+        cs: Rozpracování
+        ru: Углубление
+        zh: 拓展
     - id: 5e.evaluate
       broader: 5e
       labels:
         sk: Hodnotenie
         en: Evaluate
+        cs: Hodnocení
+        ru: Оценивание
+        zh: 评价
     - id: gagne
       labels:
         sk: Gagného 9 udalostí výučby
         en: Gagné's nine events
+        cs: Gagného 9 událostí výuky
+        ru: Девять событий обучения Ганье
+        zh: 加涅九大教学事件
     - id: rosenshine
       labels:
         sk: Rosenshineove princípy výučby
         en: Rosenshine's principles
+        cs: Rosenshineovy principy výuky
+        ru: Принципы обучения Розеншайна
+        zh: 罗森夏因教学原则
     - id: herbart
       labels:
         sk: Herbartove formálne stupne
         en: Herbart's formal steps
+        cs: Herbartovy formální stupně
+        ru: Формальные ступени Гербарта
+        zh: 赫尔巴特形式阶段
   comprehension-framework:
     labels:
       sk: Rámce úrovní porozumenia textu
       en: Comprehension frameworks
+      cs: Rámce úrovní porozumění textu
+      ru: Модели уровней понимания текста
+      zh: 文本理解层次框架
     concepts:
     - id: barrett
       labels:
         sk: Barrettova taxonómia
         en: Barrett taxonomy
+        cs: Barrettova taxonomie
+        ru: Таксономия Барретта
+        zh: 巴雷特分类法
     - id: barrett.literal
       broader: barrett
       labels:
         sk: Doslovné porozumenie
         en: Literal comprehension
+        cs: Doslovné porozumění
+        ru: Буквальное понимание
+        zh: 字面理解
     - id: barrett.reorganisation
       broader: barrett
       labels:
         sk: Reorganizácia
         en: Reorganisation
+        cs: Reorganizace
+        ru: Реорганизация
+        zh: 重组
     - id: barrett.inferential
       broader: barrett
       labels:
         sk: Inferenčné porozumenie
         en: Inferential comprehension
+        cs: Inferenční porozumění
+        ru: Понимание на уровне выводов
+        zh: 推理理解
     - id: barrett.evaluation
       broader: barrett
       labels:
         sk: Hodnotiace (kritické) porozumenie
         en: Evaluation
+        cs: Hodnoticí (kritické) porozumění
+        ru: Оценочное (критическое) понимание
+        zh: 评价性（批判性）理解
     - id: barrett.appreciation
       broader: barrett
       labels:
         sk: Ocenenie (estetické, emocionálne)
         en: Appreciation
+        cs: Ocenění (estetické, emocionální)
+        ru: Эстетическое и эмоциональное восприятие
+        zh: 欣赏（审美、情感）
     - id: pirls
       labels:
         sk: PIRLS – procesy porozumenia
         en: PIRLS comprehension processes
+        cs: PIRLS – procesy porozumění
+        ru: PIRLS – процессы понимания
+        zh: PIRLS 理解过程
     - id: pirls.retrieve
       broader: pirls
       labels:
         sk: Zameranie sa na explicitne uvedené informácie a ich vyhľadanie
         en: Focus on and retrieve explicitly stated information
+        cs: Zaměření se na explicitně uvedené informace a jejich vyhledání
+        ru: Нахождение явно заданной информации
+        zh: 关注并提取明确陈述的信息
     - id: pirls.infer
       broader: pirls
       labels:
         sk: Priame vyvodzovanie záverov
         en: Make straightforward inferences
+        cs: Vyvozování přímých závěrů
+        ru: Формулирование прямых выводов
+        zh: 进行直接推论
     - id: pirls.interpret-integrate
       broader: pirls
       labels:
         sk: Interpretácia a integrácia myšlienok a informácií
         en: Interpret and integrate ideas and information
+        cs: Interpretace a integrace myšlenek a informací
+        ru: Интерпретация и обобщение идей и информации
+        zh: 解释并整合观点和信息
     - id: pirls.evaluate-critique
       broader: pirls
       labels:
         sk: Hodnotenie a kritika obsahu a prvkov textu
         en: Evaluate and critique content and textual elements
+        cs: Hodnocení a kritika obsahu a prvků textu
+        ru: Оценка и критический анализ содержания и элементов текста
+        zh: 评价和批判内容及文本要素
     - id: pisa2018
       labels:
         sk: PISA 2018+ – kognitívne procesy čítania
         en: PISA 2018 reading processes
+        cs: PISA 2018+ – kognitivní procesy čtení
+        ru: PISA 2018+ – когнитивные процессы чтения
+        zh: PISA 2018+ 阅读认知过程
     - id: pisa2018.locate
       broader: pisa2018
       labels:
         sk: Lokalizovanie informácií
         en: Locate information
+        cs: Vyhledávání informací
+        ru: Поиск информации
+        zh: 定位信息
     - id: pisa2018.understand
       broader: pisa2018
       labels:
         sk: Porozumenie
         en: Understand
+        cs: Porozumění
+        ru: Понимание
+        zh: 理解
     - id: pisa2018.evaluate-reflect
       broader: pisa2018
       labels:
         sk: Hodnotenie a reflexia
         en: Evaluate and reflect
+        cs: Hodnocení a reflexe
+        ru: Оценка и рефлексия
+        zh: 评价与反思
     - id: bloom
       labels:
         sk: Bloomova taxonómia (revidovaná, 2001)
         en: Revised Bloom's taxonomy
+        cs: Bloomova taxonomie (revidovaná, 2001)
+        ru: Таксономия Блума (пересмотренная, 2001)
+        zh: 布鲁姆教育目标分类（修订版，2001）
     - id: bloom.remember
       broader: bloom
       labels:
         sk: Zapamätať si
         en: Remember
+        cs: Zapamatovat si
+        ru: Запоминать
+        zh: 记忆
     - id: bloom.understand
       broader: bloom
       labels:
         sk: Porozumieť
         en: Understand
+        cs: Porozumět
+        ru: Понимать
+        zh: 理解
     - id: bloom.apply
       broader: bloom
       labels:
         sk: Aplikovať
         en: Apply
+        cs: Aplikovat
+        ru: Применять
+        zh: 应用
     - id: bloom.analyse
       broader: bloom
       labels:
         sk: Analyzovať
         en: Analyse
+        cs: Analyzovat
+        ru: Анализировать
+        zh: 分析
     - id: bloom.evaluate
       broader: bloom
       labels:
         sk: Hodnotiť
         en: Evaluate
+        cs: Hodnotit
+        ru: Оценивать
+        zh: 评价
     - id: bloom.create
       broader: bloom
       labels:
         sk: Tvoriť
         en: Create
+        cs: Tvořit
+        ru: Создавать
+        zh: 创造
   approach:
     labels:
       sk: Pedagogické smery a prístupy
       en: Pedagogical approaches
+      cs: Pedagogické směry a přístupy
+      ru: Педагогические направления и подходы
+      zh: 教育流派与理念
     concepts:
     - id: montessori
       labels:
         sk: Montessori
         en: Montessori
+        cs: Montessori
+        ru: Монтессори
+        zh: 蒙台梭利
       keywords:
         sk:
         - montessori
@@ -3011,6 +3561,9 @@ schemes:
       labels:
         sk: Waldorfská pedagogika
         en: Waldorf/Steiner
+        cs: Waldorfská pedagogika
+        ru: Вальдорфская педагогика
+        zh: 华德福教育
       keywords:
         sk:
         - waldorf
@@ -3027,6 +3580,9 @@ schemes:
       labels:
         sk: Freinetova pedagogika
         en: Freinet
+        cs: Freinetova pedagogika
+        ru: Педагогика Френе
+        zh: 弗雷内教育
       keywords:
         sk:
         - freinet
@@ -3038,6 +3594,9 @@ schemes:
       labels:
         sk: Daltonský plán
         en: Dalton plan
+        cs: Daltonský plán
+        ru: Дальтон-план
+        zh: 道尔顿制
       keywords:
         sk:
         - dalton
@@ -3048,6 +3607,9 @@ schemes:
       labels:
         sk: Jenaplan
         en: Jenaplan
+        cs: Jenaplan
+        ru: Йена-план
+        zh: 耶拿计划
       keywords:
         sk:
         - jenaplan
@@ -3059,6 +3621,9 @@ schemes:
       labels:
         sk: Reggio Emilia
         en: Reggio Emilia
+        cs: Reggio Emilia
+        ru: Реджо-Эмилия
+        zh: 瑞吉欧教育
       keywords:
         sk:
         - reggio
@@ -3068,6 +3633,9 @@ schemes:
       labels:
         sk: HighScope
         en: HighScope
+        cs: HighScope
+        ru: HighScope
+        zh: 高瞻课程
       keywords:
         en:
         - highscope
@@ -3075,6 +3643,9 @@ schemes:
       labels:
         sk: Krok za krokom / Začít spolu
         en: Step by Step
+        cs: Začít spolu (Step by Step)
+        ru: «Шаг за шагом» (Step by Step)
+        zh: 循序渐进（Step by Step）项目
       keywords:
         sk:
         - krok za krokom
@@ -3086,6 +3657,9 @@ schemes:
       labels:
         sk: Demokratická škola
         en: Democratic education
+        cs: Demokratická škola
+        ru: Демократическая школа
+        zh: 民主学校
       keywords:
         sk:
         - demokratick škol
@@ -3098,6 +3672,9 @@ schemes:
       labels:
         sk: Lesná pedagogika (Forest School)
         en: Forest School
+        cs: Lesní pedagogika (Forest School)
+        ru: Лесная школа (Forest School)
+        zh: 森林学校
       keywords:
         sk:
         - lesná škôlka
@@ -3115,6 +3692,9 @@ schemes:
       labels:
         sk: Filozofia pre deti (P4C)
         en: Philosophy for Children
+        cs: Filozofie pro děti (P4C)
+        ru: Философия для детей (P4C)
+        zh: 儿童哲学（P4C）
       keywords:
         sk:
         - filozofia pre deti
@@ -3125,6 +3705,9 @@ schemes:
       labels:
         sk: Sebariadené učenie / unschooling
         en: Self-directed learning
+        cs: Sebeřízené učení / unschooling
+        ru: Самонаправленное обучение / анскулинг
+        zh: 自主学习 / 非学校化教育
       keywords:
         sk:
         - sebariaden
@@ -3136,6 +3719,9 @@ schemes:
       labels:
         sk: Domáce (individuálne) vzdelávanie
         en: Home education
+        cs: Domácí (individuální) vzdělávání
+        ru: Семейное образование
+        zh: 在家上学
       note:
         sk: Právny režim, nie metóda.
       keywords:
@@ -3151,6 +3737,9 @@ schemes:
       labels:
         sk: Comenia Script
         en: Comenia Script
+        cs: Comenia Script
+        ru: Comenia Script
+        zh: Comenia Script 字体
       keywords:
         sk:
         - comenia script
@@ -3158,6 +3747,9 @@ schemes:
     labels:
       sk: Druhy škôl a zariadení
       en: School types
+      cs: Druhy škol a zařízení
+      ru: Типы образовательных организаций
+      zh: 学校与机构类型
     note:
       sk: Prvá úroveň = 6 skupín zo zadania (prepínače v profile). Druhá úroveň = konkrétne druhy podľa slovenskej legislatívy. ŠVVP je zároveň
         priečny filter (žiak so ŠVVP môže byť v bežnej škole). Spojená škola je organizačný vzťah, nie stupeň – výsledky jej zložiek sa zjednotia
@@ -3167,6 +3759,9 @@ schemes:
       labels:
         sk: Predprimárne vzdelávanie
         en: Early childhood
+        cs: Předškolní vzdělávání
+        ru: Дошкольное образование
+        zh: 学前教育
       isced:
       - '0'
     - id: nursery
@@ -3174,6 +3769,9 @@ schemes:
       labels:
         sk: Jasle (deti do 3 rokov)
         en: Nursery (0–3)
+        cs: Jesle (děti do 3 let)
+        ru: Ясли (дети до 3 лет)
+        zh: 托育（0–3岁）
       note:
         sk: V SR iný právny režim (zákon 448/2008 Z. z.)
       isced:
@@ -3204,6 +3802,9 @@ schemes:
       labels:
         sk: Materská škola
         en: Kindergarten
+        cs: Mateřská škola
+        ru: Детский сад
+        zh: 幼儿园
       isced:
       - '02'
       keywords:
@@ -3240,6 +3841,9 @@ schemes:
       labels:
         sk: Primárne a nižšie sekundárne vzdelávanie
         en: Primary and lower secondary
+        cs: Primární a nižší sekundární vzdělávání
+        ru: Начальное и основное общее образование
+        zh: 小学与初中教育
       isced:
       - '1'
       - '2'
@@ -3271,6 +3875,9 @@ schemes:
       labels:
         sk: ZŠ – 1. stupeň (primárne)
         en: Primary school
+        cs: ZŠ – 1. stupeň (primární)
+        ru: Начальная школа
+        zh: 小学
       isced:
       - '1'
       keywords:
@@ -3305,6 +3912,9 @@ schemes:
       labels:
         sk: ZŠ – 2. stupeň (nižšie sekundárne)
         en: Lower secondary
+        cs: ZŠ – 2. stupeň (nižší sekundární)
+        ru: Основная школа (5–9 классы)
+        zh: 初中
       isced:
       - '2'
       keywords:
@@ -3334,6 +3944,9 @@ schemes:
       labels:
         sk: Vyššie sekundárne vzdelávanie
         en: Upper secondary
+        cs: Vyšší sekundární vzdělávání
+        ru: Старшая ступень среднего образования
+        zh: 高中阶段教育
       isced:
       - '3'
       - '4'
@@ -3342,6 +3955,9 @@ schemes:
       labels:
         sk: Gymnázium
         en: Grammar school (gymnasium)
+        cs: Gymnázium
+        ru: Гимназия
+        zh: 文理中学（Gymnasium）
       isced:
       - '2'
       - '3'
@@ -3374,6 +3990,9 @@ schemes:
       labels:
         sk: Stredná odborná škola
         en: Vocational secondary school
+        cs: Střední odborná škola
+        ru: Колледж / техникум (среднее профессиональное образование)
+        zh: 中等职业学校
       isced:
       - '3'
       - '4'
@@ -3412,6 +4031,9 @@ schemes:
       labels:
         sk: Konzervatórium
         en: Conservatory
+        cs: Konzervatoř
+        ru: Консерватория (среднее профессиональное)
+        zh: 中等艺术学校（音乐、舞蹈、戏剧）
       isced:
       - '3'
       - '5'
@@ -3427,6 +4049,9 @@ schemes:
       labels:
         sk: Školy pre deti a žiakov so ŠVVP
         en: Special schools (SEN)
+        cs: Školy pro děti a žáky se SVP
+        ru: Школы для детей с ОВЗ
+        zh: 特殊教育学校
       isced:
       - '0'
       - '1'
@@ -3437,11 +4062,17 @@ schemes:
       labels:
         sk: Špeciálna materská škola
         en: Special kindergarten
+        cs: Speciální mateřská škola
+        ru: Специальный (коррекционный) детский сад
+        zh: 特殊教育幼儿园
     - id: special-primary
       broader: special-education
       labels:
         sk: Špeciálna základná škola
         en: Special primary school
+        cs: Speciální základní škola
+        ru: Специальная (коррекционная) школа
+        zh: 特殊教育学校（义务教育阶段）
       keywords:
         sk:
         - špeciálna základná
@@ -3468,6 +4099,9 @@ schemes:
       labels:
         sk: Špeciálna stredná škola, praktická škola, odborné učilište
         en: Special secondary school
+        cs: Speciální střední škola, praktická škola, odborné učiliště
+        ru: Специальная средняя школа и профессиональное обучение
+        zh: 特殊教育中等学校与职业培训
       keywords:
         sk:
         - praktická škola
@@ -3476,6 +4110,9 @@ schemes:
       labels:
         sk: Spojené školy
         en: Merged schools
+        cs: Spojené školy
+        ru: Объединённые школы (образовательные комплексы)
+        zh: 合并学校（教育集团）
       note:
         sk: Organizačná väzba rodič–zložky
       keywords:
@@ -3489,6 +4126,9 @@ schemes:
       labels:
         sk: Celoživotné vzdelávanie
         en: Lifelong learning
+        cs: Celoživotní vzdělávání
+        ru: Непрерывное образование
+        zh: 终身学习
       keywords:
         sk:
         - vzdelávanie dospelých
@@ -3499,6 +4139,9 @@ schemes:
       labels:
         sk: Základná umelecká škola (ZUŠ)
         en: Basic art school
+        cs: Základní umělecká škola (ZUŠ)
+        ru: Детская школа искусств
+        zh: 少儿艺术学校
       note:
         sk: Druh školy podľa školského zákona; v zadaní chýbal
       keywords:
@@ -3516,6 +4159,9 @@ schemes:
       labels:
         sk: Jazyková škola
         en: Language school
+        cs: Jazyková škola
+        ru: Языковая школа
+        zh: 语言学校
       keywords:
         sk:
         - jazyková škola
@@ -3524,6 +4170,9 @@ schemes:
       labels:
         sk: Školské zariadenia (ŠKD, CVČ, CPP, internáty)
         en: School facilities
+        cs: Školská zařízení (ŠD, DDM, PPP, domovy mládeže)
+        ru: Учреждения дополнительного образования, психолого-педагогические центры, интернаты
+        zh: 校外与教育辅助机构（课后托管、青少年活动中心、心理辅导中心、寄宿）
       keywords:
         sk:
         - školský klub
@@ -3541,6 +4190,9 @@ schemes:
       labels:
         sk: Vysoké školy (príprava učiteľov, výskum)
         en: Higher education (teacher education)
+        cs: Vysoké školy (příprava učitelů, výzkum)
+        ru: Вузы (подготовка учителей, исследования)
+        zh: 高等院校（师范教育、研究）
       isced:
       - '6'
       - '7'
@@ -3573,11 +4225,17 @@ schemes:
     labels:
       sk: Typ obsahu
       en: Resource type
+      cs: Typ obsahu
+      ru: Тип материала
+      zh: 资源类型
     concepts:
     - id: legal-act
       labels:
         sk: Právny predpis
         en: Legal act
+        cs: Právní předpis
+        ru: Нормативный правовой акт
+        zh: 法律法规
       keywords:
         sk:
         - zákon č
@@ -3607,6 +4265,9 @@ schemes:
       labels:
         sk: Usmernenie / metodický pokyn
         en: Guidance
+        cs: Metodický pokyn / doporučení
+        ru: Методические рекомендации
+        zh: 指导意见
       keywords:
         sk:
         - usmernenie
@@ -3624,14 +4285,23 @@ schemes:
       labels:
         sk: Strategický dokument
         en: Strategy / policy
+        cs: Strategický dokument
+        ru: Стратегический документ
+        zh: 战略与政策文件
     - id: curriculum-document
       labels:
         sk: Kurikulárny dokument (ŠVP, štandard)
         en: Curriculum document
+        cs: Kurikulární dokument (RVP, standard)
+        ru: Документ о содержании образования (стандарт, программа)
+        zh: 课程文件（课程方案、标准）
     - id: report
       labels:
         sk: Správa / analýza
         en: Report / analysis
+        cs: Zpráva / analýza
+        ru: Доклад / аналитика
+        zh: 报告 / 分析
       keywords:
         sk:
         - správa o
@@ -3649,14 +4319,23 @@ schemes:
       labels:
         sk: Štatistika / dataset
         en: Statistics / dataset
+        cs: Statistika / datová sada
+        ru: Статистика / набор данных
+        zh: 统计 / 数据集
     - id: research-study
       labels:
         sk: Výskumná štúdia
         en: Research study
+        cs: Výzkumná studie
+        ru: Научное исследование
+        zh: 研究论文
     - id: systematic-review
       labels:
         sk: Systematický prehľad / syntéza
         en: Systematic review
+        cs: Systematický přehled / syntéza
+        ru: Систематический обзор / синтез
+        zh: 系统综述
       keywords:
         sk:
         - metaanalýz
@@ -3670,6 +4349,9 @@ schemes:
       labels:
         sk: Metodika / príručka
         en: Teacher guide
+        cs: Metodika / příručka
+        ru: Методическое пособие
+        zh: 教师指导用书
       keywords:
         sk:
         - metodika
@@ -3689,6 +4371,9 @@ schemes:
       labels:
         sk: Scenár / plán hodiny
         en: Lesson plan
+        cs: Scénář / příprava hodiny
+        ru: Сценарий / план урока
+        zh: 教案
       keywords:
         sk:
         - scenár
@@ -3709,14 +4394,23 @@ schemes:
       labels:
         sk: Videoukážka hodiny
         en: Lesson video
+        cs: Videoukázka hodiny
+        ru: Видеозапись урока
+        zh: 课堂实录
     - id: explainer-video
       labels:
         sk: Vysvetľujúce video
         en: Explainer video
+        cs: Vysvětlující video
+        ru: Обучающее видео
+        zh: 讲解视频
     - id: webinar
       labels:
         sk: Webinár / záznam
         en: Webinar
+        cs: Webinář / záznam
+        ru: Вебинар / запись
+        zh: 网络研讨会 / 录像
       keywords:
         sk:
         - webinár
@@ -3734,6 +4428,9 @@ schemes:
       labels:
         sk: Kurz (online/prezenčný)
         en: Course
+        cs: Kurz (online/prezenční)
+        ru: Курс (онлайн/очный)
+        zh: 培训课程（线上/线下）
       keywords:
         sk:
         - kurz
@@ -3752,6 +4449,9 @@ schemes:
       labels:
         sk: Pracovný list
         en: Worksheet
+        cs: Pracovní list
+        ru: Рабочий лист
+        zh: 学习单
       keywords:
         sk:
         - pracovný list
@@ -3768,18 +4468,30 @@ schemes:
       labels:
         sk: Interaktívna aktivita / simulácia
         en: Interactive / simulation
+        cs: Interaktivní aktivita / simulace
+        ru: Интерактивное задание / симуляция
+        zh: 互动活动 / 仿真
     - id: educational-game
       labels:
         sk: Vzdelávacia hra
         en: Educational game
+        cs: Vzdělávací hra
+        ru: Образовательная игра
+        zh: 教育游戏
     - id: test-items
       labels:
         sk: Testové úlohy
         en: Test items
+        cs: Testové úlohy
+        ru: Тестовые задания
+        zh: 测试题
     - id: event
       labels:
         sk: Podujatie / konferencia
         en: Event
+        cs: Akce / konference
+        ru: Мероприятие / конференция
+        zh: 活动 / 会议
       keywords:
         sk:
         - konferencia
@@ -3800,10 +4512,16 @@ schemes:
       labels:
         sk: Novinka / oznam
         en: News / announcement
+        cs: Novinka / oznámení
+        ru: Новость / объявление
+        zh: 新闻 / 通知
     - id: call
       labels:
         sk: Výzva / grant / súťaž
         en: Call / grant / competition
+        cs: Výzva / grant / soutěž
+        ru: Конкурс / грант
+        zh: 项目申报 / 资助 / 竞赛
       keywords:
         sk:
         - výzva
@@ -3824,169 +4542,289 @@ schemes:
       labels:
         sk: Pojem / glosár
         en: Term
+        cs: Pojem / glosář
+        ru: Термин / глоссарий
+        zh: 术语 / 词汇表
     - id: tool
       labels:
         sk: Nástroj / aplikácia
         en: Tool / app
+        cs: Nástroj / aplikace
+        ru: Инструмент / приложение
+        zh: 工具 / 应用
     - id: podcast
       labels:
         sk: Podcast
         en: Podcast
+        cs: Podcast
+        ru: Подкаст
+        zh: 播客
     - id: practice-account
       labels:
         sk: Skúsenosť z praxe / blog
         en: Practice account / blog
+        cs: Zkušenost z praxe / blog
+        ru: Опыт из практики / блог
+        zh: 实践经验 / 博客
   audience:
     labels:
       sk: Pre koho
       en: Audience
+      cs: Pro koho
+      ru: Для кого
+      zh: 适用对象
     concepts:
     - id: kindergarten-teacher
       labels:
         sk: Učiteľ/ka MŠ
         en: Kindergarten teacher
+        cs: Učitel/ka MŠ
+        ru: Воспитатель детского сада
+        zh: 幼儿园教师
     - id: primary-teacher
       labels:
         sk: Učiteľ 1. stupňa
         en: Primary teacher
+        cs: Učitel 1. stupně
+        ru: Учитель начальных классов
+        zh: 小学教师
     - id: secondary-teacher
       labels:
         sk: Učiteľ 2. stupňa a SŠ
         en: Secondary teacher
+        cs: Učitel 2. stupně a SŠ
+        ru: Учитель основной и старшей школы
+        zh: 中学教师
     - id: vocational-trainer
       labels:
         sk: Majster odbornej výchovy
         en: Vocational trainer
+        cs: Učitel odborného výcviku
+        ru: Мастер производственного обучения
+        zh: 职业实训教师
     - id: educator
       labels:
         sk: Vychovávateľ
         en: Educator (after-school)
+        cs: Vychovatel
+        ru: Воспитатель группы продлённого дня
+        zh: 课后服务教师
     - id: teaching-assistant
       labels:
         sk: Pedagogický asistent
         en: Teaching assistant
+        cs: Asistent pedagoga
+        ru: Ассистент учителя (тьютор)
+        zh: 教学助理
     - id: specialist-staff
       labels:
         sk: Odborný zamestnanec (psychológ, špec. pedagóg, logopéd…)
         en: Specialist staff
+        cs: Odborný pracovník (psycholog, speciální pedagog, logoped…)
+        ru: Специалист (психолог, дефектолог, логопед…)
+        zh: 专业支持人员（心理教师、特教教师、言语治疗师等）
     - id: school-leaders
       labels:
         sk: Vedenie školy
         en: School leaders
+        cs: Vedení školy
+        ru: Администрация школы
+        zh: 学校领导
     - id: school-authority
       labels:
         sk: Zriaďovateľ
         en: School authority
+        cs: Zřizovatel
+        ru: Учредитель
+        zh: 学校举办者
     - id: parent
       labels:
         sk: Rodič
         en: Parent
+        cs: Rodič
+        ru: Родитель
+        zh: 家长
     - id: student
       labels:
         sk: Žiak / študent
         en: Student
+        cs: Žák / student
+        ru: Ученик / студент
+        zh: 学生
     - id: youth-worker
       labels:
         sk: Lektor / pracovník s mládežou
         en: Trainer / youth worker
+        cs: Lektor / pracovník s mládeží
+        ru: Педагог дополнительного образования / специалист по работе с молодёжью
+        zh: 培训师 / 青少年工作者
     - id: policy-maker
       labels:
         sk: Tvorca politík
         en: Policy maker
+        cs: Tvůrce politik
+        ru: Разработчик образовательной политики
+        zh: 政策制定者
     - id: researcher
       labels:
         sk: Výskumník
         en: Researcher
+        cs: Výzkumník
+        ru: Исследователь
+        zh: 研究人员
   authority:
     labels:
       sk: Autorita zdroja
       en: Source authority
+      cs: Autorita zdroje
+      ru: Авторитетность источника
+      zh: 来源权威等级
     concepts:
     - id: A1
       labels:
         sk: A1 – záväzný úradný (zbierka zákonov, vestník)
         en: Binding official
+        cs: A1 – závazný úřední (sbírka zákonů, věstník)
+        ru: A1 – обязательный официальный (собрание законодательства, вестник)
+        zh: A1 – 具有约束力的官方来源（法律汇编、公报）
     - id: A2
       labels:
         sk: A2 – úradný (ministerstvo, štátna inštitúcia)
         en: Official
+        cs: A2 – úřední (ministerstvo, státní instituce)
+        ru: A2 – официальный (министерство, государственное учреждение)
+        zh: A2 – 官方（部委、国家机构）
     - id: B1
       labels:
         sk: B1 – medzinárodná organizácia (EÚ, OECD, UNESCO)
         en: International organisation
+        cs: B1 – mezinárodní organizace (EU, OECD, UNESCO)
+        ru: B1 – международная организация (ЕС, ОЭСР, ЮНЕСКО)
+        zh: B1 – 国际组织（欧盟、经合组织、联合国教科文组织）
     - id: B2
       labels:
         sk: B2 – výskumná / akademická inštitúcia
         en: Research institution
+        cs: B2 – výzkumná / akademická instituce
+        ru: B2 – научная / академическая организация
+        zh: B2 – 研究 / 学术机构
     - id: C1
       labels:
         sk: C1 – odborná organizácia / nezisková s metodikou
         en: Expert organisation / NGO
+        cs: C1 – odborná organizace / nezisková s metodikou
+        ru: C1 – экспертная организация / НКО с методикой
+        zh: C1 – 专业组织 / 具备方法体系的非营利组织
     - id: C2
       labels:
         sk: C2 – asociácia pedagogického smeru (vlastný popis)
         en: Pedagogical movement
+        cs: C2 – asociace pedagogického směru (vlastní popis)
+        ru: C2 – ассоциация педагогического направления (самоописание)
+        zh: C2 – 教育流派协会（自我介绍）
     - id: D
       labels:
         sk: D – identifikovaný autor / komunita
         en: Identified author / community
+        cs: D – identifikovaný autor / komunita
+        ru: D – установленный автор / сообщество
+        zh: D – 可识别的作者 / 社群
     - id: E
       labels:
         sk: E – médium (len signál, dohľadať primárny zdroj)
         en: Media (signal only)
+        cs: E – médium (jen signál, dohledat primární zdroj)
+        ru: E – СМИ (только сигнал, найти первоисточник)
+        zh: E – 媒体（仅作线索，需查找原始来源）
   evidence:
     labels:
       sk: Úroveň dôkazov
       en: Evidence level
+      cs: Úroveň důkazů
+      ru: Уровень доказательности
+      zh: 证据等级
     concepts:
     - id: E4
       labels:
         sk: E4 – syntéza viacerých kvalitných štúdií
         en: Synthesis of high-quality studies
+        cs: E4 – syntéza více kvalitních studií
+        ru: E4 – синтез нескольких качественных исследований
+        zh: E4 – 多项高质量研究的综合
     - id: E3
       labels:
         sk: E3 – experimentálna / kvázi-experimentálna štúdia
         en: Experimental / quasi-experimental
+        cs: E3 – experimentální / kvaziexperimentální studie
+        ru: E3 – экспериментальное / квазиэкспериментальное исследование
+        zh: E3 – 实验 / 准实验研究
     - id: E2
       labels:
         sk: E2 – korelačná / pozorovacia štúdia
         en: Correlational / observational
+        cs: E2 – korelační / observační studie
+        ru: E2 – корреляционное / наблюдательное исследование
+        zh: E2 – 相关性 / 观察性研究
     - id: E1
       labels:
         sk: E1 – opis praxe / prípadová štúdia
         en: Practice description / case
+        cs: E1 – popis praxe / případová studie
+        ru: E1 – описание практики / кейс
+        zh: E1 – 实践描述 / 案例研究
     - id: E0
       labels:
         sk: E0 – názor, bez doložených dôkazov
         en: Opinion
+        cs: E0 – názor bez doložených důkazů
+        ru: E0 – мнение без подтверждающих данных
+        zh: E0 – 观点，无证据支持
     - id: NA
       labels:
         sk: Neuplatňuje sa (predpis, štatistika, oznam)
         en: Not applicable
+        cs: Neuplatňuje se (předpis, statistika, oznámení)
+        ru: Не применяется (нормативный акт, статистика, объявление)
+        zh: 不适用（法规、统计、通知）
   country:
     labels:
       sk: Krajiny a regióny
       en: Countries and regions
+      cs: Země a regiony
+      ru: Страны и регионы
+      zh: 国家和地区
     concepts:
     - id: SK
       labels:
         sk: Slovensko
         en: Slovakia
+        cs: Slovensko
+        ru: Словакия
+        zh: 斯洛伐克
       lang: sk
     - id: CZ
       labels:
         sk: Česko
         en: Czechia
+        cs: Česko
+        ru: Чехия
+        zh: 捷克
       lang: cs
     - id: PL
       labels:
         sk: Poľsko
         en: Poland
+        cs: Polsko
+        ru: Польша
+        zh: 波兰
       lang: pl
     - id: DE
       labels:
         sk: Nemecko
         en: Germany
+        cs: Německo
+        ru: Германия
+        zh: 德国
       note:
         sk: Školstvo je v kompetencii spolkových krajín (DE-BY, DE-BW…)
       lang: de
@@ -3994,21 +4832,33 @@ schemes:
       labels:
         sk: Rakúsko
         en: Austria
+        cs: Rakousko
+        ru: Австрия
+        zh: 奥地利
       lang: de
     - id: HU
       labels:
         sk: Maďarsko
         en: Hungary
+        cs: Maďarsko
+        ru: Венгрия
+        zh: 匈牙利
       lang: hu
     - id: EU
       labels:
         sk: Európska únia a európske siete
         en: European Union
+        cs: Evropská unie a evropské sítě
+        ru: Европейский союз и европейские сети
+        zh: 欧盟及欧洲网络
       lang: en
     - id: US
       labels:
         sk: USA
         en: United States
+        cs: USA
+        ru: США
+        zh: 美国
       note:
         sk: Školstvo najmä v kompetencii štátov
       lang: en
@@ -4016,6 +4866,9 @@ schemes:
       labels:
         sk: Rusko
         en: Russia
+        cs: Rusko
+        ru: Россия
+        zh: 俄罗斯
       note:
         sk: Zahraničný kontext; dostupnosť webov z EÚ môže byť obmedzená
       lang: ru
@@ -4023,84 +4876,135 @@ schemes:
       labels:
         sk: Čína
         en: China
+        cs: Čína
+        ru: Китай
+        zh: 中国
       lang: zh
     - id: FI
       labels:
         sk: Fínsko
         en: Finland
+        cs: Finsko
+        ru: Финляндия
+        zh: 芬兰
       lang: fi
     - id: EE
       labels:
         sk: Estónsko
         en: Estonia
+        cs: Estonsko
+        ru: Эстония
+        zh: 爱沙尼亚
       lang: et
     - id: NL
       labels:
         sk: Holandsko
         en: Netherlands
+        cs: Nizozemsko
+        ru: Нидерланды
+        zh: 荷兰
       lang: nl
     - id: IE
       labels:
         sk: Írsko
         en: Ireland
+        cs: Irsko
+        ru: Ирландия
+        zh: 爱尔兰
       lang: en
     - id: GB-ENG
       labels:
         sk: Anglicko
         en: England
+        cs: Anglie
+        ru: Англия
+        zh: 英格兰
       lang: en
     - id: GB-SCT
       labels:
         sk: Škótsko
         en: Scotland
+        cs: Skotsko
+        ru: Шотландия
+        zh: 苏格兰
       lang: en
     - id: FR
       labels:
         sk: Francúzsko
         en: France
+        cs: Francie
+        ru: Франция
+        zh: 法国
       lang: fr
     - id: SE
       labels:
         sk: Švédsko
         en: Sweden
+        cs: Švédsko
+        ru: Швеция
+        zh: 瑞典
       lang: sv
     - id: IT
       labels:
         sk: Taliansko
         en: Italy
+        cs: Itálie
+        ru: Италия
+        zh: 意大利
       lang: it
     - id: CA
       labels:
         sk: Kanada (Ontário, Britská Kolumbia)
         en: Canada
+        cs: Kanada (Ontario, Britská Kolumbie)
+        ru: Канада (Онтарио, Британская Колумбия)
+        zh: 加拿大（安大略省、不列颠哥伦比亚省）
       lang: en
     - id: SG
       labels:
         sk: Singapur
         en: Singapore
+        cs: Singapur
+        ru: Сингапур
+        zh: 新加坡
       lang: en
     - id: JP
       labels:
         sk: Japonsko
         en: Japan
+        cs: Japonsko
+        ru: Япония
+        zh: 日本
       lang: ja
     - id: KR
       labels:
         sk: Južná Kórea
         en: South Korea
+        cs: Jižní Korea
+        ru: Южная Корея
+        zh: 韩国
       lang: ko
     - id: AU
       labels:
         sk: Austrália
         en: Australia
+        cs: Austrálie
+        ru: Австралия
+        zh: 澳大利亚
       lang: en
     - id: NZ
       labels:
         sk: Nový Zéland
         en: New Zealand
+        cs: Nový Zéland
+        ru: Новая Зеландия
+        zh: 新西兰
       lang: en
     - id: WORLD
       labels:
         sk: Svet (globálne organizácie)
         en: Global
+        cs: Svět (globální organizace)
+        ru: Мир (глобальные организации)
+        zh: 全球（国际组织）
       lang: en

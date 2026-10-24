@@ -4,6 +4,9 @@ Reads prototyp-v0.1/atena/data/{taxonomia,zdroje}.yaml and writes:
   data/taxonomy.yaml   – English stable IDs, labels/notes/keywords per language
   data/sources.yaml    – English field values, interval in seconds, notes per language
   data/id-map.csv      – old scheme:id -> new scheme:id (for the prototype and old links)
+
+Already applied; data/ is now edited directly. Do not re-run it: it would overwrite later work
+such as the Czech, Russian and Chinese labels.
 """
 import csv
 import re
