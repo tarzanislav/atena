@@ -237,6 +237,8 @@ jobs:
         with:
           name: atena-windows-installer
           path: release
+      # the release may exist already (made on the GitHub website with a new tag): then the
+      # installer is added to it, and the notes when it has none
       - name: Pre-release with the installer and its checksum
         env:
           GH_TOKEN: ${{ github.token }}
@@ -245,5 +247,12 @@ jobs:
           cd release
           sha256sum *.exe > SHA256SUMS.txt
           cat SHA256SUMS.txt
-          gh release create "$TAG" *.exe SHA256SUMS.txt --repo "$GITHUB_REPOSITORY" --prerelease \
-            --title "ATENA $TAG" --notes-file ../apps/desktop/release-notes.md
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release upload "$TAG" *.exe SHA256SUMS.txt --repo "$GITHUB_REPOSITORY" --clobber
+            if [ -z "$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json body --jq .body)" ]; then
+              gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --notes-file ../apps/desktop/release-notes.md
+            fi
+          else
+            gh release create "$TAG" *.exe SHA256SUMS.txt --repo "$GITHUB_REPOSITORY" --prerelease \
+              --title "ATENA $TAG" --notes-file ../apps/desktop/release-notes.md
+          fi
