@@ -8,6 +8,14 @@ import { appendFileSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+// in CI, every failure becomes an annotation of the pull request
+const fail = (message) => {
+  console.log(`::error::postgres-notices: ${message}`);
+  process.exit(1);
+};
+process.on("uncaughtException", (e) => fail(e.message));
+process.on("unhandledRejection", (e) => fail(e instanceof Error ? e.message : String(e)));
+
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const postgres = process.argv[2] ?? join(root, "src-tauri", "resources", "postgres");
 const notices = join(root, "src-tauri", "resources", "notices", "postgresql.txt");
@@ -15,10 +23,10 @@ const notices = join(root, "src-tauri", "resources", "notices", "postgresql.txt"
 // the canonical licence texts, read from their projects at build time
 const TEXTS = {
   apache: { file: join(root, "..", "..", "LICENSE") },
-  lgpl: { url: "https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt" },
+  lgpl: { url: "https://raw.githubusercontent.com/spdx/license-list-data/main/text/LGPL-2.1-or-later.txt" },
   icu: { url: "https://raw.githubusercontent.com/unicode-org/icu/main/LICENSE" },
-  libxml2: { url: "https://gitlab.gnome.org/GNOME/libxml2/-/raw/master/Copyright" },
-  libxslt: { url: "https://gitlab.gnome.org/GNOME/libxslt/-/raw/master/Copyright" },
+  libxml2: { url: "https://raw.githubusercontent.com/GNOME/libxml2/master/Copyright" },
+  libxslt: { url: "https://raw.githubusercontent.com/GNOME/libxslt/master/Copyright" },
   zlib: { url: "https://raw.githubusercontent.com/madler/zlib/master/LICENSE" },
   lz4: { url: "https://raw.githubusercontent.com/lz4/lz4/dev/lib/LICENSE" },
   zstd: { url: "https://raw.githubusercontent.com/facebook/zstd/dev/LICENSE" },
@@ -47,8 +55,7 @@ const KNOWN = [
 const libraries = readdirSync(join(postgres, "bin")).filter((f) => /\.dll$/i.test(f)).sort();
 const unknown = libraries.filter((f) => !KNOWN.some((k) => k.match.test(f)));
 if (unknown.length) {
-  console.error(`unknown libraries – check their licences and add them to scripts/postgres-notices.mjs: ${unknown.join(", ")}`);
-  process.exit(1);
+  fail(`unknown libraries – check their licences and add them to scripts/postgres-notices.mjs: ${unknown.join(", ")}`);
 }
 
 const used = new Map();

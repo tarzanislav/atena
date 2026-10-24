@@ -152,7 +152,8 @@ jobs:
             Copy-Item "$from/bin/$program" "$to/bin/"
             $queue.Enqueue((Resolve-Path "$from/bin/$program").Path)
           }
-          foreach ($module in Get-ChildItem "$from/lib" -Filter *.dll) {
+          # not the procedural languages that need Perl, Python or Tcl installed
+          foreach ($module in Get-ChildItem "$from/lib" -Filter *.dll | Where-Object Name -notmatch '^pl(perl|python|tcl)') {
             Copy-Item $module.FullName "$to/lib/"
             $queue.Enqueue($module.FullName)
           }

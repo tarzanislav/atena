@@ -10,6 +10,12 @@ import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFi
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+// in CI, every failure becomes an annotation of the pull request
+process.on("uncaughtException", (e) => {
+  console.log(`::error::notices: ${e.message.split("\n")[0]}`);
+  process.exit(1);
+});
+
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const out = join(root, "src-tauri", "resources", "notices");
 const target = process.argv.includes("--target") ? process.argv[process.argv.indexOf("--target") + 1] : null;
