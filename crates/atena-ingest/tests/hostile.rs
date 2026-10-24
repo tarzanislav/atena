@@ -34,7 +34,9 @@ async fn serve() -> Server {
     let feed = format!(
         "<?xml version=\"1.0\"?><rss version=\"2.0\"><channel><title>Oznamy</title>\
          <item><title>Dlhý</title><link>/skola/{}</link></item>\
-         <item><title>Skript</title><link>javascript:alert(1)</link></item></channel></rss>",
+         <item><title>Skript</title><link>javascript:alert(1)</link></item>\
+         <item><title>Cudzí web</title><link>https://www.example.com/clanok</link></item>\
+         <item><title>Zamestnanci</title><link>/skola/zamestnanci/</link></item></channel></rss>",
         "b".repeat(3_000)
     );
     Server::start(move |req| match req.path.as_str() {
@@ -42,6 +44,9 @@ async fn serve() -> Server {
         // a program posing as a PDF
         "/skola/program.pdf" => reply(200, &b"MZ\x90\x00\x03\x00\x00\x00%PDF-1.7"[..]),
         "/skola/rss.xml" => reply(200, feed.clone()).header("content-type", "application/rss+xml"),
+        // an address that leads to an erased page
+        "/presun/" => reply(301, "").header("location", "/skola/vymazane.html"),
+        "/skola/vymazane.html" => reply(200, "<html><body><p>Ján Novák, učiteľ</p></body></html>"),
         "/zlyha/" => reply(
             200,
             "<html><body><main><p>Stránka, ktorú databáza odmietne uložiť, lebo je to skúška.</p></main></body></html>",
@@ -80,6 +85,7 @@ async fn register(store: &Store, server: &Server) {
                 endpoint("/skola/", EndpointKind::Page),
                 endpoint("/skola/rss.xml", EndpointKind::Feed),
                 endpoint("/zlyha/", EndpointKind::Page),
+                endpoint("/presun/", EndpointKind::Page),
             ],
         }])
         .await
@@ -124,6 +130,15 @@ async fn hostile_content_is_cleaned_and_failures_pause() {
     let store = &db.store;
     let server = serve().await;
     register(store, &server).await;
+    // a page erased on request must not come back through a redirect
+    store
+        .forget(
+            server.url("/skola/vymazane.html").as_str(),
+            false,
+            "erasure request",
+        )
+        .await
+        .unwrap();
     // the store refuses this one page, as it would refuse a value it cannot hold
     sqlx::query("ALTER TABLE document ADD CONSTRAINT test_refuse CHECK (url NOT LIKE '%/zlyha/%')")
         .execute(store.pool())
@@ -148,10 +163,10 @@ async fn hostile_content_is_cleaned_and_failures_pause() {
     assert!(links[0].ends_with("/skola/dokument.txt"));
     let endpoints = text(store, "SELECT url FROM endpoint").await;
     assert!(
-        endpoints
-            .iter()
-            .all(|u| u.starts_with("http://") && u.len() <= 2_000),
-        "{endpoints:?}"
+        endpoints.iter().all(|u| u.starts_with("http://127.0.0.1:")
+            && u.len() <= 2_000
+            && !u.contains("zamestnanci")),
+        "no other site, no page about people: {endpoints:?}"
     );
     let unsafe_values: i64 = sqlx::query_scalar(
         "SELECT count(*) FROM document_version WHERE canonical_url IS NOT NULL OR published_at IS NOT NULL",
@@ -195,6 +210,20 @@ async fn hostile_content_is_cleaned_and_failures_pause() {
         (outcome.as_str(), enabled, documents),
         ("dangerous", false, 0)
     );
+
+    // the erased page reached through a redirect: nothing stored
+    let erased: Vec<String> = text(
+        store,
+        "SELECT last_outcome FROM endpoint WHERE url LIKE '%/presun/'",
+    )
+    .await;
+    assert_eq!(erased, ["erased"]);
+    let kept = text(
+        store,
+        "SELECT url FROM document WHERE url LIKE '%vymazane%'",
+    )
+    .await;
+    assert!(kept.is_empty());
     db.drop().await;
 }
 

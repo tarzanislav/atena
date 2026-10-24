@@ -146,6 +146,10 @@ pub enum Blocked {
     /// The URL is longer than [`MAX_URL_LEN`].
     #[error("URL is too long")]
     TooLong,
+    /// A redirect from an encrypted address to an unencrypted one, where anyone on the way could
+    /// change the content.
+    #[error("redirect from https to plain http")]
+    Downgrade,
 }
 
 /// Which destinations the crawler may contact.

@@ -79,6 +79,12 @@ resource (after decompression), only the content types it can process. It sends 
   a parser trap) can only end that child. Such a document counts as too demanding (`too_demanding`):
   nothing of it is kept and its address is not tried again. Comparing versions is limited to
   2 seconds, removing contact details reads a text a fixed number of times.
+* **Each source stays on its own site.** Sites are told apart with the public suffix list
+  (`static.minedu.sk` belongs to `www.minedu.sk`, but two hosts under `gov.uk` are two publishers).
+  Content that another site serves after a redirect is not stored under the source's name
+  (`moved_elsewhere`); feeds and sitemaps add only addresses on their own site; pages about people
+  are skipped wherever they are found; an erased address cannot come back through a redirect
+  (`erased`); a redirect from `https` to plain `http` is refused.
 * **A failure never turns into a loop.** When the database cannot store a result, the check counts as
   failed and the address waits at least an hour, like after any other failure.
 

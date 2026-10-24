@@ -80,6 +80,12 @@ Z jedného zdroja najviac 50 MiB po rozbalení a len typy obsahu, ktoré vie spr
   (dekompresná bomba, pasca na parser) tak môže ukončiť len tento proces. Taký dokument sa považuje za
   príliš náročný (`too_demanding`): nič z neho sa neuloží a jeho adresa sa už neskúša. Porovnanie verzií
   má limit 2 sekundy a odstránenie kontaktných údajov prečíta text len pevne daný počet ráz.
+* **Každý zdroj zostane na svojom webe.** Weby sa rozlišujú podľa zoznamu verejných domén (public
+  suffix list): `static.minedu.sk` patrí k `www.minedu.sk`, ale dva weby pod `gov.uk` sú dvaja rôzni
+  vydavatelia. Obsah, ktorý po presmerovaní ponúkne iný web, sa pod menom zdroja neuloží
+  (`moved_elsewhere`). Kanály a sitemapy pridajú len adresy na vlastnom webe. Stránky o ľuďoch sa
+  vynechajú, nech sa nájdu kdekoľvek. Vymazaná adresa sa nevráti ani cez presmerovanie (`erased`).
+  Presmerovanie z `https` na nešifrované `http` sa odmietne.
 * **Z chyby sa nikdy nestane slučka.** Keď databáza výsledok uložiť nevie, kontrola sa počíta za
   neúspešnú a adresa počká aspoň hodinu, ako po každej inej chybe.
 

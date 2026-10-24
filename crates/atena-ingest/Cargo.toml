@@ -23,6 +23,9 @@ atena-store = { path = "../atena-store" }
 # counts allocations so that the parsing worker can be held to a memory limit
 cap = "0.1.2"
 jiff = "0.2.38"
+# the public suffix list: which hosts belong to one site (static.minedu.sk and www.minedu.sk do,
+# two hosts under gov.uk do not)
+psl = "2.1.245"
 serde_json.workspace = true
 thiserror.workspace = true
 tokio = { version = "1.54.1", features = ["macros", "rt-multi-thread", "signal", "sync", "time"] }

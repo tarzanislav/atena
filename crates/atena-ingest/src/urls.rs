@@ -75,15 +75,31 @@ pub fn is_document_file(url: &Url) -> bool {
     extension(url).is_some_and(|e| DOCUMENTS.contains(&e.as_str()))
 }
 
-/// `true` when `link_host` belongs to the site of `page_host`: the same host, or the same name
-/// without `www.`, or one of its subdomains (`static.minedu.sk` for `www.minedu.sk`).
-fn same_site(page_host: &str, link_host: &str) -> bool {
-    let base = page_host.strip_prefix("www.").unwrap_or(page_host);
-    // a bare top-level domain or an IP address has no subdomains worth following
-    if !base.contains('.') || base.parse::<std::net::IpAddr>().is_ok() || base.starts_with('[') {
-        return page_host == link_host;
+/// `true` when two hosts belong to one site: the same host, or the same registrable domain by
+/// the public suffix list – `static.minedu.sk` and `www.minedu.sk` do, `www.gov.uk` and
+/// `assets.service.gov.uk` do not (`gov.uk` is a public suffix shared by many publishers), and an IP
+/// address is a site of its own.
+pub fn same_site(a: &str, b: &str) -> bool {
+    if a.eq_ignore_ascii_case(b) {
+        return true;
     }
-    link_host == page_host || link_host == base || link_host.ends_with(&format!(".{base}"))
+    let is_name =
+        |h: &str| h.contains('.') && h.parse::<std::net::IpAddr>().is_err() && !h.starts_with('[');
+    if !is_name(a) || !is_name(b) {
+        return false;
+    }
+    match (psl::domain_str(a), psl::domain_str(b)) {
+        (Some(x), Some(y)) => x.eq_ignore_ascii_case(y),
+        _ => false,
+    }
+}
+
+/// `true` when `link` is on the site of `page`.
+pub fn on_site(page: &Url, link: &Url) -> bool {
+    match (host(page), host(link)) {
+        (Some(a), Some(b)) => same_site(&a, &b),
+        _ => false,
+    }
 }
 
 /// The directory of a path: `/a/b/page.html` → `/a/b/`, `/a/b/` → `/a/b/`.
@@ -162,6 +178,22 @@ mod tests {
             host(&u("https://WWW.Skola.sk/")).as_deref(),
             Some("www.skola.sk")
         );
+    }
+
+    #[test]
+    fn one_site_by_the_public_suffix_list() {
+        assert!(same_site("www.minedu.sk", "static.minedu.sk"));
+        assert!(same_site("minedu.sk", "www.minedu.sk"));
+        assert!(same_site("www.bbc.co.uk", "news.bbc.co.uk"));
+        // gov.uk and gov.pl are shared by many publishers
+        assert!(!same_site("www.gov.uk", "assets.publishing.service.gov.uk"));
+        assert!(!same_site("www.gov.pl", "www.oke.gov.pl"));
+        assert!(!same_site("www.minedu.sk", "evil-minedu.sk"));
+        assert!(!same_site("www.minedu.sk", "minedu.sk.evil.com"));
+        // addresses and single names are sites of their own
+        assert!(same_site("127.0.0.1", "127.0.0.1"));
+        assert!(!same_site("127.0.0.1", "127.0.0.2"));
+        assert!(!same_site("localhost", "intranet"));
     }
 
     #[test]

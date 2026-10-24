@@ -485,10 +485,17 @@ impl Fetcher {
                 status: response.status().as_u16(),
             }
         })?;
-        url.join(&location).map_err(|_| FetchError::Network {
+        let target = url.join(&location).map_err(|_| FetchError::Network {
             url: url.to_string(),
             message: format!("invalid redirect target {location:?}"),
-        })
+        })?;
+        if url.scheme() == "https" && target.scheme() == "http" {
+            return Err(FetchError::Blocked {
+                url: target.to_string(),
+                reason: Blocked::Downgrade,
+            });
+        }
+        Ok(target)
     }
 
     fn retry_after(&self, headers: &HeaderMap) -> Duration {
