@@ -63,6 +63,15 @@ resource (after decompression), only the content types it can process. It sends 
   streaming, robots.txt read up to 500 KiB, sitemaps up to 50,000 entries / 50 MiB, feeds up to 10,000
   items. XML entities declared in a DTD are never expanded.
 * **TLS** via rustls with the operating system's certificate store.
+* **Hostile content stays out** (`atena_core::safety`). Before anything is stored:
+  * control characters, bidirectional overrides and invisible characters are removed from every text
+    (they could break the database, drive a terminal or make text read differently than it is stored);
+  * only plain `http(s)` addresses of at most 2,000 characters are kept or followed – never
+    `javascript:`, `data:` or `file:`, never an address with credentials;
+  * dates before 1900 or in the future are dropped;
+  * binary data declared as text is refused.
+* **A failure never turns into a loop.** When the database cannot store a result, the check counts as
+  failed and the address waits at least an hour, like after any other failure.
 
 Known limits of this version: per-host state is kept in memory without pruning (fine for thousands of
 hosts); feeds in encodings other than UTF-8 are read with replacement characters. HTML `<meta>` rules and

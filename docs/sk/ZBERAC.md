@@ -63,6 +63,15 @@ Z jedného zdroja najviac 50 MiB po rozbalení a len typy obsahu, ktoré vie spr
   veľkosti kontrolované priebežne, robots.txt do 500 KiB, sitemapa do 50 000 položiek / 50 MiB, kanál do
   10 000 položiek. Entity definované v DTD sa nikdy nerozbaľujú.
 * **Šifrovanie** cez rustls s úložiskom certifikátov operačného systému.
+* **Nebezpečný obsah zostane vonku** (`atena_core::safety`). Pred uložením:
+  * sa z každého textu odstránia riadiace znaky, znaky obracajúce smer textu a neviditeľné znaky
+    (mohli by pokaziť databázu, ovládať terminál alebo zmeniť, ako sa text číta);
+  * sa ponechajú alebo sledujú len obyčajné adresy `http(s)` s najviac 2 000 znakmi – nikdy
+    `javascript:`, `data:` ani `file:`, nikdy adresa s menom a heslom;
+  * sa zahodia dátumy pred rokom 1900 alebo v budúcnosti;
+  * sa odmietnu binárne dáta vydávané za text.
+* **Z chyby sa nikdy nestane slučka.** Keď databáza výsledok uložiť nevie, kontrola sa počíta za
+  neúspešnú a adresa počká aspoň hodinu, ako po každej inej chybe.
 
 Obmedzenia tejto verzie: stav jednotlivých serverov sa drží v pamäti bez čistenia (stačí pre tisíce
 serverov); kanály v inom kódovaní ako UTF-8 sa čítajú s náhradnými znakmi. Pravidlá z HTML `<meta>` a

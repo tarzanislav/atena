@@ -18,6 +18,9 @@ mod office;
 mod pdf;
 mod video;
 
+use std::borrow::Cow;
+
+use atena_core::safety::{clean_line, clean_text, is_storable_url};
 use jiff::Timestamp;
 use url::Url;
 
@@ -138,6 +141,10 @@ fn format_of(
     let lower = String::from_utf8_lossy(head).to_ascii_lowercase();
     match essence(content_type).as_str() {
         "text/html" | "application/xhtml+xml" => Ok((Format::Html, None)),
+        // text that is not text (NUL bytes) is binary data in disguise
+        "text/plain" | "text/csv" if head.contains(&0) => Err(ExtractError::Unsupported(
+            "binary data declared as text".into(),
+        )),
         "text/plain" | "text/csv" => Ok((Format::Text, None)),
         _ if lower.contains("<html")
             || lower.contains("<!doctype html")
@@ -152,6 +159,60 @@ fn format_of(
             other.to_string()
         })),
     }
+}
+
+/// Earliest date a document's metadata may claim (1 January 1900); earlier ones are errors.
+const EARLIEST_DATE_S: i64 = -2_208_988_800;
+/// Metadata may run ahead of the clock by this much (time zones, servers' clocks).
+const FUTURE_SLACK_S: i64 = 2 * 86_400;
+
+/// A date no document can have – before 1900 or in the future – is dropped.
+fn plausible(time: Option<Timestamp>) -> Option<Timestamp> {
+    let latest = Timestamp::now().as_second().saturating_add(FUTURE_SLACK_S);
+    time.filter(|t| (EARLIEST_DATE_S..=latest).contains(&t.as_second()))
+}
+
+/// Removes what could hide or harm (`atena_core::safety`): hidden characters in every text,
+/// addresses that are not plain `http(s)` URLs of a sensible length, impossible dates.
+fn sanitize(doc: &mut Document) {
+    let line = |t: &mut Option<String>| {
+        *t = t.as_deref().map(clean_line).filter(|t| !t.is_empty());
+    };
+    line(&mut doc.title);
+    line(&mut doc.description);
+    line(&mut doc.declared_language);
+    if let Cow::Owned(text) = clean_text(&doc.text) {
+        doc.text = text;
+    }
+    doc.authors = doc
+        .authors
+        .iter()
+        .map(|a| clean_line(a))
+        .filter(|a| !a.is_empty())
+        .collect();
+    doc.robots = doc
+        .robots
+        .iter()
+        .map(|r| clean_line(r))
+        .filter(|r| !r.is_empty())
+        .collect();
+    doc.links.retain(|l| is_storable_url(l.url.as_str()));
+    for link in &mut doc.links {
+        link.text = clean_line(&link.text);
+    }
+    doc.videos.retain(|v| is_storable_url(v.url.as_str()));
+    for video in &mut doc.videos {
+        video.title = clean_line(&video.title);
+    }
+    doc.feeds.retain(|f| is_storable_url(f.as_str()));
+    doc.canonical = doc.canonical.take().filter(|c| is_storable_url(c.as_str()));
+    doc.tdm_policy = doc
+        .tdm_policy
+        .take()
+        .map(|p| p.trim().to_string())
+        .filter(|p| is_storable_url(p));
+    doc.published = plausible(doc.published);
+    doc.modified = plausible(doc.modified);
 }
 
 fn cut(text: String) -> (String, bool) {
@@ -253,6 +314,7 @@ pub fn extract(
         }
     };
     (doc.text, doc.truncated) = cut(text);
+    sanitize(&mut doc);
     let sample = match &doc.title {
         Some(title) if doc.text.chars().count() < 200 => format!("{title}\n{}", doc.text),
         _ => doc.text.clone(),
@@ -290,6 +352,27 @@ mod tests {
             extract(&office::tests::zip_of(&[("a.txt", "x")]), None, &url()),
             Err(ExtractError::Unsupported(_))
         ));
+    }
+
+    #[test]
+    fn binary_data_declared_as_text_is_refused() {
+        assert!(matches!(
+            extract(b"MZ\x90\0\x03\0\0\0", Some("text/plain"), &url()),
+            Err(ExtractError::Unsupported(_))
+        ));
+    }
+
+    #[test]
+    fn hidden_characters_and_impossible_dates_are_removed() {
+        let html = "<html><head><title>T</title>\
+            <meta property=\"article:published_time\" content=\"1066-10-14T00:00:00Z\">\
+            <link rel=\"canonical\" href=\"javascript:alert(1)\"></head><body><main>\
+            <h1>Zá\u{202e}pis\u{0}</h1><p>Zápis\u{200b} do prvého ročníka sa koná v apríli.</p>\
+            </main></body></html>";
+        let d = extract(html.as_bytes(), Some("text/html"), &url()).unwrap();
+        assert_eq!(d.title.as_deref(), Some("Zápis"));
+        assert!(d.text.contains("Zápis do prvého ročníka"));
+        assert_eq!((d.canonical, d.published), (None, None));
     }
 
     #[test]

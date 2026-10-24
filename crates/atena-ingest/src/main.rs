@@ -9,6 +9,7 @@ use std::sync::Arc;
 
 use atena_core::Taxonomy;
 use atena_core::legality::{SourceFacts, permission};
+use atena_core::safety::for_terminal;
 use atena_core::source::{BUNDLED_SOURCES, load_sources};
 use atena_crawl::{Config, Fetched, Fetcher, Validators};
 use atena_ingest::{Pipeline, PipelineConfig, WorkerConfig, register_entries, run};
@@ -247,10 +248,13 @@ async fn fetch_one(url: &str) -> Result<(), String> {
         "Status:       {} ({} bytes, {})",
         page.status,
         page.body.len(),
-        page.content_type.as_deref().unwrap_or("no type")
+        for_terminal(page.content_type.as_deref().unwrap_or("no type"))
     );
     println!("Format:       {:?}", doc.format);
-    println!("Title:        {}", doc.title.as_deref().unwrap_or("–"));
+    println!(
+        "Title:        {}",
+        for_terminal(doc.title.as_deref().unwrap_or("–"))
+    );
     match &doc.language {
         Some(l) => println!(
             "Language:     {} ({:?}, {:.2})",
@@ -276,7 +280,8 @@ async fn fetch_one(url: &str) -> Result<(), String> {
     );
     let preview: String = doc.text.chars().take(600).collect();
     println!(
-        "\n{preview}{}",
+        "\n{}{}",
+        for_terminal(&preview),
         if doc.text.chars().count() > 600 {
             " …"
         } else {
@@ -334,7 +339,7 @@ async fn assess(args: &[String]) -> Result<(), String> {
     }
     let parsed = atena_assess::parse_input(&read_lines(path)?);
     for r in &parsed.rejected {
-        eprintln!("line {}: {:?}: {}", r.line, r.reason, r.text);
+        eprintln!("line {}: {:?}: {}", r.line, r.reason, for_terminal(&r.text));
     }
     let fetcher = Arc::new(Fetcher::new(Config::default()).map_err(|e| e.to_string())?);
     let assessments = atena_assess::Assessor::new(fetcher)
@@ -367,7 +372,7 @@ async fn assess(args: &[String]) -> Result<(), String> {
             yes(show),
             a.url
         );
-        println!("      {}", p.rights.finding);
+        println!("      {}", for_terminal(&p.rights.finding));
     }
     println!(
         "\n{} items assessed, {} lines not accepted. Proposals are not applied: a person confirms each one.",

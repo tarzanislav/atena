@@ -4,6 +4,7 @@
 //! Main-text extraction drops menus and footers on purpose; here they matter, because that is where
 //! "All rights reserved", licence badges and the link to the terms of use usually are.
 
+use atena_core::safety::{clean_line, clean_text, is_storable_url};
 use ego_tree::iter::Edge;
 use scraper::{Html, Node};
 use url::Url;
@@ -134,7 +135,14 @@ pub fn legal_signals(body: &[u8], content_type: Option<&str>, url: &Url) -> Lega
         }
     }
     flush(&mut line, &mut blocks, &mut length);
-    signals.text = blocks.join("\n\n");
+    signals.text = clean_text(&blocks.join("\n\n")).into_owned();
+    signals
+        .licence_links
+        .retain(|u| is_storable_url(u.as_str()));
+    signals.links.retain(|l| is_storable_url(l.url.as_str()));
+    for link in &mut signals.links {
+        link.text = clean_line(&link.text);
+    }
     signals
 }
 

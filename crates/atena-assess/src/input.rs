@@ -139,6 +139,10 @@ fn target_of(text: &str) -> Result<Target, Rejection> {
     }
     let mut url = url;
     url.set_fragment(None);
+    // percent-encoding can make an address longer than it was typed
+    if url.as_str().len() > atena_core::safety::MAX_URL_LEN {
+        return Err(Rejection::TooLong);
+    }
     Ok(Target::Url(url))
 }
 
