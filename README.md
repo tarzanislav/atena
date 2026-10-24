@@ -19,7 +19,7 @@ and always links each item back to its original source.
 |---|---|
 | `data/` | taxonomy (296 concepts, 15 facets, 8 languages) and a register of 186 sources |
 | `prototyp-v0.1/` | working Python prototype (crawling, versions, classification, search, web, 41 tests) – the executable specification for the Rust core |
-| `nastroje/meranie-jazykov/` | benchmark of Rust, Go, Java, Node and Python on ATENA's classification task |
+| `tools/language-benchmark/` | benchmark of Rust, Go, Java, Node and Python on ATENA's classification task |
 | `docs/` | technology, design, licences, internationalisation (English); `docs/sk/` Slovak versions |
 
 ## Principles

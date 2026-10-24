@@ -40,5 +40,5 @@ nastroje/             meranie jazykov a ďalšie nástroje
 ```
 
 ## Meranie
-`nastroje/meranie-jazykov` – rovnaký algoritmus zaraďovania v 5 jazykoch, rovnaký výsledok:
+`tools/language-benchmark` – rovnaký algoritmus zaraďovania v 5 jazykoch, rovnaký výsledok:
 Rust 669, Go 526, Java 317, Node 246, Python 15 dokumentov za sekundu.

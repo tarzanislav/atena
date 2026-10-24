@@ -19,7 +19,7 @@ vedie späť na pôvodný zdroj.
 |---|---|
 | `data/` | taxonómia (296 pojmov, 15 osí, 8 jazykov) a register 186 zdrojov |
 | `prototyp-v0.1/` | funkčný prototyp v Pythone (zber, verzie, zaradenie, vyhľadávanie, web, 41 testov) – špecifikácia pre jadro v Ruste |
-| `nastroje/meranie-jazykov/` | meranie rýchlosti Rust, Go, Java, Node, Python na úlohe ATENA |
+| `tools/language-benchmark/` | meranie rýchlosti Rust, Go, Java, Node, Python na úlohe ATENA |
 | `docs/` | technológie, dizajn, licencie |
 
 ## Zásady

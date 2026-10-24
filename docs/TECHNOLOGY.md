@@ -40,5 +40,5 @@ and about 600 GB of original files outside the database. A global deployment wit
 roughly ten times that – still a single PostgreSQL server with partitioning and replicas.
 
 ## Benchmark
-`nastroje/meranie-jazykov`: the same classification algorithm in five languages, identical results:
+`tools/language-benchmark`: the same classification algorithm in five languages, identical results:
 Rust 669, Go 526, Java 317, Node 246, Python 15 documents per second (one core).
