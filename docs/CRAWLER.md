@@ -22,6 +22,7 @@ the original. This page is for **website owners** (what the crawler does and how
 | `429` / `503` with `Retry-After` | The host is left alone for the requested time (up to 6 hours; 60 seconds when the header is missing). |
 | Conditional requests | `If-None-Match` / `If-Modified-Since` – unchanged pages cost a `304`. |
 | **TDMRep** ([W3C](https://www.w3.org/community/reports/tdmrep/CG-FINAL-tdmrep-20240510/)) | `/.well-known/tdmrep.json` (cached 24 h), `tdm-reservation` / `tdm-policy` headers, and later HTML/PDF metadata. A reservation is recorded with every page and respected by the processing pipeline (text and data mining under Art. 4 of Directive (EU) 2019/790). |
+| **AI crawlers in robots.txt** | A group naming a crawler that collects for AI training or mining (`MINING_AGENTS`: GPTBot, CCBot, ClaudeBot, Google-Extended …) that disallows the page counts as a reservation of mining: ATENA, which follows only its own group or `*`, may fetch the page, but keeps metadata only. No later TDMRep value can lift it. |
 | `X-Robots-Tag` / `<meta name="robots">` | `noindex`, `nofollow`, `noarchive` (also `nocache`), `nosnippet`, `notranslate`, `none`; values addressed to other crawlers (`otherbot: noindex`) are ignored. |
 
 Examples:

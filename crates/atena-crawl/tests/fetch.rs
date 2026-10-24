@@ -243,6 +243,27 @@ async fn tdm_reservation_from_the_well_known_file_and_headers() {
 }
 
 #[tokio::test]
+async fn refusing_ai_crawlers_in_robots_txt_reserves_mining() {
+    let server = Server::start(|req| match req.path.as_str() {
+        "/robots.txt" => reply(
+            200,
+            "User-agent: *\nAllow: /\n\nUser-agent: GPTBot\nUser-agent: CCBot\nDisallow: /news/\n",
+        ),
+        "/.well-known/tdmrep.json" => reply(200, r#"[{"location": "/*", "tdm-reservation": 0}]"#)
+            .header("content-type", "application/json"),
+        _ => reply(200, "x"),
+    })
+    .await;
+    let f = Fetcher::new(config(&server)).unwrap();
+    // ATENA may fetch the page, but keeps it as metadata only – TDMRep "0" cannot lift that
+    let news = page(&f, server.url("/news/a")).await.tdm;
+    assert!(news.refused_to_ai_crawlers && news.is_reserved());
+    assert_eq!(news.reserved, Some(false));
+    let other = page(&f, server.url("/about")).await.tdm;
+    assert!(!other.refused_to_ai_crawlers && !other.is_reserved());
+}
+
+#[tokio::test]
 async fn size_and_type_limits_also_after_decompression() {
     let mut gz = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::best());
     gz.write_all(&vec![b'a'; 1_000_000]).unwrap();

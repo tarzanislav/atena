@@ -21,7 +21,8 @@ stiahnuť, uložiť a zobraziť, ide cez funkciu `permission`. Iná cesta v prog
 3. **Neisté je zakázané.** Chránený obsah smie ATENA uchovávať len vtedy, keď:
    - podmienky webu boli overené (`terms: allowed`),
    - **obe** práva majú výnimku na vyťažovanie textov a dát, ktorá pokrýva účel ATENY,
-   - vydavateľ si vyťažovanie nevyhradil.
+   - vydavateľ si vyťažovanie nevyhradil – ani protokolom TDMRep, ani v podmienkach webu
+     (`terms: reserved`), ani tým, že v robots.txt zakázal roboty, ktoré zbierajú pre umelú inteligenciu.
 4. **Zobraziť celý text** sa smie len pri úradných textoch, ktoré sú voľné podľa oboch práv, a pri
    otvorených licenciách. Rovnako to platí pre preklad celého textu a pre ukladanie pôvodných súborov.
 5. **Prísne právo o osobných údajoch** (Čína – PIPL, Rusko – 152-FZ, Južná Kórea – PIPA): z týchto
@@ -52,11 +53,15 @@ Profily sú opatrným zhrnutím práva, nie právnou radou. Profil smie ktokoľv
 ho možno len po posúdení právnikom, ktoré sa zapíše do pull requestu.
 
 ## Čo z toho dnes vyplýva
+Všetkých 186 zdrojov prešlo 24. 10. 2026 overením práv. Pri každom zdroji je v `data/sources.yaml`
+zapísaná stránka, ktorá sa čítala, a čo na nej je ([PRAVA-ZDROJOV.md](PRAVA-ZDROJOV.md)).
 Program to kedykoľvek ukáže príkazom `atena-ingest legality`.
-- Zo 186 zdrojov sa smie zbierať 185; YouTube nie, lebo jeho podmienky to zakazujú.
-- Texty si smie ponechať a zobraziť zatiaľ len 5 zbierok predpisov.
-- Pri ostatných zdrojoch ATENA zatiaľ ukladá len metadáta: názov, adresu, dátumy a zaradenie podľa
-  názvu. Zmenu stránky zistí aj tak, cez odtlačok textu, ale neuchová jej obsah.
-- Overenie licencií a podmienok jednotlivých zdrojov (`terms: allowed`, otvorené licencie, federálne
-  úradné diela) otvorí uchovávanie textov tam, kde to obe práva dovoľujú. Americký, britský, ruský a
-  čínsky chránený obsah zostane len v metadátach aj potom.
+- **Zbierať sa smie 158 zdrojov.** 28 nie, lebo ich podmienky zakazujú automatický prístup alebo
+  dovoľujú prístup len na osobné použitie (UNESCO, YouTube, Edutopia, PBS LearningMedia, CommonLit,
+  OER Commons, CORE a ďalšie).
+- **Texty si smie ponechať 114 zdrojov**, a to len na zistenie zmien a zaradenie. Celé ich nikdy
+  nezobrazí: používateľ uvidí názov, údaje o dokumente, zaradenie a odkaz na originál.
+- **Celé zobraziť smie 22 zdrojov:** zbierky predpisov, federálne diela USA a obsah s otvorenou
+  licenciou (CC BY, CC BY-SA, CC0, OGL, Licence Ouverte).
+- Americký, britský, kanadský a austrálsky chránený obsah zostáva len v metadátach, ruský a čínsky
+  vždy.

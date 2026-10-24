@@ -22,6 +22,7 @@ ATENY (čo zberač zaručuje).
 | `429` / `503` s `Retry-After` | Server dostane pokoj na požadovaný čas (najviac 6 hodín; bez hlavičky 60 sekúnd). |
 | Podmienené požiadavky | `If-None-Match` / `If-Modified-Since` – nezmenená stránka stojí len odpoveď `304`. |
 | **TDMRep** ([W3C](https://www.w3.org/community/reports/tdmrep/CG-FINAL-tdmrep-20240510/)) | `/.well-known/tdmrep.json` (platí 24 h), hlavičky `tdm-reservation` / `tdm-policy`, neskôr aj údaje v HTML a PDF. Výhrada sa zapíše ku každej stránke a ďalšie spracovanie ju rešpektuje (vyťažovanie textov a dát podľa čl. 4 smernice (EÚ) 2019/790). |
+| **Roboty umelej inteligencie v robots.txt** | Ak skupina v robots.txt zakazuje stránku niektorému robotovi, ktorý zbiera pre trénovanie umelej inteligencie alebo vyťažovanie (`MINING_AGENTS`: GPTBot, CCBot, ClaudeBot, Google-Extended a ďalšie), platí to ako výhrada vyťažovania. ATENA sa riadi len svojou skupinou alebo skupinou `*`, takže stránku stiahnuť smie, ale uloží z nej len metadáta. Neskorší údaj TDMRep túto výhradu nezruší. |
 | `X-Robots-Tag` / `<meta name="robots">` | `noindex`, `nofollow`, `noarchive` (aj `nocache`), `nosnippet`, `notranslate`, `none`; pokyny pre iné zberače (`otherbot: noindex`) sa ignorujú. |
 
 Príklady:

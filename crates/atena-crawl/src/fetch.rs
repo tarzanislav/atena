@@ -6,7 +6,8 @@
 //! 3. the host is paced: one request at a time, `min_delay` or the robots `crawl-delay` apart,
 //!    and left alone after `429`/`503` for as long as `Retry-After` asks;
 //! 4. only accepted content types are read, never more than `max_body_bytes` (also after gzip);
-//! 5. the TDMRep reservation and `X-Robots-Tag` rules are attached to the page.
+//! 5. the TDMRep reservation, a refusal of AI crawlers in robots.txt and `X-Robots-Tag` rules are
+//!    attached to the page.
 
 use std::error::Error as StdError;
 use std::sync::{Arc, Once};
@@ -23,7 +24,7 @@ use crate::date::parse_date;
 use crate::directives::{IndexRules, Tdm, TdmFile};
 use crate::net::{Blocked, NetPolicy, VettingResolver};
 use crate::pace::{OriginCache, Pacer, Turn};
-use crate::robots::{MAX_ROBOTS_BYTES, RobotsPolicy, RobotsTxt};
+use crate::robots::{MAX_ROBOTS_BYTES, MiningRules, RobotsPolicy, RobotsTxt};
 
 /// The name site owners use for ATENA in robots.txt and `X-Robots-Tag`.
 pub const PRODUCT_TOKEN: &str = "ATENA";
@@ -241,6 +242,8 @@ pub enum FetchError {
 #[derive(Debug, Clone)]
 struct SiteRules {
     robots: RobotsPolicy,
+    /// What robots.txt says to crawlers that collect for AI training and mining.
+    mining: MiningRules,
     sitemaps: Vec<String>,
     /// `false` when the policy is the "complete disallow" of an unreachable robots.txt.
     reachable: bool,
@@ -393,7 +396,9 @@ impl Fetcher {
                     });
                 }
                 200..=299 => {
-                    let page = self.read_page(current, response, tdm_file.as_deref()).await;
+                    let page = self
+                        .read_page(current, response, tdm_file.as_deref(), &site.mining)
+                        .await;
                     drop(turn);
                     return page.map(Fetched::Page);
                 }
@@ -531,6 +536,7 @@ impl Fetcher {
         url: Url,
         mut response: Response,
         tdm_file: Option<&TdmFile>,
+        mining: &MiningRules,
     ) -> Result<Page, FetchError> {
         let headers = response.headers().clone();
         let content_type = header_text(&headers, header::CONTENT_TYPE);
@@ -557,6 +563,7 @@ impl Fetcher {
             header_text(&headers, HeaderName::from_static("tdm-reservation")).as_deref(),
             header_text(&headers, HeaderName::from_static("tdm-policy")).as_deref(),
         );
+        tdm.refused_to_ai_crawlers = mining.reserves(&path_and_query(&url));
         let mut index = IndexRules::default();
         for value in headers.get_all("x-robots-tag") {
             if let Ok(text) = value.to_str() {
@@ -625,6 +632,7 @@ impl Fetcher {
         let Ok(robots_url) = url.join("/robots.txt") else {
             return SiteRules {
                 robots: RobotsPolicy::DisallowAll,
+                mining: MiningRules::default(),
                 sitemaps: Vec::new(),
                 reachable: false,
             };
@@ -638,6 +646,7 @@ impl Fetcher {
             .get(&origin, |stale| async move {
                 let fresh = |robots| SiteRules {
                     robots,
+                    mining: MiningRules::default(),
                     sitemaps: Vec::new(),
                     reachable: true,
                 };
@@ -646,6 +655,7 @@ impl Fetcher {
                         let parsed = RobotsTxt::parse(&String::from_utf8_lossy(&body));
                         let rules = SiteRules {
                             robots: RobotsPolicy::Rules(parsed.rules_for(token)),
+                            mining: parsed.mining_rules(),
                             sitemaps: parsed.sitemaps().to_vec(),
                             reachable: true,
                         };
@@ -664,6 +674,7 @@ impl Fetcher {
                         _ => (
                             SiteRules {
                                 robots: RobotsPolicy::DisallowAll,
+                                mining: MiningRules::default(),
                                 sitemaps: Vec::new(),
                                 reachable: false,
                             },

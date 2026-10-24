@@ -18,9 +18,10 @@ kept and shown goes through `legality::permission`; there is no other path.
 2. **Two laws at once**: the operator's (Slovakia/EU) and the source country's; only what both allow.
 3. **Uncertain means forbidden**: copyrighted content is kept as text only with **verified** terms of
    use (`terms: allowed`), where **both** laws have a mining exception covering ATENA's purpose, and
-   without a publisher's reservation. (German courts have not settled whether a reservation written
+   without a publisher's reservation – in TDMRep, in the terms of use (`terms: reserved`), or by
+   refusing AI crawlers in robots.txt. (German courts have not settled whether a reservation written
    only in the terms of use counts – OLG Hamburg, Dec 2025, left it open for the future – so the terms
-   must be read.)
+   must be read, and every such reservation is respected.)
 4. **Full text, full translations and originals** only for official texts free under both laws and
    for openly licensed content.
 5. **Strict data protection** (China – PIPL, Russia – 152-FZ, South Korea – PIPA treated as strict):
@@ -50,6 +51,11 @@ The profiles are conservative summaries, not legal advice. Anyone may make a pro
 making one more permissive requires a legal review recorded in the pull request.
 
 ## Today
-`atena-ingest legality` prints the decision for every source. Of 186 sources, 185 may be crawled
-(YouTube's terms forbid it), 5 legal databases may keep and show texts, and all others keep metadata
-only until their licence and terms are verified.
+Every source went through a rights review on 24 Oct 2026; each entry of `data/sources.yaml` records
+the page that was read and what it says ([SOURCE-RIGHTS.md](SOURCE-RIGHTS.md)).
+`atena-ingest legality` prints the decision for every source. Of 186 sources:
+* **158 may be crawled**; 28 are not, because their terms forbid automated access or allow access only
+  for personal use (UNESCO, YouTube, Edutopia, PBS LearningMedia, CommonLit, OER Commons, CORE …);
+* **114 may keep texts** for change detection and classification – never shown in full;
+* **22 may be shown in full**: legal databases, US federal works, and openly licensed content
+  (CC BY, CC BY-SA, CC0, OGL, Licence Ouverte).

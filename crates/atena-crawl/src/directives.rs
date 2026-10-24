@@ -19,9 +19,17 @@ pub struct Tdm {
     pub reserved: Option<bool>,
     /// URL of the licensing policy, if one is published.
     pub policy: Option<String>,
+    /// robots.txt refuses the page to crawlers that collect for AI training and mining
+    /// ([`crate::robots::MINING_AGENTS`]). No later source can lift this.
+    pub refused_to_ai_crawlers: bool,
 }
 
 impl Tdm {
+    /// `true` when mining is reserved by any means: TDMRep or robots.txt.
+    pub fn is_reserved(&self) -> bool {
+        self.reserved == Some(true) || self.refused_to_ai_crawlers
+    }
+
     /// Applies values from a later source; absent values keep the current ones.
     pub fn apply(&mut self, reserved: Option<bool>, policy: Option<String>) {
         if reserved.is_some() {
@@ -105,6 +113,7 @@ impl TdmFile {
             .map(|r| Tdm {
                 reserved: r.reserved,
                 policy: r.reserved.and(r.policy.clone()),
+                refused_to_ai_crawlers: false,
             })
             .unwrap_or_default()
     }
