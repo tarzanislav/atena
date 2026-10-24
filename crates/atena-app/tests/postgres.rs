@@ -7,6 +7,17 @@ use std::path::PathBuf;
 use atena_app::EmbeddedPostgres;
 use sqlx::{Connection, PgConnection};
 
+/// A folder for a test. On Windows in the extended form `\\?\C:\…`, as Windows gives the app
+/// its own folders – the database must start from such paths too.
+fn folder(name: &str) -> PathBuf {
+    let folder = std::env::temp_dir().join(format!("{name}-{}", std::process::id()));
+    if cfg!(windows) {
+        PathBuf::from(format!(r"\\?\{}", folder.display()))
+    } else {
+        folder
+    }
+}
+
 fn bin() -> Option<PathBuf> {
     let Ok(bin) = std::env::var("ATENA_TEST_PG_BIN") else {
         eprintln!("ATENA_TEST_PG_BIN is not set – the embedded database test is skipped");
@@ -20,7 +31,7 @@ async fn the_database_runs_for_this_computer_only_and_keeps_its_data() {
     let Some(bin) = bin() else {
         return;
     };
-    let folder = std::env::temp_dir().join(format!("atena-pg-{}", std::process::id()));
+    let folder = folder("atena-pg");
     let _ = std::fs::remove_dir_all(&folder);
 
     let first = {
@@ -96,7 +107,7 @@ async fn the_whole_backend_starts_once_per_folder_and_stops() {
     let Some(bin) = bin() else {
         return;
     };
-    let folder = std::env::temp_dir().join(format!("atena-backend-{}", std::process::id()));
+    let folder = folder("atena-backend");
     let _ = std::fs::remove_dir_all(&folder);
     let start = atena_app::Start {
         folder: folder.clone(),

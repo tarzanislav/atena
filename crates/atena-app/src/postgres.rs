@@ -89,6 +89,29 @@ fn run(command: &mut Command, code: &'static str, what: &str) -> Result<(), AppE
     }
 }
 
+/// A Windows path in its ordinary form: `\\?\C:\…` becomes `C:\…` and `\\?\UNC\server\…`
+/// becomes `\\server\…`. Windows hands such extended paths to programs (the app's own folder is
+/// one), but PostgreSQL passes them through `cmd.exe`, which cannot use them.
+fn ordinary(path: &str) -> String {
+    if let Some(rest) = path.strip_prefix(r"\\?\UNC\") {
+        return format!(r"\\{rest}");
+    }
+    match path.strip_prefix(r"\\?\") {
+        // only a drive path has an ordinary form that means the same
+        Some(rest) if rest.as_bytes().get(1) == Some(&b':') => rest.to_string(),
+        _ => path.to_string(),
+    }
+}
+
+/// [`ordinary`] for paths of this system (on Windows; elsewhere the path as it is).
+fn ordinary_path(path: &Path) -> PathBuf {
+    if cfg!(windows) {
+        PathBuf::from(ordinary(&path.to_string_lossy()))
+    } else {
+        path.to_path_buf()
+    }
+}
+
 /// The last lines of the server log, for the detail of an error.
 fn log_tail(log: &Path) -> String {
     let text = std::fs::read_to_string(log).unwrap_or_default();
@@ -172,6 +195,7 @@ impl EmbeddedPostgres {
     /// Starts PostgreSQL from the programs in `bin` with its data in `folder`. The first start
     /// creates the database cluster.
     pub fn start(bin: &Path, folder: &Path) -> Result<Self, AppError> {
+        let (bin, folder) = (&ordinary_path(bin), &ordinary_path(folder));
         let data = folder.join("pgdata");
         let secret = folder.join("pg-password");
         std::fs::create_dir_all(folder).map_err(|e| AppError::io(folder, e))?;
@@ -309,6 +333,31 @@ fn create(bin: &Path, data: &Path, secret: &Path) -> Result<(), AppError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn windows_paths_take_their_ordinary_form() {
+        assert_eq!(
+            ordinary(r"\\?\C:\Users\spravca\AppData\Local\ATENA\postgres\bin"),
+            r"C:\Users\spravca\AppData\Local\ATENA\postgres\bin"
+        );
+        assert_eq!(
+            ordinary(r"\\?\UNC\server\share\atena"),
+            r"\\server\share\atena"
+        );
+        assert_eq!(
+            ordinary(r"C:\Program Files\ATENA"),
+            r"C:\Program Files\ATENA"
+        );
+        // a device path has no ordinary form and stays as it is
+        assert_eq!(
+            ordinary(r"\\?\Volume{1234}\atena"),
+            r"\\?\Volume{1234}\atena"
+        );
+        assert_eq!(
+            ordinary("/usr/lib/postgresql/17/bin"),
+            "/usr/lib/postgresql/17/bin"
+        );
+    }
 
     #[test]
     fn versions_are_read() {
