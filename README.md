@@ -21,6 +21,7 @@ The principles below and the rules written into the core (`atena-core`) put the 
   **Tantivy** search – see [docs/TECHNOLOGY.md](docs/TECHNOLOGY.md).
 * Design: Windows 11 / Fluent style, calm pastel section colours, light and dark themes – see [docs/DESIGN.md](docs/DESIGN.md).
 * Licences of all components and AI models – see [docs/LICENSES.md](docs/LICENSES.md).
+* The desktop app: user guide (Slovak) – see [docs/sk/PRIRUCKA.md](docs/sk/PRIRUCKA.md).
 
 ## Repository
 | Folder | Contents |

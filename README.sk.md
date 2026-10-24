@@ -21,6 +21,7 @@ Zásady nižšie a pravidlá zapísané v jadre (`atena-core`) tieto piliere uv�
 * Nosné jazyky od začiatku: **angličtina, slovenčina, čeština, ruština a čínština (zjednodušená)**; slovenčina je referenčný jazyk, Slovensko prvý balík krajiny, Česko druhý.
 * Medzinárodnosť a balíky krajín (anglicky) – [docs/INTERNATIONALIZATION.md](docs/INTERNATIONALIZATION.md).
 * Licencie súčastí a modelov AI – [docs/LICENCIE.md](docs/sk/LICENCIE.md).
+* Aplikácia pre počítač: príručka pre používateľa – [docs/sk/PRIRUCKA.md](docs/sk/PRIRUCKA.md).
 
 ## Obsah repozitára
 | Priečinok | Čo obsahuje |

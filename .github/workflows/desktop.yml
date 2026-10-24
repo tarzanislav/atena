@@ -118,9 +118,16 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
           Invoke-WebRequest -Uri $env:PG_URL -OutFile pg.zip
+          $size = (Get-Item pg.zip).Length
+          $head = Get-Content pg.zip -AsByteStream -TotalCount 2
+          if ($head[0] -ne 0x50 -or $head[1] -ne 0x4B) {
+            Write-Output "::error::the PostgreSQL download is not a zip archive ($size bytes)"
+            exit 1
+          }
           $sha = (Get-FileHash pg.zip -Algorithm SHA256).Hash.ToLower()
           if (-not $env:PG_SHA256) {
-            Write-Output "::error::PostgreSQL $env:PG_VERSION archive has SHA-256 $sha – check it and pin it as PG_SHA256"
+            $names = (Expand-Archive pg.zip -DestinationPath pg -PassThru | Select-Object -First 5 | ForEach-Object FullName) -join ", "
+            Write-Output "::error::PostgreSQL $env:PG_VERSION archive: $size bytes, SHA-256 $sha, first entries: $names – check it and pin it as PG_SHA256"
             exit 1
           }
           if ($sha -ne $env:PG_SHA256) {

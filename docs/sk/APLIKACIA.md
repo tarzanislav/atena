@@ -1,6 +1,6 @@
 # Aplikácia pre počítač
 
-*English: [../DESKTOP.md](../DESKTOP.md)*
+*English: [../DESKTOP.md](../DESKTOP.md)* · Príručka pre používateľa: [PRIRUCKA.md](PRIRUCKA.md)
 
 Aplikácia pre počítač je ATENA pre jedného človeka na jednom počítači. Vyhľadávanie, zdroje,
 návrhy aj zberač sú v jednom okne, bez servera a bez inštalovania čohokoľvek ďalšieho. Skladá sa
