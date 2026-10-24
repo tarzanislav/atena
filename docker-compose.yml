@@ -1,0 +1,27 @@
+# Pilot na jednom serveri alebo počítači (Docker Desktop na Windows funguje tiež):
+#   docker compose up -d db && docker compose run --rm web atena init && docker compose up -d
+services:
+  db:
+    image: postgres:17            # PostgreSQL License
+    environment:
+      POSTGRES_PASSWORD: ${ATENA_DB_PASSWORD:-zmen-ma}
+      POSTGRES_DB: atena
+    volumes: [dbdata:/var/lib/postgresql/data]
+    healthcheck: {test: ["CMD", "pg_isready", "-U", "postgres"], interval: 5s, retries: 10}
+  web:
+    build: .
+    environment:
+      ATENA_DATABASE_URL: postgresql://postgres:${ATENA_DB_PASSWORD:-zmen-ma}@db:5432/atena
+      ATENA_EDITOR_TOKEN: ${ATENA_EDITOR_TOKEN:-}
+    ports: ["127.0.0.1:8000:8000"]
+    depends_on: {db: {condition: service_healthy}}
+  worker:
+    build: .
+    command: ["atena", "worker"]
+    environment:
+      ATENA_DATABASE_URL: postgresql://postgres:${ATENA_DB_PASSWORD:-zmen-ma}@db:5432/atena
+      # voliteľný lokálny prekladový server (llama.cpp / vLLM s modelom s otvorenou licenciou)
+      ATENA_TRANSLATE_URL: ${ATENA_TRANSLATE_URL:-}
+    depends_on: {db: {condition: service_healthy}}
+volumes:
+  dbdata:

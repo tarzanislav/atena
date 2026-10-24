@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ concept.label('sk') }}{% endblock %}
+{% block content %}
+<h1>{{ concept.label('sk') }}</h1>
+{% if subsections %}<nav class="chips" aria-label="Podsekcie">{% for s in subsections %}<a class="chip" href="/sekcia/{{ s.id }}">{{ s.label('sk') }}</a>{% endfor %}</nav>{% endif %}
+<form class="inline" action=""><input name="q" value="{{ q }}" placeholder="Hľadať v sekcii"><button>Hľadať</button></form>
+<p class="lead">{{ res.total }} položiek</p>
+<div class="withfacets"><div>
+{% for it in res['items'] %}{% include "_item.html" %}{% else %}<p class="muted">Sekcia sa naplní po zbere a zaradení dokumentov.</p>{% endfor %}
+</div>{% include "_facets.html" %}</div>
+{% endblock %}

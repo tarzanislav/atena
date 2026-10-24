@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Rozdiel verzií{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="/dokument/{{ d.id }}">{{ d.title }}</a> › porovnanie</p>
+<h1>v{{ old.version_no }} → v{{ new.version_no }}</h1>
+<p class="lead">{{ old.fetched_at.strftime('%d. %m. %Y') }} → {{ new.fetched_at.strftime('%d. %m. %Y') }} · <a href="{{ d.url }}" target="_blank" rel="noopener">originál ↗</a></p>
+<div class="diff">{% for op, text in lines %}
+<p class="d{{ {'+':'add','-':'del','@':'gap',' ':'ctx'}[op] }}"><span aria-hidden="true">{{ op if op in '+-' else '' }}</span> {{ text }}</p>
+{% else %}<p>Rozdiel sa týka len metadát.</p>{% endfor %}</div>
+{% endblock %}

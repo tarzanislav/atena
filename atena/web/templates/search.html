@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Hľadanie{% endblock %}
+{% block content %}
+<h1>Výsledky{% if q %} pre „{{ q }}“{% endif %}</h1>
+<p class="lead">{{ res.total }} položiek</p>
+<div class="withfacets">
+<div>
+{% for it in res['items'] %}{% include "_item.html" %}{% else %}<p>Nič sa nenašlo. Skúste kratšie slovo alebo menej filtrov.</p>{% endfor %}
+{% if res.total > page*20 %}<p><a class="btn" href="?{{ next_qs }}">Ďalšie →</a></p>{% endif %}
+</div>
+{% include "_facets.html" %}
+</div>
+{% endblock %}

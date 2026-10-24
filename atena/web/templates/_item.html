@@ -1,0 +1,13 @@
+<article class="item">
+  <h3><a href="/dokument/{{ it.id }}">{{ it.title or it.url }}</a></h3>
+  <p class="meta">
+    <span class="badge auth-{{ it.authority[:1] }}" title="{{ label('autorita', it.authority) }}">{{ it.authority }}</span>
+    {{ it.source_name }} · {{ it.country }}{% if it.language %} · {{ it.language }}{% endif %}
+    · {{ (it.published_at or it.last_changed).strftime('%d. %m. %Y') }}
+    {% if it.change_kind == 'substantive' %}<span class="badge change">podstatná zmena (v{{ it.version_no }})</span>{% endif %}
+    {% if it.rights_mode == 'metadata_only' %}<span class="badge muted" title="Autor vyhradil vyťažovanie – ukladáme len odkaz a metadáta">len odkaz</span>{% endif %}
+  </p>
+  {% if it.summary %}<p class="sum">{{ it.summary }}</p>{% endif %}
+  {% if it.labels %}<p class="tags">{% for l in it.labels[:6] %}<span class="tag {{ l.status }}" title="{{ l.scheme }}{% if l.status=='suggested' %} – návrh{% endif %}">{{ label(l.scheme, l.concept_id) }}</span>{% endfor %}</p>{% endif %}
+  <p class="orig"><a href="{{ it.url }}" rel="noopener" target="_blank">Otvoriť originál ↗</a></p>
+</article>

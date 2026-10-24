@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{{ d.title }}{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="/">Prehľad</a> › {{ d.source_name }}</p>
+<h1>{{ d.title }}</h1>
+<div class="sourcecard">
+  <p><strong>Originál:</strong> <a href="{{ d.url }}" rel="noopener" target="_blank">{{ d.url }}</a></p>
+  <p><strong>Zdroj:</strong> {{ d.source_name }} · <span class="badge auth-{{ d.authority[:1] }}">{{ d.authority }}</span> {{ label('autorita', d.authority) }} · {{ d.country }}</p>
+  <p><strong>Jazyk:</strong> {{ d.language or 'nezistený' }} · <strong>Prvé zachytenie:</strong> {{ d.first_seen.strftime('%d. %m. %Y') }}
+     · <strong>Dátum publikovania:</strong> {{ d.published_at.strftime('%d. %m. %Y') if d.published_at else 'nezistený' }}
+     · <strong>Stav:</strong> {{ {'active':'aktívny','gone':'stránka nedostupná – preveruje sa','withdrawn':'stiahnutý','archived':'archív'}[d.status] }}</p>
+  {% if d.rights_mode == 'metadata_only' %}<p class="note">Autor vyhradil vyťažovanie textov a dát – ATENA ukladá len názov, odkaz a krátku anotáciu.</p>{% endif %}
+</div>
+{% if versions %}<h2>Anotácia</h2><p>{{ versions[0].summary }}</p>
+<p class="muted small">Výňatok z prvých viet originálu; nie je to preklad ani interpretácia.</p>{% endif %}
+{% if tr %}<h2>Preklad (sk)</h2><p><strong>{{ tr.title }}</strong></p><p>{{ tr.summary }}</p>
+<p class="badge {{ 'ok' if tr.status=='automaticka_kontrola' else 'warn' }}">{{ {'navrh':'automatický návrh','automaticka_kontrola':'po automatickej kontrole','chyba_kontroly':'neprešiel kontrolou – nepoužívať','odborne_skontrolovany':'odborne skontrolovaný'}[tr.status] }} · {{ tr.engine }}</p>{% endif %}
+<h2>Zaradenie</h2>
+{% if labels %}<ul class="labels">{% for l in labels %}
+<li><span class="scheme">{{ tax.schemes[l.scheme].title.sk if l.scheme in tax.schemes else l.scheme }}:</span> {{ label(l.scheme, l.concept_id) }}
+ {% if l.status == 'suggested' %}<span class="tag suggested" title="Automatický návrh, dôvod: {{ (l.evidence or [])|join(', ') }}">návrh {{ '%.0f'|format(l.score*100) }} %</span>{% else %}<span class="tag confirmed">potvrdené redaktorom</span>{% endif %}</li>
+{% endfor %}</ul>{% else %}<p class="muted">Nezaradené (nevymýšľame zaradenie bez podkladu).</p>{% endif %}
+<h2>História verzií</h2>
+<table class="tbl"><thead><tr><th>Verzia</th><th>Zachytené</th><th>Zmena</th><th></th></tr></thead><tbody>
+{% for v in versions %}<tr><td>v{{ v.version_no }}</td><td>{{ v.fetched_at.strftime('%d. %m. %Y %H:%M') }}</td>
+<td>{{ {'initial':'prvé zachytenie','minor':'drobná úprava','substantive':'podstatná zmena'}[v.change_kind] }}{% if v.change and v.change.numbers_changed %} · zmenené čísla/dátumy{% endif %}</td>
+<td>{% if v.version_no > 1 %}<a href="/dokument/{{ d.id }}/rozdiel/{{ v.version_no }}">porovnať s v{{ v.version_no-1 }}</a>{% endif %}</td></tr>{% endfor %}
+</tbody></table>
+{% endblock %}

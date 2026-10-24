@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Prehľad dňa{% endblock %}
+{% block content %}
+<h1>Prehľad dňa</h1>
+<p class="lead">{{ counts.docs }} dokumentov z {{ counts.sources }} zdrojov · {{ counts.changes }} podstatných zmien{% if counts.last_fetch %} · posledný zber {{ counts.last_fetch.strftime('%d. %m. %Y %H:%M') }}{% endif %}</p>
+{% if profile.vypnute %}<p class="note">Podľa profilu sú skryté druhy škôl: {% for v in profile.vypnute %}{{ label('druh-skoly', v) }}{% if not loop.last %}, {% endif %}{% endfor %}. <a href="/profil">Zmeniť</a></p>{% endif %}
+<div class="grid2">
+<section class="card"><h2>Úradné novinky (SK)</h2>
+{% for it in official['items'] %}{% include "_item.html" %}{% else %}<p class="muted">Zatiaľ nič – spustite zber: <code>atena crawl</code></p>{% endfor %}
+</section>
+<section class="card"><h2>Podstatné zmeny dokumentov</h2>
+{% for it in changes['items'] %}{% include "_item.html" %}{% else %}<p class="muted">Žiadne zachytené zmeny.</p>{% endfor %}
+</section>
+</div>
+<section class="card"><h2>Najnovšie vo všetkých zdrojoch</h2>
+{% for it in latest['items'] %}{% include "_item.html" %}{% endfor %}
+</section>
+<section class="tiles">
+{% for s in sections if s.id not in ('prehlad','moja','kalendar','pojmy') %}
+<a class="tile" href="/sekcia/{{ s.id }}">{{ s.label('sk') }}</a>
+{% endfor %}
+</section>
+{% endblock %}

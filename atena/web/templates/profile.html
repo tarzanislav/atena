@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Môj profil{% endblock %}
+{% block content %}
+<h1>Môj profil</h1>
+{% if request.query_params.get('ulozene') %}<p class="note ok">Uložené.</p>{% endif %}
+<p>Zapnite druhy škôl, ktoré vás zaujímajú. Vypnutie ovplyvní len <em>vaše</em> výsledky, prehľad a upozornenia – zber pre ostatných pokračuje.
+Položky bez zisteného druhu školy sa zobrazujú vždy.</p>
+<form method="post" class="toggles">
+{% for t in toggles %}
+<label class="toggle"><input type="checkbox" name="druh" value="{{ t.id }}" {{ '' if t.id in profile.get('vypnute', []) else 'checked' }}>
+<span>{{ t.label('sk') }}</span>{% if t.note %}<small>{{ t.note }}</small>{% endif %}</label>
+{% endfor %}
+<button>Uložiť</button>
+</form>
+{% endblock %}

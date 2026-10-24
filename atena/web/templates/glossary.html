@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Pojmy{% endblock %}
+{% block content %}
+<h1>Pojmy a taxonómia</h1>
+<nav class="chips">{% for s, sd in tax.schemes.items() %}<a class="chip {{ 'on' if s==schema }}" href="/pojmy?schema={{ s }}">{{ sd.title.sk }}</a>{% endfor %}</nav>
+{% if tax.schemes[schema].note %}<p class="note">{{ tax.schemes[schema].note }}</p>{% endif %}
+<table class="tbl"><thead><tr><th>Pojem</th><th>Iné jazyky</th><th>Poznámka</th></tr></thead><tbody>
+{% for c in concepts %}<tr><td class="{{ 'child' if c.broader }}"><a href="/hladat?{{ schema }}={{ c.id }}">{{ c.label('sk') }}</a></td>
+<td class="small">{% for lg, lb in c.labels.items() if lg != 'sk' %}<span class="lang">{{ lg }}</span> {{ lb }}{% if not loop.last %} · {% endif %}{% endfor %}</td>
+<td class="small">{{ c.note or '' }}</td></tr>{% endfor %}
+</tbody></table>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Register zdrojov{% endblock %}
+{% block content %}
+<h1>Register zdrojov</h1>
+<p class="lead">{{ rows|length }} zdrojov. Autorita hovorí, <em>odkiaľ</em> informácia je – nie aké silné sú dôkazy pri konkrétnom tvrdení.</p>
+<table class="tbl"><thead><tr><th>ID</th><th>Zdroj</th><th>Krajina</th><th>Autorita</th><th>Priorita</th><th>Vstupy</th><th>Dokumenty</th><th>Kontrola</th></tr></thead><tbody>
+{% for r in rows %}<tr class="{{ '' if r.enabled else 'off' }}"><td>{{ r.id }}</td><td><a href="{{ r.url }}" target="_blank" rel="noopener">{{ r.name }}</a>{% if r.note %}<br><span class="small muted">{{ r.note }}</span>{% endif %}</td>
+<td>{{ r.country }}</td><td><span class="badge auth-{{ r.authority[:1] }}">{{ r.authority }}</span></td><td>{{ r.priority }}</td><td>{{ r.kinds or '' }}</td>
+<td><a href="/hladat?zdroj={{ r.id }}">{{ r.docs }}</a></td><td>{{ r.checked.strftime('%d. %m. %H:%M') if r.checked else '—' }}{% if r.fails %} <span class="badge warn">chyby {{ r.fails }}</span>{% endif %}</td></tr>{% endfor %}
+</tbody></table>
+{% endblock %}

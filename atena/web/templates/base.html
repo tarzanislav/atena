@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}ATENA{% endblock %} · ATENA</title>
+<link rel="stylesheet" href="/static/atena.css">
+<link rel="alternate" type="application/atom+xml" title="Zmeny z úradných zdrojov" href="/feed/zmeny.atom">
+</head>
+<body>
+<a class="skip" href="#obsah">Preskočiť na obsah</a>
+<header class="top">
+  <a class="brand" href="/"><span class="owl" aria-hidden="true">◈</span> ATENA</a>
+  <form class="topsearch" action="/hladat" role="search">
+    <label for="q" class="sr">Hľadať</label>
+    <input id="q" name="q" type="search" placeholder="Hľadať metódy, zmeny, materiály… (v ľubovoľnom jazyku)" value="{{ q|default('') }}">
+    <button>Hľadať</button>
+  </form>
+  <nav class="util"><a href="/profil">Môj profil</a> <a href="/zdroje">Zdroje</a> <a href="/pojmy">Pojmy</a></nav>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Sekcie">
+  <ul>
+  {% for s in sections %}
+    <li><a href="{% if s.id == 'prehlad' %}/{% elif s.id == 'pojmy' %}/pojmy{% else %}/sekcia/{{ s.id }}{% endif %}">{{ s.label('sk') }}</a></li>
+  {% endfor %}
+  </ul>
+</nav>
+<main id="obsah">
+{% block content %}{% endblock %}
+</main>
+</div>
+<footer class="foot">ATENA {{ version }} · otvorený softvér (Apache-2.0) · každá položka vedie na pôvodný zdroj · zaradenie označené „návrh“ ešte neskontroloval redaktor</footer>
+</body>
+</html>

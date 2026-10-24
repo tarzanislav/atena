@@ -1,0 +1,10 @@
+{% if res.facets %}
+<aside class="facets">
+  {% for name, rows in res['facets'].items() %}{% if rows %}
+  <h3>{{ {'autorita':'Autorita zdroja','krajina':'Krajina','tema':'Téma'}[name] }}</h3>
+  <ul>{% for r in rows %}{% set key = {'autorita':'autorita','krajina':'krajina','tema':'tema'}[name] %}
+    <li><a href="?{{ urlencode({'q': q or '', key: r.k}) }}">{% if name=='tema' %}{{ label('tema', r.k) }}{% elif name=='autorita' %}{{ label('autorita', r.k) }}{% else %}{{ r.k }}{% endif %}</a> <span class="n">{{ r.n }}</span></li>
+  {% endfor %}</ul>
+  {% endif %}{% endfor %}
+</aside>
+{% endif %}
