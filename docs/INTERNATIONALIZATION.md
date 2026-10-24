@@ -1,7 +1,28 @@
 # Internationalisation and country packs
 
-ATENA is built to be used in any country and language. Slovak (sk-SK) is the first locale and Slovakia
-the first country pack; Czech (cs-CZ) is next. Nothing country-specific is hard-coded in the core.
+ATENA is built to be used in any country and language. Nothing country-specific is hard-coded in the core.
+
+## Core languages from the start
+| Language | Code | Role |
+|---|---|---|
+| Slovak | sk-SK | reference locale, first country pack |
+| English | en | technical language, international default |
+| Czech | cs-CZ | second country pack |
+| Russian | ru | UI and translation target; Russian sources as foreign context |
+| Chinese (Simplified) | zh-Hans | UI and translation target; Chinese sources as foreign context; Traditional (zh-Hant) later |
+
+All five are complete in the UI, the taxonomy labels, the glossary and search before a release; a release
+is blocked if any core locale has missing strings (checked in CI). Further languages (de, pl, hu…) follow
+the same gate. UI language and country pack are independent: a Russian-speaking teacher in Slovakia uses the
+Russian UI with the Slovak pack.
+
+### What the five languages require
+* **Search:** diacritics folded for sk/cs, `ё → е` for Russian, Chinese segmented into words (jieba-rs, MIT)
+  with a per-character fallback (ALTAIS indexes each character as a word; ATENA adds word segmentation).
+* **Fonts:** Latin Extended, Cyrillic and Simplified Chinese (Noto Sans SC, OFL) in the app bundle.
+* **Translation models:** EuroLLM covers sk, cs, en, ru, zh; Qwen3 is the stronger choice for Chinese.
+* **Plural rules:** Slovak, Czech and Russian have several plural forms – handled by Fluent, never by string concatenation.
+* **Legal sources:** Russian and Chinese official documents are always labelled "foreign context".
 
 ## Three independent language settings
 | Setting | Meaning | Example |

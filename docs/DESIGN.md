@@ -12,7 +12,7 @@ and going further. Every visible text comes from locale files; the Slovak locale
 6. **Left navigation** with icons and an accent bar on the selected item; nested items with a colour bar; collapses to an icon rail.
 7. **Mobile**: navigation at the bottom, touch targets ≥ 44 px.
 8. **Honest UI**: source authority (A1–D) on every item, "translation – suggestion", "ATENA suggestion", the original always one click away.
-9. **Locale-proof layout**: no fixed-width labels; German and Hungarian strings are often 30–40 % longer than Slovak.
+9. **Locale-proof layout** for the core languages (en, sk, cs, ru, zh-Hans): no fixed-width labels; Russian strings are often 20–30 % longer than English, Chinese much shorter but taller – buttons and menus size to content.
 
 ## Type
 `'Segoe UI Variable Text', 'Segoe UI', 'Open Sans', system-ui` – Segoe UI on Windows as in ŠkVP, Open Sans

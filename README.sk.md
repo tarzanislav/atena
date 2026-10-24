@@ -10,6 +10,7 @@ vedie späť na pôvodný zdroj.
 * Technológie: jadro **Rust**, rozhranie **TypeScript + React**, program pre PC a mobil **Tauri 2**,
   databáza **PostgreSQL**, vyhľadávanie **Tantivy** – [docs/TECHNOLOGIE.md](docs/sk/TECHNOLOGIE.md).
 * Dizajn v štýle Windows 11 / Fluent, pastelové farby sekcií, svetlý a tmavý vzhľad – [docs/DIZAJN.md](docs/sk/DIZAJN.md).
+* Nosné jazyky od začiatku: **angličtina, slovenčina, čeština, ruština a čínština (zjednodušená)**; slovenčina je referenčný jazyk, Slovensko prvý balík krajiny, Česko druhý.
 * Medzinárodnosť a balíky krajín (anglicky) – [docs/INTERNATIONALIZATION.md](docs/INTERNATIONALIZATION.md).
 * Licencie súčastí a modelov AI – [docs/LICENCIE.md](docs/sk/LICENCIE.md).
 

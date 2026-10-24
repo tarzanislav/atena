@@ -7,8 +7,8 @@ practice sources from many countries, tracks every change, classifies content in
 and always links each item back to its original source.
 
 * Code licence **Apache-2.0** (free for private and commercial use), data CC BY 4.0 / CC0, no paid dependencies.
-* Multilingual and multi-country by design; **Slovak is the first locale and Slovakia the first country pack**,
-  Czech follows – see [docs/INTERNATIONALIZATION.md](docs/INTERNATIONALIZATION.md).
+* Multilingual and multi-country by design. **Core languages from the start: English, Slovak, Czech, Russian
+  and Chinese (Simplified)**; Slovak is the reference locale, Slovakia the first country pack and Czechia the second – see [docs/INTERNATIONALIZATION.md](docs/INTERNATIONALIZATION.md).
 * Stack: **Rust** core, **TypeScript + React** UI, **Tauri 2** desktop and mobile apps, **PostgreSQL**,
   **Tantivy** search – see [docs/TECHNOLOGY.md](docs/TECHNOLOGY.md).
 * Design: Windows 11 / Fluent style, calm pastel section colours, light and dark themes – see [docs/DESIGN.md](docs/DESIGN.md).
