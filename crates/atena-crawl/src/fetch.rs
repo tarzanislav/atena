@@ -167,10 +167,17 @@ pub enum FetchError {
         /// The reason.
         reason: Blocked,
     },
-    /// robots.txt does not allow ATENA to fetch the URL (also when robots.txt is unreachable).
+    /// robots.txt does not allow ATENA to fetch the URL.
     #[error("{url}: disallowed by robots.txt")]
     Robots {
         /// The disallowed URL.
+        url: String,
+    },
+    /// robots.txt could not be fetched (server error, network, DNS), which means nothing may be
+    /// fetched from the site for now (RFC 9309).
+    #[error("{url}: robots.txt is unreachable, so nothing may be fetched for now")]
+    RobotsUnreachable {
+        /// The URL.
         url: String,
     },
     /// More redirects than allowed.
@@ -360,8 +367,11 @@ impl Fetcher {
             self.check(&current)?;
             let site = self.site_rules(&current).await;
             if !site.robots.is_allowed(&path_and_query(&current)) {
-                return Err(FetchError::Robots {
-                    url: current.to_string(),
+                let url = current.to_string();
+                return Err(if site.reachable {
+                    FetchError::Robots { url }
+                } else {
+                    FetchError::RobotsUnreachable { url }
                 });
             }
             let tdm_file = self.tdm_file(&current).await;

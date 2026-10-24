@@ -9,6 +9,8 @@ rust-version = "1.88"
 license = "Apache-2.0"
 repository = "https://github.com/tarzanislav/atena"
 authors = ["The ATENA contributors"]
+# ATENA is an application; its crates are not published to crates.io
+publish = false
 
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }

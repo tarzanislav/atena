@@ -1,73 +1,14 @@
 //! The store against a real PostgreSQL. Set `ATENA_TEST_DATABASE_URL` to a connection that may
 //! create databases (e.g. `postgres://postgres@localhost/postgres`); without it these tests are skipped.
 
-use std::path::PathBuf;
-use std::sync::atomic::{AtomicU32, Ordering};
 use std::time::Duration;
 
+use atena_store::testing::TestDb;
 use atena_store::{
-    BlobStore, Capture, Check, EndpointKind, LabelDecision, LabelSuggestion, NewEndpoint,
-    NewVersion, Origin, RegisterSource, Rights, SourceRecord, Store, hash,
+    Capture, Check, EndpointKind, LabelDecision, LabelSuggestion, NewEndpoint, NewVersion, Origin,
+    RegisterSource, Rights, SourceRecord, Store, hash,
 };
 use jiff::Timestamp;
-use sqlx::postgres::{PgConnectOptions, PgPoolOptions};
-use sqlx::{Connection, Executor, PgConnection};
-
-static COUNTER: AtomicU32 = AtomicU32::new(0);
-
-struct TestDb {
-    admin: String,
-    name: String,
-    root: PathBuf,
-    store: Store,
-}
-
-impl TestDb {
-    async fn new() -> Option<Self> {
-        let Ok(admin) = std::env::var("ATENA_TEST_DATABASE_URL") else {
-            eprintln!("ATENA_TEST_DATABASE_URL is not set – database tests skipped");
-            return None;
-        };
-        let name = format!(
-            "atena_t_{}_{}",
-            std::process::id(),
-            COUNTER.fetch_add(1, Ordering::SeqCst)
-        );
-        let mut conn = PgConnection::connect(&admin)
-            .await
-            .expect("admin connection");
-        conn.execute(format!("CREATE DATABASE {name}").as_str())
-            .await
-            .expect("create database");
-        conn.close().await.ok();
-        let options: PgConnectOptions = admin.parse().expect("database URL");
-        let pool = PgPoolOptions::new()
-            .max_connections(5)
-            .connect_with(options.database(&name))
-            .await
-            .expect("test database");
-        let root = std::env::temp_dir().join(format!("atena-store-{name}"));
-        let store = Store::from_pool(pool, BlobStore::new(&root));
-        store.migrate().await.expect("migrations");
-        Some(Self {
-            admin,
-            name,
-            root,
-            store,
-        })
-    }
-
-    async fn drop(self) {
-        self.store.pool().close().await;
-        let mut conn = PgConnection::connect(&self.admin)
-            .await
-            .expect("admin connection");
-        conn.execute(format!("DROP DATABASE {} WITH (FORCE)", self.name).as_str())
-            .await
-            .ok();
-        let _ = std::fs::remove_dir_all(&self.root);
-    }
-}
 
 fn source(id: &str, enabled: bool) -> SourceRecord {
     SourceRecord {

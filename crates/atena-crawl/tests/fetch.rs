@@ -1,152 +1,11 @@
 //! The fetcher against a real HTTP server on 127.0.0.1 (allowed for these tests only).
 
 use std::io::Write;
-use std::net::SocketAddr;
-use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
-use atena_crawl::{
-    Blocked, Config, FetchError, Fetched, Fetcher, IpRange, NetPolicy, Page, Validators,
-};
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use tokio::net::TcpListener;
+use atena_crawl::testing::{Reply, Server, reply, test_config as config};
+use atena_crawl::{Blocked, Config, FetchError, Fetched, Fetcher, Page, Validators};
 use url::Url;
-
-/// A received request: path with query, lower-cased header lines, arrival time.
-#[derive(Debug, Clone)]
-struct Seen {
-    path: String,
-    headers: Vec<String>,
-    at: Instant,
-}
-
-/// A response: status, extra headers, body; `close_delimited` omits `Content-Length`.
-struct Reply {
-    status: u16,
-    headers: Vec<(&'static str, String)>,
-    body: Vec<u8>,
-    close_delimited: bool,
-}
-
-fn reply(status: u16, body: impl Into<Vec<u8>>) -> Reply {
-    Reply {
-        status,
-        headers: vec![("content-type", "text/html; charset=utf-8".into())],
-        body: body.into(),
-        close_delimited: false,
-    }
-}
-
-impl Reply {
-    /// Adds a header; a content type replaces the default one, other headers may repeat.
-    fn header(mut self, name: &'static str, value: impl Into<String>) -> Self {
-        if name == "content-type" {
-            self.headers.retain(|(n, _)| *n != name);
-        }
-        self.headers.push((name, value.into()));
-        self
-    }
-}
-
-type Handler = dyn Fn(&Seen) -> Reply + Send + Sync;
-
-struct Server {
-    addr: SocketAddr,
-    log: Arc<Mutex<Vec<Seen>>>,
-}
-
-impl Server {
-    async fn start(handler: impl Fn(&Seen) -> Reply + Send + Sync + 'static) -> Self {
-        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
-        let addr = listener.local_addr().unwrap();
-        let log = Arc::new(Mutex::new(Vec::new()));
-        let handler: Arc<Handler> = Arc::new(handler);
-        let server_log = Arc::clone(&log);
-        tokio::spawn(async move {
-            loop {
-                let Ok((mut stream, _)) = listener.accept().await else {
-                    return;
-                };
-                let (handler, log) = (Arc::clone(&handler), Arc::clone(&server_log));
-                tokio::spawn(async move {
-                    let mut raw = Vec::new();
-                    let mut buf = [0u8; 4096];
-                    while !raw.windows(4).any(|w| w == b"\r\n\r\n") {
-                        match stream.read(&mut buf).await {
-                            Ok(0) | Err(_) => return,
-                            Ok(n) => raw.extend_from_slice(&buf[..n]),
-                        }
-                    }
-                    let text = String::from_utf8_lossy(&raw).to_string();
-                    let mut lines = text.split("\r\n");
-                    let path = lines
-                        .next()
-                        .and_then(|l| l.split(' ').nth(1))
-                        .unwrap_or("/")
-                        .to_string();
-                    let headers = lines
-                        .take_while(|l| !l.is_empty())
-                        .map(str::to_ascii_lowercase)
-                        .collect();
-                    let seen = Seen {
-                        path,
-                        headers,
-                        at: Instant::now(),
-                    };
-                    log.lock().unwrap().push(seen.clone());
-                    let r = handler(&seen);
-                    let mut out = format!("HTTP/1.1 {} X\r\nconnection: close\r\n", r.status);
-                    if !r.close_delimited {
-                        out.push_str(&format!("content-length: {}\r\n", r.body.len()));
-                    }
-                    for (name, value) in &r.headers {
-                        out.push_str(&format!("{name}: {value}\r\n"));
-                    }
-                    out.push_str("\r\n");
-                    let _ = stream.write_all(out.as_bytes()).await;
-                    let _ = stream.write_all(&r.body).await;
-                    let _ = stream.shutdown().await;
-                });
-            }
-        });
-        Self { addr, log }
-    }
-
-    fn url(&self, path: &str) -> Url {
-        Url::parse(&format!("http://{}{path}", self.addr)).unwrap()
-    }
-
-    fn paths(&self) -> Vec<String> {
-        self.log
-            .lock()
-            .unwrap()
-            .iter()
-            .map(|s| s.path.clone())
-            .collect()
-    }
-
-    fn requests_to(&self, path: &str) -> Vec<Seen> {
-        self.log
-            .lock()
-            .unwrap()
-            .iter()
-            .filter(|s| s.path == path)
-            .cloned()
-            .collect()
-    }
-}
-
-fn config(server: &Server) -> Config {
-    Config {
-        net: NetPolicy {
-            ports: vec![server.addr.port(), 80, 443],
-            allowed_ranges: vec![IpRange::new("127.0.0.0".parse().unwrap(), 8).unwrap()],
-        },
-        min_delay: Duration::ZERO,
-        timeout: Duration::from_secs(10),
-        ..Config::default()
-    }
-}
 
 async fn page(fetcher: &Fetcher, url: Url) -> Page {
     match fetcher.fetch(&url, &Validators::default()).await {
@@ -210,13 +69,13 @@ async fn unreachable_robots_txt_means_complete_disallow_and_missing_means_allow(
     let f = Fetcher::new(config(&busy)).unwrap();
     assert!(matches!(
         error(&f, busy.url("/a")).await,
-        FetchError::Robots { .. }
+        FetchError::RobotsUnreachable { .. }
     ));
     assert_eq!(busy.paths(), ["/robots.txt"]);
     // the host asked for five minutes of rest; the cached "disallow" answers meanwhile
     assert!(matches!(
         error(&f, busy.url("/b")).await,
-        FetchError::Robots { .. }
+        FetchError::RobotsUnreachable { .. }
     ));
     assert_eq!(busy.paths(), ["/robots.txt"]);
 
