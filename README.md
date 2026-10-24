@@ -22,7 +22,7 @@ and always links each item back to its original source.
 | `crates/atena-extract/` | main text without menus and footers, metadata and language from HTML (also legacy encodings), PDF, DOCX and ODT |
 | `crates/atena-store/` | PostgreSQL schema and queries, host-lease scheduling, content-addressed file store – see [docs/DATABASE.md](docs/DATABASE.md) |
 | `crates/atena-assess/` | automatic rights assessment: input lines → licence, terms of use and evidence – see [docs/ASSESSMENT.md](docs/ASSESSMENT.md) |
-| `crates/atena-ingest/` | the crawler program: register → fetch → extraction → versions → classification – see [docs/RUNNING.md](docs/RUNNING.md) |
+| `crates/atena-ingest/` | the crawler program: register → fetch → extraction → versions → classification; imports and shared proposals – see [docs/RUNNING.md](docs/RUNNING.md), [docs/IMPORT-AND-SHARING.md](docs/IMPORT-AND-SHARING.md) |
 | `data/` | taxonomy (296 concepts, 15 facets, 8 languages) and a register of 186 sources |
 | `prototyp-v0.1/` | working Python prototype (crawling, versions, classification, search, web, 41 tests) – the executable specification for the Rust core |
 | `tools/language-benchmark/` | benchmark of Rust, Go, Java, Node and Python on ATENA's classification task |

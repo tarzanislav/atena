@@ -4,11 +4,16 @@
 //! * [`Pipeline::check`] handles one endpoint: fetch, then feed, sitemap or page processing.
 //! * [`run`] is the worker loop on host leases (see `atena-store`).
 //!
-//! The `atena-ingest` program wraps these as commands (`migrate`, `sync`, `run`, `fetch`).
+//! * [`import`] and [`share`] – proposals of users: imported sources, decisions, and the lists
+//!   shared between installations.
+//!
+//! The `atena-ingest` program wraps these as commands.
 
+pub mod import;
 pub mod pipeline;
 pub mod privacy;
 pub mod register;
+pub mod share;
 pub mod urls;
 pub mod worker;
 

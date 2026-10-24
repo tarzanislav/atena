@@ -1,6 +1,8 @@
 //! `atena-ingest`: database migrations, register synchronisation, the crawler worker and a
 //! one-off fetch for checking a single URL.
 
+mod commands;
+
 use std::process::ExitCode;
 use std::sync::Arc;
 
@@ -19,7 +21,9 @@ atena-ingest – ATENA crawler and ingestion
 
 USAGE:
     atena-ingest migrate              apply database migrations
-    atena-ingest sync [REGISTER]      load the source register (default: the bundled data/sources.yaml)
+    atena-ingest sync [REGISTER | --shared [URL]]
+                                      load the source register (default: the bundled data/sources.yaml;
+                                      --shared: the shared register of the ATENA repository)
     atena-ingest run [--once] [--concurrency N]
                                       check due endpoints; --once stops when nothing is due
     atena-ingest fetch URL            fetch and extract one URL and print a summary (no database)
@@ -27,6 +31,21 @@ USAGE:
     atena-ingest assess [FILE] [--json] [--concurrency N]
                                       read addresses or DOIs, one per line (FILE or standard input),
                                       and propose licence and terms for each (no database)
+    atena-ingest import [FILE] [--country CC] [--no-share]
+                                      propose sources: addresses or DOIs, one per line; each is assessed
+                                      and stored as a proposal, nothing is crawled until confirmed
+    atena-ingest imports [proposed|confirmed|rejected|merged|all]
+                                      list imported sources with their proposals
+    atena-ingest confirm ID... [--licence L] [--terms T] [--country CC] [--by NAME] --reason TEXT
+                                      a person's decision (default: the proposal); crawled if allowed
+    atena-ingest reject ID... [--by NAME] --reason TEXT
+                                      reject imported sources and remove what was collected
+    atena-ingest share                send lists of proposals still waiting to be shared
+    atena-ingest proposals [--no-relay] [--no-github] [--close]
+                                      editor: read the lists other installations shared and assess them
+    atena-ingest publish ID --id NEW_ID --authority A1…E [--priority P0…P3] [--languages sk,en]
+                         [--name TEXT] [--register PATH]
+                                      editor: add a confirmed import to the register file
     atena-ingest forget URL --reason TEXT [--prefix]
                                       erase everything about URL (with --prefix: every URL below it)
                                       and never fetch it again – for erasure requests (GDPR Art. 17)
@@ -36,6 +55,11 @@ ENVIRONMENT:
     ATENA_FILES          directory of the file store (default: ./atena-files)
     ATENA_WORKER         name of this worker in host leases (default: host name and process ID)
     ATENA_LOG            error, warn, info (default) or debug
+    ATENA_SHARE          0 turns sharing of imported addresses off (default: on)
+    ATENA_RELAY          ntfy topic the lists travel through (default: the ATENA topic on ntfy.sh)
+    ATENA_EDITOR         name recorded with confirmations and rejections (or --by)
+    ATENA_SHARED_REGISTER  address of the shared register (default: data/sources.yaml on GitHub)
+    ATENA_GITHUB_TOKEN   editor only: closes processed proposal issues (proposals --close)
 ";
 
 async fn connect(max_connections: u32) -> Result<Store, String> {
@@ -92,8 +116,15 @@ fn legality_report(path: Option<&str>) -> Result<(), String> {
     Ok(())
 }
 
-async fn sync(path: Option<&str>) -> Result<(), String> {
-    let sources = register(path)?;
+async fn sync(args: &[String]) -> Result<(), String> {
+    let sources = match args.first().map(String::as_str) {
+        Some("--shared") => {
+            let text = commands::shared_register(args.get(1).map(String::as_str)).await?;
+            let taxonomy = Taxonomy::bundled().map_err(|e| e.to_string())?;
+            load_sources(&text, &taxonomy).map_err(|e| format!("shared register: {e}"))?
+        }
+        path => register(path)?,
+    };
     let store = connect(2).await?;
     let report = store
         .sync_register(&register_entries(&sources))
@@ -116,9 +147,14 @@ async fn sync(path: Option<&str>) -> Result<(), String> {
         }
     }
     println!(
-        "{} sources ({} removed), {} endpoints added, {} disabled; legality: {purged} documents of \
-         sources that may not be crawled removed, texts of {restricted} versions reduced to metadata",
-        report.sources, report.removed, report.endpoints_added, report.endpoints_disabled
+        "{} sources ({} removed, {} imports taken over), {} endpoints added, {} disabled; legality: \
+         {purged} documents of sources that may not be crawled removed, texts of {restricted} \
+         versions reduced to metadata",
+        report.sources,
+        report.removed,
+        report.merged,
+        report.endpoints_added,
+        report.endpoints_disabled
     );
     Ok(())
 }
@@ -150,6 +186,10 @@ async fn work(args: &[String]) -> Result<(), String> {
     )
     .await?;
     let fetcher = Fetcher::new(Config::default()).map_err(|e| e.to_string())?;
+    // lists of proposals that could not be shared before are tried again
+    if let Err(e) = commands::share_pending(&store).await {
+        tracing::warn!("sharing proposals: {e}");
+    }
     let taxonomy = Taxonomy::bundled().map_err(|e| e.to_string())?;
     let pipeline = Arc::new(Pipeline::new(
         store,
@@ -378,7 +418,7 @@ async fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
     let result = match args.first().map(String::as_str) {
         Some("migrate") => connect(2).await.map(|_| println!("database is up to date")),
-        Some("sync") => sync(args.get(1).map(String::as_str)).await,
+        Some("sync") => sync(&args[1..]).await,
         Some("run") => work(&args[1..]).await,
         Some("fetch") => match args.get(1) {
             Some(url) => fetch_one(url).await,
@@ -387,6 +427,22 @@ async fn main() -> ExitCode {
         Some("forget") => forget(&args[1..]).await,
         Some("legality") => legality_report(args.get(1).map(String::as_str)),
         Some("assess") => assess(&args[1..]).await,
+        Some(
+            cmd @ ("import" | "imports" | "confirm" | "reject" | "share" | "proposals" | "publish"),
+        ) => match connect(4).await {
+            Ok(store) => match cmd {
+                "import" => commands::import(&store, &args[1..]).await,
+                "imports" => commands::list(&store, &args[1..]).await,
+                "confirm" => commands::confirm(&store, &args[1..]).await,
+                "reject" => commands::reject(&store, &args[1..]).await,
+                "share" => commands::share_pending(&store)
+                    .await
+                    .map(|n| println!("{n} lists shared")),
+                "proposals" => commands::proposals(&store, &args[1..]).await,
+                _ => commands::publish(&store, &args[1..]).await,
+            },
+            Err(e) => Err(e),
+        },
         Some("help" | "--help" | "-h") | None => {
             print!("{USAGE}");
             Ok(())

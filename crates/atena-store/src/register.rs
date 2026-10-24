@@ -52,12 +52,15 @@ pub struct SyncReport {
     pub endpoints_added: u64,
     /// Register endpoints disabled because the register no longer lists them.
     pub endpoints_disabled: u64,
+    /// Imported sources taken over by the register.
+    pub merged: u64,
 }
 
 impl Store {
     /// Makes the database match the register: sources are inserted or updated, sources missing
     /// from the register are disabled, register endpoints are created, updated or disabled.
-    /// Endpoints found later (feed items, links) are left alone.
+    /// Endpoints found later (feed items, links) are left alone. Imported sources are never
+    /// disabled by a sync; those the register now lists are `merged` into it.
     pub async fn sync_register(&self, register: &[RegisterSource]) -> Result<SyncReport> {
         let mut tx = self.pool.begin().await?;
         let mut report = SyncReport::default();
@@ -125,15 +128,35 @@ impl Store {
             .execute(&mut *tx)
             .await?;
             report.endpoints_disabled += disabled.rows_affected();
+            // documents of endpoints the register took over (from an imported source) follow them
+            sqlx::query(
+                "UPDATE document d SET source_id = $1 FROM endpoint e
+                 WHERE e.id = d.endpoint_id AND e.source_id = $1 AND d.source_id <> $1",
+            )
+            .bind(&s.id)
+            .execute(&mut *tx)
+            .await?;
             wake_hosts(&mut tx, &hosts).await?;
         }
         let ids: Vec<&str> = register.iter().map(|r| r.source.id.as_str()).collect();
-        let removed =
-            sqlx::query("UPDATE source SET enabled = false WHERE enabled AND NOT (id = ANY($1))")
-                .bind(&ids)
-                .execute(&mut *tx)
-                .await?;
+        let removed = sqlx::query(
+            "UPDATE source SET enabled = false
+             WHERE enabled AND origin = 'register' AND NOT (id = ANY($1))",
+        )
+        .bind(&ids)
+        .execute(&mut *tx)
+        .await?;
         report.removed = removed.rows_affected();
+        // imported sources the shared register now lists are taken over by it
+        let urls: Vec<&str> = register.iter().map(|r| r.source.url.as_str()).collect();
+        let merged = sqlx::query(
+            "UPDATE source SET state = 'merged', enabled = false
+             WHERE origin = 'import' AND state <> 'merged' AND url = ANY($1)",
+        )
+        .bind(&urls)
+        .execute(&mut *tx)
+        .await?;
+        report.merged = merged.rows_affected();
         tx.commit().await?;
         Ok(report)
     }

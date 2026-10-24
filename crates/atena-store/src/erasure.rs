@@ -2,7 +2,8 @@
 //!
 //! [`Store::forget`] removes everything ATENA holds about a URL (or every URL below a prefix):
 //! documents with all versions, labels and links, the endpoints and their check log, links to it
-//! in other documents, and original files nothing else refers to. The URL goes on the block list,
+//! in other documents, proposals of it (imported sources, received lists), and original files
+//! nothing else refers to. The URL goes on the block list,
 //! so neither the register, nor a feed, a sitemap or a link can bring it back. The erasure itself
 //! is logged without any of the removed content.
 
@@ -84,6 +85,29 @@ impl Store {
         .bind(prefix)
         .execute(&mut *tx)
         .await?;
+        // proposals of the address: imported sources lose their assessments and their address and
+        // stay disabled (documents of other addresses they may have are not part of the request)
+        sqlx::query(&format!(
+            "DELETE FROM assessment WHERE source_id IN (SELECT id FROM source WHERE origin = 'import' AND {})",
+            matches("url")
+        ))
+        .bind(url)
+        .bind(prefix)
+        .execute(&mut *tx)
+        .await?;
+        sqlx::query(&format!(
+            "UPDATE source SET state = 'rejected', enabled = false, name = '(erased on request)', url = ''
+             WHERE origin = 'import' AND {}",
+            matches("url")
+        ))
+        .bind(url)
+        .bind(prefix)
+        .execute(&mut *tx)
+        .await?;
+        sqlx::query("DELETE FROM inbox WHERE strpos(body, $1) > 0")
+            .bind(url)
+            .execute(&mut *tx)
+            .await?;
         let orphans: Vec<Vec<u8>> = sqlx::query_scalar(
             "DELETE FROM blob b WHERE b.hash = ANY($1)
                  AND NOT EXISTS (SELECT 1 FROM document_version v WHERE v.raw_hash = b.hash)

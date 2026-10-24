@@ -266,7 +266,7 @@ pub struct Fetcher {
     tdm_files: OriginCache<Option<Arc<TdmFile>>>,
 }
 
-fn install_crypto_provider() {
+pub(crate) fn install_crypto_provider() {
     static ONCE: Once = Once::new();
     // an application may have installed its own provider already; that one is kept
     ONCE.call_once(|| {
@@ -309,7 +309,7 @@ fn blocked_in_chain(error: &(dyn StdError + 'static)) -> Option<Blocked> {
     None
 }
 
-fn classify(url: &Url, error: &reqwest::Error) -> FetchError {
+pub(crate) fn classify(url: &Url, error: &reqwest::Error) -> FetchError {
     let url_text = url.to_string();
     if let Some(reason) = blocked_in_chain(error) {
         return FetchError::Blocked {

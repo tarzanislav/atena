@@ -1,0 +1,58 @@
+name: Proposals
+
+# Copies lists of proposed sources from the relay (a topic on ntfy.sh, which keeps messages for
+# 12 hours) into issues labelled `navrh-zdrojov`, so that none is lost while the editor's
+# installation is offline. The lists hold addresses and country codes only. The editor reads them
+# with `atena-ingest proposals`, which assesses every address again – nothing here is trusted.
+on:
+  schedule:
+    - cron: "17,47 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: proposals
+  cancel-in-progress: false
+
+jobs:
+  copy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELAY: https://ntfy.sh/atena-navrhy-spty1ssg9ywc
+      LABEL: navrh-zdrojov
+    steps:
+      - name: Copy new lists into issues
+        run: |
+          set -euo pipefail
+          gh label create "$LABEL" --repo "$GITHUB_REPOSITORY" --color 0E8A16 \
+            --description "Návrhy zdrojov z inštalácií ATENA" 2>/dev/null || true
+          # the relay may be unreachable for a while; the next run catches up (13 h > 12 h kept)
+          curl -sSf --max-time 60 --max-filesize 10000000 "$RELAY/json?poll=1&since=13h" > messages.jsonl || exit 0
+          gh issue list --repo "$GITHUB_REPOSITORY" --label "$LABEL" --state all --limit 1000 \
+            --json title --jq '.[].title' > known.txt
+          created=0
+          jq -c 'select(.event == "message" and (.id | test("^[A-Za-z0-9]{1,64}$")))' messages.jsonl |
+          while IFS= read -r m; do
+            id=$(jq -r '.id' <<<"$m")
+            title="Návrh zdrojov $id"
+            if grep -qxF "$title" known.txt; then continue; fi
+            # untrusted text: never evaluated, cut to the relay's size, no backticks (it is fenced)
+            jq -r '.message' <<<"$m" | head -c 4096 | tr -d '`\r' > list.txt
+            if ! head -n 1 list.txt | grep -qx 'ATENA-NAVRHY 1'; then continue; fi
+            if [ "$created" -ge 50 ]; then break; fi
+            {
+              echo "Zoznam navrhnutých zdrojov z inštalácie ATENA (len adresy a kódy krajín)."
+              echo "Redaktor ho spracuje príkazom \`atena-ingest proposals\`."
+              echo
+              echo '```text'
+              cat list.txt
+              echo '```'
+            } > body.md
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --label "$LABEL" --body-file body.md
+            created=$((created + 1))
+          done

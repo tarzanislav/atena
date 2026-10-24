@@ -22,6 +22,10 @@ cargo run --release -p atena-ingest -- fetch https://www.minedu.sk/  # jedna adr
 cargo run --release -p atena-ingest -- legality  # čo zásada zákonnosti dovoľuje pri každom zdroji
 cargo run --release -p atena-ingest -- assess navrhy.txt [--json]
                                                  # návrh licencie a podmienok pre adresy, jedna na riadok
+cargo run --release -p atena-ingest -- import navrhy.txt   # uložiť ako návrhy (a zdieľať ich)
+cargo run --release -p atena-ingest -- confirm ID --by MENO --reason TEXT
+cargo run --release -p atena-ingest -- sync --shared       # načítať spoločný register
+                                                 # viac: docs/sk/IMPORT-A-ZDIELANIE.md
 cargo run --release -p atena-ingest -- forget ADRESA --reason "žiadosť z 24. 10. 2026" [--prefix]
                                                  # žiadosť o výmaz: vymaže a navždy zablokuje
 ```

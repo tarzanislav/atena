@@ -8,6 +8,7 @@
 mod blob;
 mod documents;
 mod erasure;
+mod imports;
 mod register;
 mod schedule;
 #[cfg(feature = "testing")]
@@ -24,6 +25,10 @@ pub use documents::{
     NewVersion, Rights, SavedVersion, VersionSummary,
 };
 pub use erasure::ErasureReport;
+pub use imports::{
+    AssessmentRecord, ImportOutcome, ImportState, ImportedSource, InboxMessage, NewImport,
+    OutboxMessage, Via,
+};
 pub use register::{RegisterSource, SourceRecord, SyncReport};
 pub use schedule::{Check, Endpoint, EndpointKind, HostLease, NewEndpoint, Origin};
 
