@@ -24,26 +24,26 @@ pub enum SharedRegisterError {
     Address(String),
     /// The register decides licences and terms: it travels encrypted or not at all.
     #[error("{0}: the shared register is read over https only")]
-    NotHttps(Url),
+    NotHttps(String),
     /// It could not be downloaded.
     #[error("{url}: {source}")]
     Fetch {
         /// The address.
-        url: Url,
+        url: String,
         /// Why.
-        source: atena_crawl::FetchError,
+        source: Box<atena_crawl::FetchError>,
     },
     /// It is not a valid register.
     #[error("{url}: {source}")]
     Invalid {
         /// The address.
-        url: Url,
+        url: String,
         /// What is wrong.
-        source: atena_core::source::RegisterError,
+        source: Box<atena_core::source::RegisterError>,
     },
     /// Not UTF-8 text.
     #[error("{0}: not UTF-8 text")]
-    NotText(Url),
+    NotText(String),
 }
 
 /// Downloads and checks the shared register at `address` (default: [`DEFAULT_SHARED_REGISTER`]).
@@ -54,21 +54,22 @@ pub async fn fetch_shared(
     let text = address.unwrap_or(DEFAULT_SHARED_REGISTER);
     let url = Url::parse(text).map_err(|_| SharedRegisterError::Address(text.to_string()))?;
     if url.scheme() != "https" {
-        return Err(SharedRegisterError::NotHttps(url));
+        return Err(SharedRegisterError::NotHttps(url.to_string()));
     }
     let fetch = |source| SharedRegisterError::Fetch {
-        url: url.clone(),
-        source,
+        url: url.to_string(),
+        source: Box::new(source),
     };
     let body = ServiceClient::new(&Config::default())
         .map_err(fetch)?
         .get(&url, &[])
         .await
         .map_err(fetch)?;
-    let yaml = std::str::from_utf8(&body).map_err(|_| SharedRegisterError::NotText(url.clone()))?;
+    let yaml =
+        std::str::from_utf8(&body).map_err(|_| SharedRegisterError::NotText(url.to_string()))?;
     load_sources(yaml, taxonomy).map_err(|source| SharedRegisterError::Invalid {
-        url: url.clone(),
-        source,
+        url: url.to_string(),
+        source: Box::new(source),
     })
 }
 

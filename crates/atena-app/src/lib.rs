@@ -28,6 +28,18 @@ pub use error::{AppError, CODES};
 pub use postgres::EmbeddedPostgres;
 pub use settings::{LANGUAGES, MAX_CONCURRENCY, MAX_EDITOR_CHARS, Settings, Theme};
 
+/// `true` for an address the interface may open in the user's own browser: `http` or `https`
+/// with a host, without credentials, white space or hidden characters, of limited length.
+pub fn openable(url: &str) -> bool {
+    atena_core::safety::is_storable_url(url)
+        && url::Url::parse(url).is_ok_and(|u| {
+            matches!(u.scheme(), "http" | "https")
+                && u.host().is_some()
+                && u.username().is_empty()
+                && u.password().is_none()
+        })
+}
+
 /// Database connections of the app.
 const MAX_CONNECTIONS: u32 = 24;
 
@@ -106,5 +118,32 @@ impl Backend {
                 tracing::warn!("{e}");
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::openable;
+
+    #[test]
+    fn only_web_addresses_are_opened() {
+        assert!(openable("https://www.minedu.sk/oznamy/?a=1#b"));
+        assert!(openable("http://example.sk/"));
+        for bad in [
+            "file:///etc/passwd",
+            "javascript:alert(1)",
+            "ms-settings:privacy",
+            "https://user:secret@example.sk/",
+            "https://example.sk/a b",
+            "https://example.sk/\u{202e}",
+            "",
+            "example.sk",
+        ] {
+            assert!(!openable(bad), "{bad}");
+        }
+        assert!(!openable(&format!(
+            "https://example.sk/{}",
+            "a".repeat(3_000)
+        )));
     }
 }

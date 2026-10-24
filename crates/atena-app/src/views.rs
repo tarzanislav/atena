@@ -358,6 +358,63 @@ pub struct PendingView {
     pub entries: Vec<i64>,
 }
 
+/// What a person changes in a proposal when confirming it, as the interface sends it.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct ChoiceInput {
+    /// Licence; `None` keeps the proposal.
+    pub licence: Option<String>,
+    /// Terms; `None` keeps the proposal.
+    pub terms: Option<String>,
+    /// Country; `None` keeps the proposal.
+    pub country: Option<String>,
+}
+
+impl From<ChoiceInput> for atena_ingest::import::Choice {
+    fn from(c: ChoiceInput) -> Self {
+        let given = |v: Option<String>| v.filter(|v| !v.trim().is_empty());
+        Self {
+            licence: given(c.licence),
+            terms: given(c.terms),
+            country: given(c.country),
+        }
+    }
+}
+
+/// What a person may choose in a decision.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DecisionOptions {
+    /// Licences: `copyrighted`, `official` and the accepted open licences.
+    pub licences: Vec<&'static str>,
+    /// Terms of use.
+    pub terms: Vec<&'static str>,
+    /// Countries with a legal profile.
+    pub countries: Vec<&'static str>,
+}
+
+impl DecisionOptions {
+    /// The options of the register.
+    pub fn new() -> Self {
+        let mut licences = vec!["copyrighted", "official"];
+        licences.extend(atena_core::source::OPEN_LICENCES);
+        Self {
+            licences,
+            terms: vec!["allowed", "unknown", "reserved", "forbidden"],
+            countries: atena_core::legality::PROFILES
+                .iter()
+                .map(|p| p.country)
+                .collect(),
+        }
+    }
+}
+
+impl Default for DecisionOptions {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// A decision taken.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
