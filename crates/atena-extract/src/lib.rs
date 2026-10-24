@@ -12,6 +12,7 @@
 mod decode;
 mod html;
 mod lang;
+mod legal;
 mod meta;
 mod office;
 mod pdf;
@@ -22,6 +23,7 @@ use url::Url;
 
 pub use html::{Link, MAX_LINKS};
 pub use lang::{Language, LanguageSource, detect as detect_language};
+pub use legal::{LegalSignals, MAX_LEGAL_TEXT, legal_signals};
 pub use office::MAX_PART_BYTES;
 pub use video::{MAX_VIDEOS, Video, video_url};
 

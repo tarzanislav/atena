@@ -1,0 +1,29 @@
+[package]
+name = "atena-assess"
+description = "ATENA rights assessment: from lines of user input to a proposed licence and terms of use, with evidence"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish.workspace = true
+
+[dependencies]
+atena-core = { path = "../atena-core" }
+atena-crawl = { path = "../atena-crawl" }
+atena-extract = { path = "../atena-extract" }
+jiff = "0.2.38"
+serde.workspace = true
+serde_json.workspace = true
+serde-saphyr = "1.1.0"
+tokio = { version = "1.54.1", features = ["rt"] }
+unicode-normalization = "0.1.26"
+url = { version = "2.5.8", features = ["serde"] }
+
+[dev-dependencies]
+atena-crawl = { path = "../atena-crawl", features = ["testing"] }
+tokio = { version = "1.54.1", features = ["macros", "rt-multi-thread"] }
+
+[lints]
+workspace = true

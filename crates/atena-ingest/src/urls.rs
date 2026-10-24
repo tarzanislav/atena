@@ -23,58 +23,9 @@ const SKIPPED: [&str; 24] = [
     "mov", "wmv", "webm", "zip", "rar", "7z", "gz", "exe", "msi", "css", "js",
 ];
 
-/// Path words of pages that are mostly about people (galleries, staff lists, contacts, accounts);
-/// ATENA does not follow links to them (data minimisation).
-const PERSONAL_WORDS: [&str; 30] = [
-    "foto",
-    "fotky",
-    "fotografie",
-    "fotoalbum",
-    "photo",
-    "photos",
-    "gallery",
-    "album",
-    "albums",
-    "staff",
-    "team",
-    "people",
-    "osoby",
-    "ziaci",
-    "zaci",
-    "absolventi",
-    "alumni",
-    "profil",
-    "profile",
-    "user",
-    "users",
-    "uzivatel",
-    "clenovia",
-    "members",
-    "login",
-    "prihlasenie",
-    "registracia",
-    "kolektiv",
-    "ucitelia",
-    "pedagogovia",
-];
-/// Beginnings of path words with the same meaning (`galeria`, `zamestnanci`, `kontakty`…).
-const PERSONAL_STEMS: [&str; 6] = [
-    "galeri",
-    "fotogaleri",
-    "zamestnan",
-    "kontakt",
-    "contact",
-    "employee",
-];
-
-/// `true` for URLs of pages that are mostly about people.
+/// `true` for URLs of pages that are mostly about people (see [`atena_core::pages`]).
 pub fn is_personal_page(url: &Url) -> bool {
-    url.path()
-        .split(|c: char| !c.is_ascii_alphanumeric())
-        .map(str::to_ascii_lowercase)
-        .any(|w| {
-            PERSONAL_WORDS.contains(&w.as_str()) || PERSONAL_STEMS.iter().any(|s| w.starts_with(s))
-        })
+    atena_core::pages::is_personal_path(url.path())
 }
 
 /// Links taken from one page at most.

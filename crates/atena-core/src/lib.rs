@@ -3,6 +3,7 @@
 
 pub mod classify;
 pub mod legality;
+pub mod pages;
 pub mod source;
 pub mod taxonomy;
 pub mod text;
