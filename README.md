@@ -20,6 +20,7 @@ and always links each item back to its original source.
 | `crates/atena-core/` | text normalisation, taxonomy, classification suggestions, change detection |
 | `crates/atena-crawl/` | polite and safe crawler: robots.txt (RFC 9309), SSRF guard, pacing, TDMRep, RSS/Atom, sitemaps – see [docs/CRAWLER.md](docs/CRAWLER.md) |
 | `crates/atena-extract/` | main text without menus and footers, metadata and language from HTML (also legacy encodings), PDF, DOCX and ODT |
+| `crates/atena-store/` | PostgreSQL schema and queries, host-lease scheduling, content-addressed file store – see [docs/DATABASE.md](docs/DATABASE.md) |
 | `data/` | taxonomy (296 concepts, 15 facets, 8 languages) and a register of 186 sources |
 | `prototyp-v0.1/` | working Python prototype (crawling, versions, classification, search, web, 41 tests) – the executable specification for the Rust core |
 | `tools/language-benchmark/` | benchmark of Rust, Go, Java, Node and Python on ATENA's classification task |

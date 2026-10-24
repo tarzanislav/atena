@@ -27,6 +27,8 @@ Novú závislosť pridaj až po doplnení do tohto zoznamu; celý strom knižní
 | pdf-extract (s lopdf) | MIT | text a metadáta z PDF; neudržiavaný ttf-parser v lopdf sa používa len pri tvorbe PDF, preto má výnimku v `deny.toml` (neskôr ho môže nahradiť PDFium) |
 | zip | MIT | archívy DOCX a ODT |
 | lingua (len 9 jazykov) | Apache-2.0 | rozpoznanie jazyka |
+| sqlx 0.8 (PostgreSQL, migrácie) | MIT OR Apache-2.0 | prístup k databáze (0.9 vyžaduje Rust 1.94) |
+| jiff-sqlx | Unlicense OR MIT | dátumy v databáze |
 
 ## Prototyp v0.1 (Python)
 
