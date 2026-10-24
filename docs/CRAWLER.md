@@ -37,6 +37,12 @@ Crawl-delay: 30
 Disallow: /internal/
 ```
 
+## Personal data and erasure
+ATENA removes e-mail addresses and telephone numbers before storing texts, keeps no originals of web
+pages, does not follow galleries, staff lists or contact pages, and erases a page or a whole section on
+request (it is then never fetched again). Requests: [GitHub issues](https://github.com/tarzanislav/atena/issues)
+or the contact of the installation's operator. Details: [PRIVACY-AND-RIGHTS.md](PRIVACY-AND-RIGHTS.md).
+
 ## What it downloads
 Web pages, PDF and office documents, RSS/Atom feeds and sitemaps (XML, text, gzip) – at most 50 MiB per
 resource (after decompression), only the content types it can process. It sends no cookies, no

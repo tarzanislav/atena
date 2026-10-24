@@ -114,6 +114,10 @@ pub struct Endpoint {
     pub interval_s: i32,
     /// Check interval of the source.
     pub source_interval_s: i32,
+    /// Authority level of the source (`A1`…`D`).
+    pub source_authority: String,
+    /// Licence of the source's content.
+    pub source_licence: String,
     /// Failed checks in a row.
     pub fail_count: i32,
     /// `ETag` of the last full response.
@@ -155,6 +159,13 @@ pub struct Check {
 }
 
 const MAX_DETAIL: usize = 2_000;
+
+/// SQL condition: the URL expression is on the block list (exactly, or below a blocked prefix).
+pub(crate) fn blocked(url: &str) -> String {
+    format!(
+        "EXISTS (SELECT 1 FROM blocked_url b WHERE b.url = {url} OR (b.prefix AND starts_with({url}, b.url)))"
+    )
+}
 
 /// Creates missing hosts; returns the IDs of all named hosts.
 pub(crate) async fn insert_hosts<'a>(
@@ -209,6 +220,8 @@ fn endpoint_from(row: &sqlx::postgres::PgRow) -> Result<Endpoint> {
         follow_links: row.try_get("follow_links")?,
         interval_s: row.try_get("interval_s")?,
         source_interval_s: row.try_get("source_interval_s")?,
+        source_authority: row.try_get("source_authority")?,
+        source_licence: row.try_get("source_licence")?,
         fail_count: row.try_get("fail_count")?,
         etag: row.try_get("etag")?,
         last_modified: row.try_get("last_modified")?,
@@ -216,7 +229,8 @@ fn endpoint_from(row: &sqlx::postgres::PgRow) -> Result<Endpoint> {
 }
 
 const ENDPOINT_COLUMNS: &str = "e.id, e.source_id, e.host_id, e.url, e.kind, e.origin, e.follow_links, \
-     e.interval_s, s.interval_s AS source_interval_s, e.fail_count, e.etag, e.last_modified";
+     e.interval_s, s.interval_s AS source_interval_s, s.authority AS source_authority, \
+     s.licence AS source_licence, e.fail_count, e.etag, e.last_modified";
 
 impl Store {
     /// Adds endpoints found on `discovered_from` (feed items, sitemap entries, links); URLs that
@@ -234,15 +248,17 @@ impl Store {
         insert_hosts(&mut tx, endpoints.iter().map(|e| e.host.as_str())).await?;
         let column =
             |f: fn(&NewEndpoint) -> String| endpoints.iter().map(f).collect::<Vec<String>>();
-        let hosts: Vec<i64> = sqlx::query_scalar(
+        let hosts: Vec<i64> = sqlx::query_scalar(&format!(
             "INSERT INTO endpoint (source_id, host_id, url, kind, origin, follow_links, interval_s, discovered_from)
              SELECT $1, h.id, u.url, u.kind, u.origin, u.follow, u.interval_s, $2
              FROM unnest($3::text[], $4::text[], $5::text[], $6::text[], $7::bool[], $8::int[])
                   AS u(url, host, kind, origin, follow, interval_s)
              JOIN host h ON h.name = u.host
+             WHERE NOT {BLOCKED}
              ON CONFLICT (url) DO NOTHING
              RETURNING host_id",
-        )
+            BLOCKED = blocked("u.url")
+        ))
         .bind(source_id)
         .bind(discovered_from)
         .bind(column(|e| e.url.clone()))

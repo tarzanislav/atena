@@ -22,6 +22,9 @@ USAGE:
     atena-ingest run [--once] [--concurrency N]
                                       check due endpoints; --once stops when nothing is due
     atena-ingest fetch URL            fetch and extract one URL and print a summary (no database)
+    atena-ingest forget URL --reason TEXT [--prefix]
+                                      erase everything about URL (with --prefix: every URL below it)
+                                      and never fetch it again – for erasure requests (GDPR Art. 17)
 
 ENVIRONMENT:
     ATENA_DATABASE_URL   PostgreSQL connection, e.g. postgres://atena@localhost/atena (required except for fetch)
@@ -165,6 +168,42 @@ async fn fetch_one(url: &str) -> Result<(), String> {
     Ok(())
 }
 
+async fn forget(args: &[String]) -> Result<(), String> {
+    let mut url = None;
+    let mut reason = None;
+    let mut prefix = false;
+    let mut args = args.iter();
+    while let Some(arg) = args.next() {
+        match arg.as_str() {
+            "--prefix" => prefix = true,
+            "--reason" => reason = Some(args.next().ok_or("--reason needs a text")?.clone()),
+            other if url.is_none() && !other.starts_with("--") => url = Some(other.to_string()),
+            other => return Err(format!("unexpected argument {other}\n\n{USAGE}")),
+        }
+    }
+    let url = url.ok_or_else(|| format!("forget needs a URL\n\n{USAGE}"))?;
+    let reason = reason.ok_or("forget needs --reason (e.g. the request it fulfils)")?;
+    let parsed = Url::parse(&url).map_err(|e| format!("{url}: {e}"))?;
+    let normalized = atena_ingest::urls::normalize(&parsed).to_string();
+    let store = connect(2).await?;
+    let report = store
+        .forget(&normalized, prefix, &reason)
+        .await
+        .map_err(|e| e.to_string())?;
+    println!(
+        "{normalized}{}: {} documents, {} versions and {} files erased; the address is blocked",
+        if prefix {
+            " (and everything below)"
+        } else {
+            ""
+        },
+        report.documents,
+        report.versions,
+        report.files
+    );
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() -> ExitCode {
     let level = match std::env::var("ATENA_LOG").as_deref() {
@@ -187,6 +226,7 @@ async fn main() -> ExitCode {
             Some(url) => fetch_one(url).await,
             None => Err(format!("fetch needs a URL\n\n{USAGE}")),
         },
+        Some("forget") => forget(&args[1..]).await,
         Some("help" | "--help" | "-h") | None => {
             print!("{USAGE}");
             Ok(())

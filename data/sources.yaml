@@ -1,4 +1,6 @@
 # ATENA source register. Licence: CC0 1.0. Reviewed 24 Oct 2026 (see docs/sk and the review workbook).
+# licence: official (legal acts and official texts) | copyrighted (default) | an open licence (SPDX id)
+# terms:   what the terms of use say about automated access: allowed | forbidden | unknown (default)
 version: 2
 sources:
 - id: SK01
@@ -39,6 +41,7 @@ sources:
   connector: slovlex
   interval_s: 86400
   review: adjusted
+  licence: official
   note:
     sk: Rozšíriť na zoznam sledovaných predpisov (min. 245/2008, 596/2003, 138/2019, 61/2015, 448/2008). robots.txt Slov-Lexu povoľuje všetko;
       statické časové znenia na static.slov-lex.sk. Sitemapy majú zastarané lastmod – nespoliehať sa na ne.
@@ -571,6 +574,7 @@ sources:
   connector: ris
   interval_s: 86400
   review: adjusted
+  licence: official
   note:
     sk: RIS má oficiálne rozhranie Open Government Data – použiť API namiesto HTML.
 - id: AT03
@@ -1864,6 +1868,7 @@ sources:
   connector: html
   interval_s: 86400
   review: new
+  licence: official
   note:
     sk: Otvorené dáta sú obmedzené – preveriť rozhranie.
 - id: N07
@@ -1968,6 +1973,7 @@ sources:
   connector: html
   interval_s: 604800
   review: new
+  licence: official
   note:
     sk: Maďarské právne predpisy (aj pre školy s VJM na Slovensku ako kontext).
 - id: N15
@@ -1981,6 +1987,7 @@ sources:
   connector: api
   interval_s: 86400
   review: new
+  licence: official
   note:
     sk: Právo EÚ (AI Act, GDPR, autorské právo); webová služba a SPARQL.
 - id: N16
@@ -2297,5 +2304,6 @@ sources:
   connector: youtube-api
   interval_s: 86400
   review: new
+  terms: forbidden
   note:
     sk: Kanál /feeds/videos.xml je zakázaný v robots.txt – použiť oficiálne YouTube Data API (bezplatná kvóta); videá len odkaz/vloženie.

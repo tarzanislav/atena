@@ -1,6 +1,6 @@
 //! Keeping the `source` table and the register endpoints in line with `data/sources.yaml`.
 
-use crate::schedule::{NewEndpoint, insert_hosts, wake_hosts};
+use crate::schedule::{NewEndpoint, blocked, insert_hosts, wake_hosts};
 use crate::{Result, Store};
 
 /// A source as stored.
@@ -24,7 +24,11 @@ pub struct SourceRecord {
     pub connector: String,
     /// Check interval in seconds.
     pub interval_s: i32,
-    /// `false` for archived sources.
+    /// `official`, `copyrighted` or an open licence (SPDX identifier).
+    pub licence: String,
+    /// `allowed`, `forbidden` or `unknown`.
+    pub terms: String,
+    /// `false` for sources that must not be crawled.
     pub enabled: bool,
 }
 
@@ -60,13 +64,15 @@ impl Store {
         for entry in register {
             let s = &entry.source;
             sqlx::query(
-                "INSERT INTO source (id, name, url, country, languages, authority, priority, connector, interval_s, enabled)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                "INSERT INTO source (id, name, url, country, languages, authority, priority, connector, interval_s,
+                                     licence, terms, enabled)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
                  ON CONFLICT (id) DO UPDATE SET
                      name = EXCLUDED.name, url = EXCLUDED.url, country = EXCLUDED.country,
                      languages = EXCLUDED.languages, authority = EXCLUDED.authority,
                      priority = EXCLUDED.priority, connector = EXCLUDED.connector,
-                     interval_s = EXCLUDED.interval_s, enabled = EXCLUDED.enabled, synced_at = now()",
+                     interval_s = EXCLUDED.interval_s, licence = EXCLUDED.licence, terms = EXCLUDED.terms,
+                     enabled = EXCLUDED.enabled, synced_at = now()",
             )
             .bind(&s.id)
             .bind(&s.name)
@@ -77,6 +83,8 @@ impl Store {
             .bind(&s.priority)
             .bind(&s.connector)
             .bind(s.interval_s)
+            .bind(&s.licence)
+            .bind(&s.terms)
             .bind(s.enabled)
             .execute(&mut *tx)
             .await?;
@@ -86,24 +94,27 @@ impl Store {
                 insert_hosts(&mut tx, entry.endpoints.iter().map(|e| e.host.as_str())).await?;
             let urls: Vec<&str> = entry.endpoints.iter().map(|e| e.url.as_str()).collect();
             for ep in &entry.endpoints {
-                // a URL found earlier as a feed item or link becomes a register endpoint
-                let inserted: bool = sqlx::query_scalar(
+                // a URL found earlier as a feed item or link becomes a register endpoint;
+                // a blocked URL (erasure request) is never added or re-enabled
+                let inserted: Option<bool> = sqlx::query_scalar(&format!(
                     "INSERT INTO endpoint (source_id, host_id, url, kind, origin, follow_links, interval_s)
-                     VALUES ($1, (SELECT id FROM host WHERE name = $2), $3, $4, 'register', $5, $6)
+                     SELECT $1, (SELECT id FROM host WHERE name = $2), $3, $4, 'register', $5, $6
+                     WHERE NOT {BLOCKED}
                      ON CONFLICT (url) DO UPDATE SET
                          source_id = EXCLUDED.source_id, kind = EXCLUDED.kind, origin = 'register',
                          follow_links = EXCLUDED.follow_links, interval_s = EXCLUDED.interval_s, enabled = true
                      RETURNING (xmax = 0)",
-                )
+                    BLOCKED = blocked("$3")
+                ))
                 .bind(&s.id)
                 .bind(&ep.host)
                 .bind(&ep.url)
                 .bind(ep.kind.as_str())
                 .bind(ep.follow_links)
                 .bind(ep.interval_s)
-                .fetch_one(&mut *tx)
+                .fetch_optional(&mut *tx)
                 .await?;
-                report.endpoints_added += u64::from(inserted);
+                report.endpoints_added += u64::from(inserted.unwrap_or(false));
             }
             let disabled = sqlx::query(
                 "UPDATE endpoint SET enabled = false

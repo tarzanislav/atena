@@ -19,6 +19,8 @@ cargo run --release -p atena-ingest -- sync      # load data/sources.yaml (or: s
 cargo run --release -p atena-ingest -- run       # crawl until Ctrl+C
 cargo run --release -p atena-ingest -- run --once --concurrency 8   # until nothing is due
 cargo run --release -p atena-ingest -- fetch https://www.minedu.sk/  # one URL, no database
+cargo run --release -p atena-ingest -- forget URL --reason "request of 24 Oct 2026" [--prefix]
+                                                 # erasure request: remove and block for good
 ```
 `migrate` also runs automatically before `sync` and `run`. Several `run` processes – also on several
 machines – may share one database: host leases keep them from contacting a host at the same time.

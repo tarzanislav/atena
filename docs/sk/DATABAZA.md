@@ -18,6 +18,8 @@ dajú kedykoľvek prepočítať. Všetky príkazy SQL sú v module `atena-store`
 | `document_version` | nový riadok len vtedy, keď sa zmení **text**: druh zmeny, pridané a odobraté odseky, zmena čísel a dátumov |
 | `document_link` | odkazy v aktuálnej verzii (prílohy, podstránky) |
 | `document_label` | zaradenie: návrhy s dôvodom a rozhodnutia redaktora |
+| `blocked_url` | adresy (alebo celé sekcie), ktoré sa už nikdy nestiahnu – žiadosti o výmaz |
+| `erasure_log` | čo výmaz odstránil a prečo, bez odstráneného obsahu |
 
 ## Plánovanie: prenájom servera
 Slušnosť voči webom sa meria po serveroch, preto je jednotkou práce server. Pracovník si server
@@ -45,7 +47,9 @@ uloží ako ďalšia verzia, a to v jednej transakcii spolu s odkazmi a novými 
   dodržia; kópia pri `noarchive` slúži len na zistenie zmien a nikdy sa nezobrazí.
 
 ## Úložisko súborov
-Súbory sú v `<koreň>/ab/cd/<odtlačok>`. Zapisujú sa pod dočasným menom a potom sa premenujú, takže po
+Ukladajú sa len pôvodné dokumenty (PDF, DOCX, ODT) úradov a medzinárodných organizácií alebo s úradnou či
+otvorenou licenciou; z webových stránok sa ukladá len upravený text
+(pozri [PRAVA-A-OCHRANA-UDAJOV.md](PRAVA-A-OCHRANA-UDAJOV.md)). Súbory sú v `<koreň>/ab/cd/<odtlačok>`. Zapisujú sa pod dočasným menom a potom sa premenujú, takže po
 páde nezostane pokazený súbor pod platným menom. HTML, XML, JSON a čistý text sa ukladajú komprimované
 (gzip). Pri čítaní sa odtlačok overí. Rovnaký súbor sa uloží len raz.
 

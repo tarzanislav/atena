@@ -24,7 +24,9 @@ fn school_page(date: &str) -> String {
         <p>Zápis detí do prvého ročníka základnej školy sa uskutoční {date}. Zákonný zástupca prinesie žiadosť o prijatie a rodný list dieťaťa.</p>
         <p>Ďalšie informácie nájdete v <a href="/skola/oznamy/zapis.html">ozname riaditeľa</a>, v <a href="/skola/dokumenty/kriteria.txt">kritériách prijatia</a>
         a v <a href="/skola/vyhrada.html">podmienkach používania</a>. Pozri aj <a href="https://www.example.com/x.pdf">externý dokument</a>
-        a <a href="/skola/zmazane.html">starý oznam</a>.</p></main></body></html>"#
+        a <a href="/skola/zmazane.html">starý oznam</a>.</p>
+        <p>Kontakt: riaditel@zs-prikladna.sk, tel. 0905 123 456. <a href="/skola/zamestnanci/">Zamestnanci</a>,
+        <a href="/skola/fotogaleria/vylet.html">fotogaléria</a>.</p></main></body></html>"#
     )
 }
 
@@ -125,6 +127,8 @@ async fn register_to_versions_and_classification() {
                 priority: "P0".into(),
                 connector: "html".into(),
                 interval_s: 86_400,
+                licence: "copyrighted".into(),
+                terms: "unknown".into(),
                 enabled: true,
             },
             endpoints: vec![
@@ -163,7 +167,7 @@ async fn register_to_versions_and_classification() {
             "/skola/vyhrada.html",
             "/skola/zmazane.html",
         ],
-        "tracking parameters removed, external and menu links not followed"
+        "tracking parameters removed; external, menu and personal pages not followed"
     );
     assert_eq!(server.requests_to("/robots.txt").len(), 1);
 
@@ -184,8 +188,11 @@ async fn register_to_versions_and_classification() {
             &format!("SELECT count(*) FROM document_link WHERE document_id = {skola}")
         )
         .await,
-        5
+        7
     );
+    let body = store.version_body(history[0].id).await.unwrap().unwrap();
+    assert!(body.contains("Kontakt: [email], tel. [phone]."), "{body}");
+    assert!(!body.contains("0905") && !body.contains("riaditel@"));
     let labels = store.labels(skola).await.unwrap();
     assert!(
         labels.iter().any(|l| l.scheme == "school-type"),
@@ -193,8 +200,8 @@ async fn register_to_versions_and_classification() {
     );
     assert_eq!(
         count(store, "SELECT count(*) FROM blob").await,
-        5,
-        "originals kept, except the reserved page"
+        0,
+        "of web pages only the cleaned text is kept"
     );
 
     // the publisher reserved text and data mining: metadata only

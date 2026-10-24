@@ -7,6 +7,7 @@
 //! The `atena-ingest` program wraps these as commands (`migrate`, `sync`, `run`, `fetch`).
 
 pub mod pipeline;
+pub mod privacy;
 pub mod register;
 pub mod urls;
 pub mod worker;

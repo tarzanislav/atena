@@ -1,6 +1,6 @@
 //! From the source register (`data/sources.yaml`) to sources and their register endpoints.
 
-use atena_core::source::{Review, Source};
+use atena_core::source::{Review, Source, Terms};
 use atena_store::{EndpointKind, NewEndpoint, Origin, RegisterSource, SourceRecord};
 use url::Url;
 
@@ -60,7 +60,10 @@ pub fn register_entries(sources: &[Source]) -> Vec<RegisterSource> {
                     priority: s.priority.clone(),
                     connector: s.connector.clone(),
                     interval_s,
-                    enabled: true,
+                    licence: s.licence.as_str().to_string(),
+                    terms: s.terms.as_str().to_string(),
+                    // terms of use that forbid automated access are respected: not crawled at all
+                    enabled: s.terms != Terms::Forbidden,
                 },
                 endpoints,
             }
@@ -96,5 +99,9 @@ mod tests {
         {
             assert!(!e.endpoints[0].follow_links, "{}", e.source.id);
         }
+        let youtube = entries.iter().find(|e| e.source.id == "N39").unwrap();
+        assert!(!youtube.source.enabled && youtube.source.terms == "forbidden");
+        let slovlex = entries.iter().find(|e| e.source.id == "SK03").unwrap();
+        assert_eq!(slovlex.source.licence, "official");
     }
 }

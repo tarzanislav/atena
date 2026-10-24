@@ -18,6 +18,8 @@ store**. The database is the source of truth; search indexes are derived from it
 | `document_version` | a new row only when the **text** changes: change kind, paragraphs added/removed, number/date changes, text, metadata |
 | `document_link` | links in the current version (attachments, subpages) |
 | `document_label` | classification: automatic suggestions with evidence, and editors' decisions |
+| `blocked_url` | URLs (or prefixes) that are never fetched again – erasure requests |
+| `erasure_log` | what an erasure removed and why, without the removed content |
 
 ## Scheduling: host leases
 Politeness is per host, so the host is the unit of work. A worker **leases** due hosts
@@ -43,7 +45,9 @@ was not kept).
   interface respect them (a `noarchive` copy is kept for change detection but never shown).
 
 ## File store
-Files live under `<root>/ab/cd/<hash>` (BLAKE3 of the original bytes), written to a temporary name and
+Only originals of documents (PDF, DOCX, ODT) of public bodies and international organisations, or under an
+official or open licence, are kept; of web pages only the cleaned text is stored
+(see [PRIVACY-AND-RIGHTS.md](PRIVACY-AND-RIGHTS.md)). Files live under `<root>/ab/cd/<hash>` (BLAKE3 of the original bytes), written to a temporary name and
 renamed, so a crash never leaves a broken file under a valid name. HTML, XML, JSON and plain text are
 stored gzip-compressed; reading verifies the hash. Identical files are stored once.
 

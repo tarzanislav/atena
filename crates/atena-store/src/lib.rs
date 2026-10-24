@@ -7,6 +7,7 @@
 
 mod blob;
 mod documents;
+mod erasure;
 mod register;
 mod schedule;
 #[cfg(feature = "testing")]
@@ -22,6 +23,7 @@ pub use documents::{
     Capture, CurrentDocument, Label, LabelDecision, LabelSuggestion, NewVersion, Rights,
     SavedVersion, VersionSummary,
 };
+pub use erasure::ErasureReport;
 pub use register::{RegisterSource, SourceRecord, SyncReport};
 pub use schedule::{Check, Endpoint, EndpointKind, HostLease, NewEndpoint, Origin};
 

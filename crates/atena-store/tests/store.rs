@@ -21,6 +21,8 @@ fn source(id: &str, enabled: bool) -> SourceRecord {
         priority: "P0".into(),
         connector: "html".into(),
         interval_s: 3600,
+        licence: "copyrighted".into(),
+        terms: "unknown".into(),
         enabled,
     }
 }
@@ -527,5 +529,143 @@ async fn blobs_and_log_pruning() {
         1
     );
     assert!(s.record_check(999_999, &check).await.is_err());
+    db.drop().await;
+}
+
+#[tokio::test]
+async fn erasure_removes_everything_and_blocks_the_url() {
+    let Some(db) = TestDb::new().await else {
+        return;
+    };
+    let s = &db.store;
+    let page = "https://sk01.example.sk/zamestnanci/jan-novak.html";
+    let other = "https://sk01.example.sk/oznamy/";
+    s.sync_register(&[RegisterSource {
+        source: source("SK01", true),
+        endpoints: vec![endpoint(other, EndpointKind::Page, Origin::Register)],
+    }])
+    .await
+    .unwrap();
+    s.add_endpoints(
+        "SK01",
+        None,
+        &[endpoint(page, EndpointKind::Page, Origin::Link)],
+    )
+    .await
+    .unwrap();
+    let page_ep = scalar_i64(s, &format!("SELECT id FROM endpoint WHERE url = '{page}'")).await;
+    let other_ep = scalar_i64(s, &format!("SELECT id FROM endpoint WHERE url = '{other}'")).await;
+
+    // the personal page and the notice board share one original file (same bytes)
+    let shared = s
+        .put_blob(b"<p>shared</p>".to_vec(), Some("text/html"))
+        .await
+        .unwrap();
+    let own = s
+        .put_blob(b"<p>Jan Novak, ucitel</p>".to_vec(), Some("text/html"))
+        .await
+        .unwrap();
+    let mut c = capture(page_ep, "Ján Novák, učiteľ", Rights::default());
+    c.raw_hash = own.hash;
+    s.save_version(&c, &version("initial", "Ján Novák, učiteľ"), &[], &[])
+        .await
+        .unwrap();
+    c.raw_hash = shared.hash;
+    c.fingerprint = hash(b"v2");
+    s.save_version(&c, &version("minor", "Ján Novák, učiteľ."), &[], &[])
+        .await
+        .unwrap();
+    let mut o = capture(other_ep, "Oznamy", Rights::default());
+    o.raw_hash = shared.hash;
+    s.save_version(
+        &o,
+        &version("initial", "Oznamy"),
+        &[(page.to_string(), "Ján Novák".to_string())],
+        &[],
+    )
+    .await
+    .unwrap();
+    s.record_check(
+        page_ep,
+        &Check {
+            outcome: "new".into(),
+            next_in: Duration::from_secs(60),
+            ..Check::default()
+        },
+    )
+    .await
+    .unwrap();
+
+    assert!(
+        s.forget(page, false, " ").await.is_err(),
+        "a reason is required"
+    );
+    let report = s
+        .forget(page, false, "request of the data subject, ticket 17")
+        .await
+        .unwrap();
+    assert_eq!((report.documents, report.versions, report.files), (1, 2, 1));
+    assert_eq!(scalar_i64(s, "SELECT count(*) FROM document").await, 1);
+    assert_eq!(
+        scalar_i64(
+            s,
+            "SELECT count(*) FROM endpoint WHERE url LIKE '%jan-novak%'"
+        )
+        .await,
+        0
+    );
+    assert_eq!(scalar_i64(s, "SELECT count(*) FROM fetch_log").await, 0);
+    assert_eq!(
+        scalar_i64(s, "SELECT count(*) FROM document_link").await,
+        0,
+        "links to it are gone too"
+    );
+    assert!(s.get_blob(own.hash).await.unwrap().is_none() && !s.blobs().path(&own.hash).exists());
+    assert!(
+        s.get_blob(shared.hash).await.unwrap().is_some(),
+        "a file another document uses stays"
+    );
+    assert_eq!(scalar_i64(s, "SELECT count(*) FROM erasure_log").await, 1);
+
+    // it can come back neither as a link nor through the register
+    assert!(s.is_blocked(page).await.unwrap());
+    assert_eq!(
+        s.add_endpoints(
+            "SK01",
+            None,
+            &[endpoint(page, EndpointKind::Page, Origin::Link)]
+        )
+        .await
+        .unwrap(),
+        0
+    );
+    let report = s
+        .sync_register(&[RegisterSource {
+            source: source("SK01", true),
+            endpoints: vec![
+                endpoint(other, EndpointKind::Page, Origin::Register),
+                endpoint(page, EndpointKind::Page, Origin::Register),
+            ],
+        }])
+        .await
+        .unwrap();
+    assert_eq!(report.endpoints_added, 0);
+
+    // a prefix blocks a whole section
+    s.forget("https://sk01.example.sk/galeria/", true, "photos of pupils")
+        .await
+        .unwrap();
+    let below = endpoint(
+        "https://sk01.example.sk/galeria/2026/vylet.html",
+        EndpointKind::Page,
+        Origin::Link,
+    );
+    assert_eq!(s.add_endpoints("SK01", None, &[below]).await.unwrap(), 0);
+    assert!(
+        !s.is_blocked("https://sk01.example.sk/galeria-skoly/")
+            .await
+            .unwrap(),
+        "only below the prefix"
+    );
     db.drop().await;
 }

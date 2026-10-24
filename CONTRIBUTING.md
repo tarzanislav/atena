@@ -10,3 +10,11 @@
 * **Quality gates.** `cargo fmt`, `cargo clippy -D warnings`, `cargo test`, `cargo deny check` – all must pass.
   Every behaviour has a test; the Python prototype's tests are the specification for the Rust core.
 * **Honest data.** Unknown values stay unknown; automatic classification and translation are suggestions until reviewed.
+
+## Lawful by design
+ATENA draws only on open sources, and nothing it does may infringe the law, misuse data or breach the
+GDPR (see [docs/PRIVACY-AND-RIGHTS.md](docs/PRIVACY-AND-RIGHTS.md)). Changes must keep that true:
+* never sign in, bypass access controls, ignore robots.txt, TDM reservations or terms of use;
+* a new source starts as `licence: copyrighted`, `terms: unknown` until its licence and terms are verified;
+* never store more personal data than the purpose needs – no contact details, no originals of web pages,
+  no pages about people – and keep erasure (`Store::forget`) complete when adding tables.
