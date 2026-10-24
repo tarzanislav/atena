@@ -35,6 +35,9 @@ stiahnuť, uložiť a zobraziť, ide cez funkciu `permission`. Iná cesta v prog
 8. **Zdroje, ktoré navrhnú používatelia,** sa vyhodnotia automaticky, ale nič sa nezbiera, kým návrh
    nepotvrdí človek. Rozhodnutie sa skontroluje a potom sa naň uplatní `permission` rovnako ako na
    záznam v registri ([IMPORT-A-ZDIELANIE.md](IMPORT-A-ZDIELANIE.md)).
+9. **Vyhľadávanie** nenájde nič, čo ATENA nesmie zbierať alebo čo vydavateľ označil `noindex`. V texte
+   hľadá len tam, kde ho ATENA smie uchovávať, a ukážku textu ukáže len tam, kde sa text smie zobraziť –
+   len taký text sa do indexu aj uloží ([VYHLADAVANIE.md](VYHLADAVANIE.md)).
 
 ## Právne profily krajín
 | Krajina | Vyťažovanie chráneného obsahu | Úradné texty voľné | Osobné údaje | Výsledok pre chránený obsah |

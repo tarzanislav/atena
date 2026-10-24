@@ -22,6 +22,7 @@ store**. The database is the source of truth; search indexes are derived from it
 | `document_label` | classification: automatic suggestions with evidence, and editors' decisions |
 | `blocked_url` | URLs (or prefixes) that are never fetched again – erasure requests |
 | `erasure_log` | what an erasure removed and why, without the removed content |
+| `search_queue` | documents the search index must update, filled by triggers – see [SEARCH.md](SEARCH.md) |
 
 ## Scheduling: host leases
 Politeness is per host, so the host is the unit of work. A worker **leases** due hosts
@@ -44,7 +45,8 @@ was not kept).
   original file, no links; classification uses the title only. When a reservation appears later, texts,
   links and automatic suggestions kept until then are removed.
 * `noindex`, `noarchive`, `nosnippet`, `notranslate` are stored with the document; search and the user
-  interface respect them (a `noarchive` copy is kept for change detection but never shown).
+  interface respect them (a `noarchive` copy is kept for change detection but never shown; a `noindex`
+  document is never found, a `nosnippet` one never shows a snippet – see [SEARCH.md](SEARCH.md)).
 
 ## File store
 Only originals of documents (PDF, DOCX, ODT) whose text may be shown in full (official texts, open

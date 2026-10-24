@@ -22,7 +22,8 @@ vedie späť na pôvodný zdroj.
 | `crates/atena-extract/` | hlavný text bez menu a pätičky, metadáta a jazyk z HTML (aj staré kódovania), PDF, DOCX a ODT |
 | `crates/atena-store/` | databáza PostgreSQL, plánovanie kontrol, úložisko súborov – [docs/sk/DATABAZA.md](docs/sk/DATABAZA.md) |
 | `crates/atena-assess/` | automatické právne vyhodnotenie: riadky vstupu → licencia, podmienky a doklady – [docs/sk/HODNOTENIE.md](docs/sk/HODNOTENIE.md) |
-| `crates/atena-ingest/` | program zberača: register → sťahovanie → spracovanie → verzie → zaradenie; import a zdieľané návrhy – [docs/sk/SPUSTENIE.md](docs/sk/SPUSTENIE.md), [docs/sk/IMPORT-A-ZDIELANIE.md](docs/sk/IMPORT-A-ZDIELANIE.md) |
+| `crates/atena-search/` | viacjazyčné fulltextové vyhľadávanie (Tantivy) v tom, čo dovoľuje zásada zákonnosti: vlastné stemmery pre slovenčinu, češtinu a poľštinu, pojmy naprieč jazykmi – [docs/sk/VYHLADAVANIE.md](docs/sk/VYHLADAVANIE.md) |
+| `crates/atena-ingest/` | program zberača: register → sťahovanie → spracovanie → verzie → zaradenie → index vyhľadávania; import a zdieľané návrhy – [docs/sk/SPUSTENIE.md](docs/sk/SPUSTENIE.md), [docs/sk/IMPORT-A-ZDIELANIE.md](docs/sk/IMPORT-A-ZDIELANIE.md) |
 | `data/` | taxonómia (296 pojmov, 15 osí, 8 jazykov) a register 186 zdrojov |
 | `prototyp-v0.1/` | funkčný prototyp v Pythone (zber, verzie, zaradenie, vyhľadávanie, web, 41 testov) – špecifikácia pre jadro v Ruste |
 | `tools/language-benchmark/` | meranie rýchlosti Rust, Go, Java, Node, Python na úlohe ATENA |

@@ -28,10 +28,14 @@ cargo run --release -p atena-ingest -- sync --shared       # load the shared reg
                                                  # more: docs/IMPORT-AND-SHARING.md
 cargo run --release -p atena-ingest -- forget URL --reason "request of 24 Oct 2026" [--prefix]
                                                  # erasure request: remove and block for good
+cargo run --release -p atena-ingest -- index     # bring the search index up to date (--rebuild: anew)
+cargo run --release -p atena-ingest -- search citatelska gramotnost --country SK
+                                                 # search; more: docs/SEARCH.md
 ```
 `migrate` also runs automatically before `sync` and `run`. Several `run` processes – also on several
 machines – may share one database: host leases keep them from contacting a host at the same time.
-`ATENA_LOG=debug` shows more detail; `ATENA_WORKER` names the process in host leases.
+`ATENA_LOG=debug` shows more detail; `ATENA_WORKER` names the process in host leases. `run` also brings
+the search index in `ATENA_INDEX` (default `./atena-index`) up to date every minute and when it stops.
 
 ## What a run does
 1. leases due hosts (one worker per host at a time) and checks their due endpoints;

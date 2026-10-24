@@ -11,6 +11,7 @@ mod erasure;
 mod imports;
 mod register;
 mod schedule;
+mod search;
 #[cfg(feature = "testing")]
 pub mod testing;
 
@@ -31,6 +32,7 @@ pub use imports::{
 };
 pub use register::{RegisterSource, SourceRecord, SyncReport};
 pub use schedule::{Check, Endpoint, EndpointKind, HostLease, NewEndpoint, Origin};
+pub use search::{IndexRow, QueueEntry};
 
 /// The embedded migrations.
 pub static MIGRATIONS: sqlx::migrate::Migrator = sqlx::migrate!("./migrations");

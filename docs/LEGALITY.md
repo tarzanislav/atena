@@ -33,6 +33,9 @@ kept and shown goes through `legality::permission`; there is no other path.
 8. **Sources proposed by users** are assessed automatically, but nothing is crawled until a person
    confirms the proposal; the decision is checked and then `permission` applies to it like to any
    register entry ([IMPORT-AND-SHARING.md](IMPORT-AND-SHARING.md)).
+9. **Search** finds nothing ATENA may not collect or the publisher marked `noindex`; it searches text
+   only where ATENA may keep it and shows snippets only where the text may be shown – that text alone is
+   stored in the index ([SEARCH.md](SEARCH.md)).
 
 ## Country profiles
 | Country | Mining of copyrighted content | Official texts free | Personal data | Copyrighted content |
