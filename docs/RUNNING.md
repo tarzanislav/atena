@@ -19,6 +19,7 @@ cargo run --release -p atena-ingest -- sync      # load data/sources.yaml (or: s
 cargo run --release -p atena-ingest -- run       # crawl until Ctrl+C
 cargo run --release -p atena-ingest -- run --once --concurrency 8   # until nothing is due
 cargo run --release -p atena-ingest -- fetch https://www.minedu.sk/  # one URL, no database
+cargo run --release -p atena-ingest -- legality  # what the legality principle allows per source
 cargo run --release -p atena-ingest -- forget URL --reason "request of 24 Oct 2026" [--prefix]
                                                  # erasure request: remove and block for good
 ```
@@ -40,6 +41,7 @@ machines – may share one database: host leases keep them from contacting a hos
 | `new`, `changed` | first version, new version | normal interval |
 | `unchanged`, `not_modified` | same text / HTTP 304 | normal interval |
 | `feed`, `sitemap` | items added as endpoints | normal interval |
+| `not_permitted` | the legality principle does not allow crawling the source | normal interval |
 | `robots` | robots.txt disallows ATENA | normal interval |
 | `robots_unreachable` | robots.txt could not be fetched – nothing may be fetched | 1 h, 4 h, 16 h …, at most the interval |
 | `retry_later` | the host asked for rest (`429`/`503`) | as the host asked; the whole host waits |

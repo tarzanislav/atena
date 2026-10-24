@@ -1,6 +1,7 @@
 //! From the source register (`data/sources.yaml`) to sources and their register endpoints.
 
-use atena_core::source::{Review, Source, Terms};
+use atena_core::legality::{SourceFacts, permission};
+use atena_core::source::{Review, Source};
 use atena_store::{EndpointKind, NewEndpoint, Origin, RegisterSource, SourceRecord};
 use url::Url;
 
@@ -62,8 +63,8 @@ pub fn register_entries(sources: &[Source]) -> Vec<RegisterSource> {
                     interval_s,
                     licence: s.licence.as_str().to_string(),
                     terms: s.terms.as_str().to_string(),
-                    // terms of use that forbid automated access are respected: not crawled at all
-                    enabled: s.terms != Terms::Forbidden,
+                    // the legality principle decides whether the source is crawled at all
+                    enabled: permission(SourceFacts::from(s), false, false).crawl,
                 },
                 endpoints,
             }

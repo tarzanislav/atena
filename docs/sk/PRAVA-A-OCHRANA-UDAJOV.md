@@ -26,10 +26,12 @@ Každý zdroj má v registri **licenciu** (`licence`):
 | otvorená licencia (`CC0-1.0`, `CC-BY-4.0`, `CC-BY-SA-4.0` a ďalšie) | otvorené vzdelávacie zdroje, otvorené dáta | celý text s uvedením autora podľa licencie |
 | `copyrighted` (**predvolené**) | všetko, čo nie je overené | názov, údaje o dokumente, zaradenie podľa ATENY a odkaz na originál, **bez celého textu** |
 
-Vnútorné spracovanie chráneného obsahu, teda zistenie zmien a zaradenie, sa opiera o výnimku na
-vyťažovanie textov a dát (čl. 4 smernice). Výnimka platí pre zákonne prístupný obsah a vydavateľ ju
-môže výhradou vylúčiť. Kým licencia a podmienky zdroja nie sú overené, zdroj sa považuje za chránený
-(`copyrighted`) s neoverenými podmienkami (`unknown`).
+O tom, či si ATENA smie ponechať text chráneného obsahu (na zistenie zmien a zaradenie), rozhoduje
+zásada zákonnosti ([ZASADA-ZAKONNOSTI.md](ZASADA-ZAKONNOSTI.md)). Smie len vtedy, keď sú podmienky
+webu overené, keď výnimku na vyťažovanie textov a dát pre účel ATENY má právo prevádzkovateľa aj právo
+krajiny zdroja a keď si vydavateľ vyťažovanie nevyhradil. Inak sa ukladajú len metadáta. Kým licencia
+a podmienky zdroja nie sú overené, zdroj sa považuje za chránený (`copyrighted`) s neoverenými
+podmienkami (`unknown`).
 
 ## 3. Osobné údaje (GDPR)
 Stránky škôl a úradov uvádzajú mená učiteľov, riaditeľov a úradníkov aj ich kontakty. ATENA zbiera
@@ -38,7 +40,7 @@ informácie o vzdelávaní, nie o ľuďoch, preto si osobných údajov necháva 
 | Opatrenie | Kde v programe |
 |---|---|
 | **E-mailové adresy a telefónne čísla sa odstránia** z textov, názvov, popisov a textov odkazov ešte pred uložením, aj v zakrytom tvare ako `meno(at)skola.sk` | `atena-ingest/src/privacy.rs` |
-| **Pôvodné webové stránky sa neukladajú**, len upravený text. Pôvodné súbory sa ukladajú len pri PDF a kancelárskych dokumentoch úradov a medzinárodných organizácií alebo pri úradnej či otvorenej licencii | `pipeline::keep_original` |
+| **Pôvodné webové stránky sa neukladajú**, len upravený text. Pôvodné súbory sa ukladajú len pri PDF a kancelárskych dokumentoch, ktorých text sa smie zobraziť celý (úradné texty, otvorené licencie) | `legality::permission` |
 | **Stránky o ľuďoch sa nesledujú**: fotogalérie, zoznamy zamestnancov, kontakty, profily, prihlasovanie | `urls::is_personal_page` |
 | **Autor webovej stránky sa neukladá** (býva to správca webu); autor dokumentu áno | spracovanie |
 | **Výmaz na žiadosť** (čl. 17). Príkaz `atena-ingest forget ADRESA --reason …` odstráni dokumenty, verzie, odkazy, záznamy o kontrolách a súbory, ktoré nepoužíva nič iné. Adresu (alebo celú sekciu) navždy zablokuje | `Store::forget`, `blocked_url`, `erasure_log` |

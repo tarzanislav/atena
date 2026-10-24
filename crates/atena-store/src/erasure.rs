@@ -111,7 +111,83 @@ impl Store {
         tx.commit().await?;
 
         // files go after the commit: a failed transaction must not leave rows without files
-        for raw in orphans {
+        self.remove_files(orphans)?;
+        Ok(report)
+    }
+
+    /// Keeps only metadata of a source's documents: texts, descriptions, links, automatic
+    /// suggestions and originals no other source uses are removed. Used when the legality
+    /// principle no longer allows keeping the source's texts (e.g. after a licence or terms change).
+    /// Returns the number of versions whose text was removed.
+    pub async fn restrict_source(&self, source_id: &str) -> Result<u64> {
+        let mut tx = self.pool.begin().await?;
+        let docs = "SELECT id FROM document WHERE source_id = $1";
+        let stripped = sqlx::query(&format!(
+            "UPDATE document_version SET body = NULL, description = NULL
+             WHERE document_id IN ({docs}) AND (body IS NOT NULL OR description IS NOT NULL)"
+        ))
+        .bind(source_id)
+        .execute(&mut *tx)
+        .await?
+        .rows_affected();
+        sqlx::query(&format!(
+            "DELETE FROM document_link WHERE document_id IN ({docs})"
+        ))
+        .bind(source_id)
+        .execute(&mut *tx)
+        .await?;
+        sqlx::query(&format!(
+            "DELETE FROM document_label WHERE document_id IN ({docs}) AND origin = 'auto' AND status = 'suggested'"
+        ))
+        .bind(source_id)
+        .execute(&mut *tx)
+        .await?;
+        let orphans: Vec<Vec<u8>> = sqlx::query_scalar(&format!(
+            "DELETE FROM blob b
+             WHERE b.hash IN (SELECT raw_hash FROM document_version WHERE document_id IN ({docs}))
+               AND NOT EXISTS (SELECT 1 FROM document_version v JOIN document d ON d.id = v.document_id
+                               WHERE v.raw_hash = b.hash AND d.source_id <> $1)
+             RETURNING b.hash"
+        ))
+        .bind(source_id)
+        .fetch_all(&mut *tx)
+        .await?;
+        tx.commit().await?;
+        self.remove_files(orphans)?;
+        Ok(stripped)
+    }
+
+    /// Removes everything collected from a source (documents, endpoints, check log, originals no
+    /// other source uses) – for a source that may not be crawled at all. Returns removed documents.
+    pub async fn purge_source(&self, source_id: &str) -> Result<u64> {
+        let mut tx = self.pool.begin().await?;
+        let orphans: Vec<Vec<u8>> = sqlx::query_scalar(
+            "DELETE FROM blob b
+             WHERE b.hash IN (SELECT v.raw_hash FROM document_version v JOIN document d ON d.id = v.document_id
+                              WHERE d.source_id = $1)
+               AND NOT EXISTS (SELECT 1 FROM document_version v JOIN document d ON d.id = v.document_id
+                               WHERE v.raw_hash = b.hash AND d.source_id <> $1)
+             RETURNING b.hash",
+        )
+        .bind(source_id)
+        .fetch_all(&mut *tx)
+        .await?;
+        let removed = sqlx::query("DELETE FROM document WHERE source_id = $1")
+            .bind(source_id)
+            .execute(&mut *tx)
+            .await?
+            .rows_affected();
+        sqlx::query("DELETE FROM endpoint WHERE source_id = $1")
+            .bind(source_id)
+            .execute(&mut *tx)
+            .await?;
+        tx.commit().await?;
+        self.remove_files(orphans)?;
+        Ok(removed)
+    }
+
+    fn remove_files(&self, hashes: Vec<Vec<u8>>) -> Result<()> {
+        for raw in hashes {
             let Ok(hash) = Hash::try_from(raw.as_slice()) else {
                 continue;
             };
@@ -121,7 +197,7 @@ impl Store {
                 Err(e) => return Err(e.into()),
             }
         }
-        Ok(report)
+        Ok(())
     }
 
     /// `true` when the URL is on the block list.

@@ -55,6 +55,7 @@ async fn serve(round: Arc<AtomicUsize>) -> Server {
             "Kritériá prijatia\n\nPrednostne sa prijímajú deti s trvalým pobytom v školskom obvode.",
         )
         .header("content-type", "text/plain; charset=utf-8"),
+        "/cudzi/" => reply(200, article("Metodika čitateľskej gramotnosti")),
         "/skola/vyhrada.html" => reply(200, article("Podmienky používania webu")).header("tdm-reservation", "1"),
         _ => reply(404, "not found"),
     })
@@ -116,33 +117,54 @@ async fn register_to_versions_and_classification() {
         interval_s: 86_400,
     };
     store
-        .sync_register(&[RegisterSource {
-            source: SourceRecord {
-                id: "T01".into(),
-                name: "ZŠ Príkladná".into(),
-                url: server.url("/skola/").to_string(),
-                country: "SK".into(),
-                languages: vec!["sk".into()],
-                authority: "C1".into(),
-                priority: "P0".into(),
-                connector: "html".into(),
-                interval_s: 86_400,
-                licence: "copyrighted".into(),
-                terms: "unknown".into(),
-                enabled: true,
+        .sync_register(&[
+            RegisterSource {
+                source: SourceRecord {
+                    id: "T01".into(),
+                    name: "ZŠ Príkladná".into(),
+                    url: server.url("/skola/").to_string(),
+                    country: "SK".into(),
+                    languages: vec!["sk".into()],
+                    authority: "C1".into(),
+                    priority: "P0".into(),
+                    connector: "html".into(),
+                    interval_s: 86_400,
+                    licence: "copyrighted".into(),
+                    // verified terms in an EU country: texts may be kept for change detection
+                    terms: "allowed".into(),
+                    enabled: true,
+                },
+                endpoints: vec![
+                    endpoint("/skola/", EndpointKind::Page, true),
+                    endpoint("/skola/rss.xml", EndpointKind::Feed, false),
+                ],
             },
-            endpoints: vec![
-                endpoint("/skola/", EndpointKind::Page, true),
-                endpoint("/skola/rss.xml", EndpointKind::Feed, false),
-            ],
-        }])
+            RegisterSource {
+                source: SourceRecord {
+                    id: "T02".into(),
+                    name: "Neoverený zdroj".into(),
+                    url: server.url("/cudzi/").to_string(),
+                    country: "SK".into(),
+                    languages: vec!["sk".into()],
+                    authority: "C1".into(),
+                    priority: "P1".into(),
+                    connector: "html".into(),
+                    interval_s: 86_400,
+                    licence: "copyrighted".into(),
+                    // terms not verified yet: the legality principle allows metadata only
+                    terms: "unknown".into(),
+                    enabled: true,
+                },
+                endpoints: vec![endpoint("/cudzi/", EndpointKind::Page, false)],
+            },
+        ])
         .await
         .unwrap();
 
     // ---- round 1: everything is new
     let stats = run_once(store, &server).await;
     assert_eq!(stats.store_errors, 0, "{stats:?}");
-    assert_eq!(stats.outcomes.get("new"), Some(&6), "{stats:?}");
+    assert_eq!(stats.outcomes.get("new"), Some(&7), "{stats:?}");
     assert_eq!(stats.outcomes.get("feed"), Some(&1));
     assert_eq!(stats.outcomes.get("gone"), Some(&1));
 
@@ -158,6 +180,7 @@ async fn register_to_versions_and_classification() {
     assert_eq!(
         paths,
         [
+            "/cudzi/",
             "/skola/",
             "/skola/clanok-1.html",
             "/skola/clanok-2.html",
@@ -215,6 +238,23 @@ async fn register_to_versions_and_classification() {
     .unwrap();
     assert!(tdm && body.is_none());
 
+    // terms not verified: metadata only, classification from the title alone
+    let unverified = document_id(store, "/cudzi/").await;
+    let versions = store.versions(unverified).await.unwrap();
+    assert!(!versions[0].has_body);
+    assert_eq!(
+        versions[0].title.as_deref(),
+        Some("Metodika čitateľskej gramotnosti")
+    );
+    let reasons: String = sqlx::query_scalar("SELECT detail FROM fetch_log l JOIN endpoint e ON e.id = l.endpoint_id WHERE e.url LIKE '%/cudzi/'")
+        .fetch_one(store.pool())
+        .await
+        .unwrap();
+    assert!(
+        reasons.contains("metadata only: copyrighted content: the terms of use are not verified"),
+        "{reasons}"
+    );
+
     // an editor rejects one suggestion
     let rejected = labels[0].clone();
     store
@@ -241,7 +281,7 @@ async fn register_to_versions_and_classification() {
     let stats = run_once(store, &server).await;
     assert_eq!(stats.store_errors, 0, "{stats:?}");
     assert_eq!(stats.outcomes.get("changed"), Some(&1), "{stats:?}");
-    assert_eq!(stats.outcomes.get("unchanged"), Some(&5), "{stats:?}");
+    assert_eq!(stats.outcomes.get("unchanged"), Some(&6), "{stats:?}");
 
     let history = store.versions(skola).await.unwrap();
     assert_eq!(history.len(), 2);

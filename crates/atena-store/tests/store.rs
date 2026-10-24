@@ -669,3 +669,69 @@ async fn erasure_removes_everything_and_blocks_the_url() {
     );
     db.drop().await;
 }
+
+#[tokio::test]
+async fn sources_can_be_restricted_to_metadata_or_purged() {
+    let Some(db) = TestDb::new().await else {
+        return;
+    };
+    let s = &db.store;
+    let page = "https://sk01.example.sk/";
+    s.sync_register(&[RegisterSource {
+        source: source("SK01", true),
+        endpoints: vec![endpoint(page, EndpointKind::Page, Origin::Register)],
+    }])
+    .await
+    .unwrap();
+    let ep = scalar_i64(s, "SELECT id FROM endpoint").await;
+    let pdf = s
+        .put_blob(b"%PDF-1.7 fake".to_vec(), Some("application/pdf"))
+        .await
+        .unwrap();
+    let mut c = capture(ep, "Text", Rights::default());
+    c.raw_hash = pdf.hash;
+    let mut v = version("initial", "Text");
+    v.description = Some("Popis".into());
+    let saved = s
+        .save_version(
+            &c,
+            &v,
+            &[("https://sk01.example.sk/a.pdf".into(), "a".into())],
+            &[suggestion("topic", "ai")],
+        )
+        .await
+        .unwrap();
+    let endpoint = s.endpoint(ep).await.unwrap().unwrap();
+    assert_eq!(
+        (
+            endpoint.source_country.as_str(),
+            endpoint.source_terms.as_str()
+        ),
+        ("SK", "unknown")
+    );
+
+    assert_eq!(s.restrict_source("SK01").await.unwrap(), 1);
+    assert_eq!(s.version_body(saved.version_id).await.unwrap(), None);
+    assert_eq!(
+        scalar_i64(
+            s,
+            "SELECT count(*) FROM document_version WHERE description IS NOT NULL"
+        )
+        .await,
+        0
+    );
+    assert_eq!(scalar_i64(s, "SELECT count(*) FROM document_link").await, 0);
+    assert!(s.labels(saved.document_id).await.unwrap().is_empty());
+    assert!(s.get_blob(pdf.hash).await.unwrap().is_none());
+    assert_eq!(
+        s.versions(saved.document_id).await.unwrap().len(),
+        1,
+        "metadata stays"
+    );
+    assert_eq!(s.restrict_source("SK01").await.unwrap(), 0, "idempotent");
+
+    assert_eq!(s.purge_source("SK01").await.unwrap(), 1);
+    assert_eq!(scalar_i64(s, "SELECT count(*) FROM document").await, 0);
+    assert_eq!(scalar_i64(s, "SELECT count(*) FROM endpoint").await, 0);
+    db.drop().await;
+}

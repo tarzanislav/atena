@@ -8,7 +8,8 @@
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use atena_core::{ChangeKind, Taxonomy, compare, suggest};
+use atena_core::legality::{self, Permission, SourceFacts};
+use atena_core::{ChangeKind, Licence, Taxonomy, Terms, compare, suggest};
 use atena_crawl::{FetchError, Fetched, Fetcher, Page, Validators, parse_feed, parse_sitemap};
 use atena_extract::{Document, ExtractError, Format, LanguageSource, extract};
 use atena_store::{
@@ -121,13 +122,19 @@ fn rights(page: &Page, doc: &Document) -> (Rights, bool) {
     (rights, index.nofollow)
 }
 
-/// Originals are kept only for documents (PDF, DOCX, ODT) of public bodies and international
-/// organisations, or under an open or official licence. Of web pages only the cleaned text is
-/// kept: their originals would bring back the contact details removed from the text.
-fn keep_original(ep: &Endpoint, format: Format) -> bool {
-    matches!(format, Format::Pdf | Format::Docx | Format::Odt)
-        && (matches!(ep.source_authority.as_str(), "A1" | "A2" | "B1")
-            || ep.source_licence != "copyrighted")
+/// What the legality principle allows for this endpoint's source (and document).
+/// Values read back from the database that are not understood count as the strictest.
+fn permitted(ep: &Endpoint, tdm_reserved: bool, file_document: bool) -> Permission {
+    let licence = Licence::parse(&ep.source_licence);
+    legality::permission(
+        SourceFacts {
+            country: &ep.source_country,
+            licence: &licence,
+            terms: Terms::parse(&ep.source_terms),
+        },
+        tdm_reserved,
+        file_document,
+    )
 }
 
 /// Runs CPU-bound work on a worker thread with a time limit.
@@ -207,6 +214,18 @@ impl Pipeline {
         };
         let mut backoff = None;
 
+        // the legality principle comes first: a source that may not be crawled is not contacted
+        let allowed = permitted(ep, false, false);
+        if !allowed.crawl {
+            check.outcome = "not_permitted".into();
+            check.detail = Some(allowed.reasons.join("; "));
+            self.store.record_check(ep.id, &check).await?;
+            return Ok(Outcome {
+                outcome: check.outcome,
+                detail: check.detail,
+                backoff: None,
+            });
+        }
         let Ok(url) = Url::parse(&ep.url) else {
             check.outcome = "invalid_url".into();
             check.disable = true;
@@ -405,7 +424,13 @@ impl Pipeline {
         }
 
         let (rights, nofollow) = rights(page, &doc);
-        let keep_text = !rights.tdm_reserved;
+        // the legality principle decides what may be kept (and later shown)
+        let permission = permitted(
+            ep,
+            rights.tdm_reserved,
+            matches!(doc.format, Format::Pdf | Format::Docx | Format::Odt),
+        );
+        let keep_text = permission.store_text;
         let fingerprint = parse_hex(&atena_core::text::fingerprint(&doc.text))
             .expect("fingerprints are 64 hex digits");
         let capture = Capture {
@@ -453,7 +478,7 @@ impl Pipeline {
             (Some(_), _) => ("changed", 0, 0, false),
         };
 
-        if keep_text && keep_original(ep, doc.format) {
+        if permission.keep_original {
             self.store
                 .put_blob(page.body.to_vec(), page.content_type.as_deref())
                 .await?;
@@ -492,7 +517,7 @@ impl Pipeline {
             content_type: page.content_type.clone(),
             encoding: doc.encoding.map(str::to_string),
             title: doc.title.clone(),
-            description: doc.description.clone(),
+            description: doc.description.clone().filter(|_| keep_text),
             body: keep_text.then(|| doc.text.clone()),
             body_truncated: doc.truncated,
             language: language.map(|l| l.code.clone()),
@@ -541,8 +566,13 @@ impl Pipeline {
         Ok(Processed::ok(
             outcome,
             Some(format!(
-                "version {} ({change_kind}), {discovered} new endpoints, {redacted} contact details removed",
-                saved.version_no
+                "version {} ({change_kind}), {discovered} new endpoints, {redacted} contact details removed{}",
+                saved.version_no,
+                if keep_text {
+                    String::new()
+                } else {
+                    format!("; metadata only: {}", permission.reasons.join("; "))
+                }
             )),
         ))
     }

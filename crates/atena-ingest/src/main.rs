@@ -5,6 +5,7 @@ use std::process::ExitCode;
 use std::sync::Arc;
 
 use atena_core::Taxonomy;
+use atena_core::legality::{SourceFacts, permission};
 use atena_core::source::{BUNDLED_SOURCES, load_sources};
 use atena_crawl::{Config, Fetched, Fetcher, Validators};
 use atena_ingest::{Pipeline, PipelineConfig, WorkerConfig, register_entries, run};
@@ -22,6 +23,7 @@ USAGE:
     atena-ingest run [--once] [--concurrency N]
                                       check due endpoints; --once stops when nothing is due
     atena-ingest fetch URL            fetch and extract one URL and print a summary (no database)
+    atena-ingest legality [REGISTER]  what the legality principle allows for every source (no database)
     atena-ingest forget URL --reason TEXT [--prefix]
                                       erase everything about URL (with --prefix: every URL below it)
                                       and never fetch it again – for erasure requests (GDPR Art. 17)
@@ -44,20 +46,75 @@ async fn connect(max_connections: u32) -> Result<Store, String> {
     Ok(store)
 }
 
-async fn sync(path: Option<&str>) -> Result<(), String> {
+fn register(path: Option<&str>) -> Result<Vec<atena_core::Source>, String> {
     let yaml = match path {
         Some(p) => std::fs::read_to_string(p).map_err(|e| format!("{p}: {e}"))?,
         None => BUNDLED_SOURCES.to_string(),
     };
     let taxonomy = Taxonomy::bundled().map_err(|e| e.to_string())?;
-    let sources = load_sources(&yaml, &taxonomy).map_err(|e| e.to_string())?;
+    load_sources(&yaml, &taxonomy).map_err(|e| e.to_string())
+}
+
+/// Prints what the legality principle allows for every source of the register.
+fn legality_report(path: Option<&str>) -> Result<(), String> {
+    println!("{}\n", atena_core::PRINCIPLE);
+    println!(
+        "{:<7} {:<7} {:<12} {:<9} {:<5} {:<5} {:<5}  reason",
+        "source", "country", "licence", "terms", "crawl", "text", "show"
+    );
+    let yes = |b: bool| if b { "yes" } else { "–" };
+    let (mut crawl, mut text, mut show) = (0, 0, 0);
+    let sources = register(path)?;
+    for s in &sources {
+        let p = permission(SourceFacts::from(s), false, true);
+        crawl += usize::from(p.crawl);
+        text += usize::from(p.store_text);
+        show += usize::from(p.show_full_text);
+        println!(
+            "{:<7} {:<7} {:<12} {:<9} {:<5} {:<5} {:<5}  {}",
+            s.id,
+            s.country,
+            s.licence.as_str(),
+            s.terms.as_str(),
+            yes(p.crawl),
+            yes(p.store_text),
+            yes(p.show_full_text),
+            p.reasons.join("; ")
+        );
+    }
+    println!(
+        "\n{} sources: {crawl} may be crawled, {text} may keep texts, {show} may be shown in full",
+        sources.len()
+    );
+    Ok(())
+}
+
+async fn sync(path: Option<&str>) -> Result<(), String> {
+    let sources = register(path)?;
     let store = connect(2).await?;
     let report = store
         .sync_register(&register_entries(&sources))
         .await
         .map_err(|e| e.to_string())?;
+    // the legality principle applies retroactively: what a source may no longer keep is removed
+    let (mut purged, mut restricted) = (0, 0);
+    for source in &sources {
+        let allowed = permission(SourceFacts::from(source), false, false);
+        if !allowed.crawl {
+            purged += store
+                .purge_source(&source.id)
+                .await
+                .map_err(|e| e.to_string())?;
+        } else if !allowed.store_text {
+            restricted += store
+                .restrict_source(&source.id)
+                .await
+                .map_err(|e| e.to_string())?;
+        }
+    }
     println!(
-        "{} sources ({} removed), {} endpoints added, {} disabled",
+        "{} sources ({} removed), {} endpoints added, {} disabled; legality: {purged} documents of \
+         sources that may not be crawled removed, texts of {restricted} versions reduced to metadata",
         report.sources, report.removed, report.endpoints_added, report.endpoints_disabled
     );
     Ok(())
@@ -227,6 +284,7 @@ async fn main() -> ExitCode {
             None => Err(format!("fetch needs a URL\n\n{USAGE}")),
         },
         Some("forget") => forget(&args[1..]).await,
+        Some("legality") => legality_report(args.get(1).map(String::as_str)),
         Some("help" | "--help" | "-h") | None => {
             print!("{USAGE}");
             Ok(())

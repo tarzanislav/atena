@@ -33,9 +33,11 @@ vedie späť na pôvodný zdroj.
 3. Automatické zaradenie a preklad sú vždy označené ako návrh, kým ich neskontroluje človek.
 4. Neznámy údaj ostáva „nezistený“ – nič sa nedopĺňa odhadom.
 5. Alternatívne pedagogické smery sa nepenalizujú.
-6. **Len otvorené zdroje a len zákonne**: iba verejne dostupný obsah; dodržiava sa robots.txt, výhrada
-   vyťažovania a podmienky webu; celý text sa zobrazí len pri úradných textoch a otvorených licenciách;
-   kontakty sa odstraňujú, na žiadosť sa údaje vymažú – [docs/sk/PRAVA-A-OCHRANA-UDAJOV.md](docs/sk/PRAVA-A-OCHRANA-UDAJOV.md).
+6. **Zásada zákonnosti je nadradená všetkým pravidlám**: len otvorené zdroje; nič nesmie porušiť zákon,
+   zneužiť údaje ani ochranu osobných údajov – na Slovensku, v EÚ ani v žiadnej inej krajine; platí
+   právo prevádzkovateľa aj krajiny zdroja a vždy to prísnejšie; čo nie je isté, to sa nerobí. Zapísaná
+   v jadre (`atena-core/src/legality.rs`) – [docs/sk/ZASADA-ZAKONNOSTI.md](docs/sk/ZASADA-ZAKONNOSTI.md)
+   a [docs/sk/PRAVA-A-OCHRANA-UDAJOV.md](docs/sk/PRAVA-A-OCHRANA-UDAJOV.md).
 
 ## Jazyky v projekte
 * **Anglicky:** zdrojový kód, názvy v kóde, popisy zmien (commity) a technická dokumentácia – aby mohli prispievať aj zahraniční vývojári.

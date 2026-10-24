@@ -1,0 +1,55 @@
+# The legality principle
+
+*Slovenčina: [sk/ZASADA-ZAKONNOSTI.md](sk/ZASADA-ZAKONNOSTI.md)*
+
+> **ATENA draws only on open sources. Nothing it does may infringe the law, misuse data or breach
+> data protection – in Slovakia, in the European Union or in any other country: America, China,
+> Russia or anywhere else. Both the law of the place where ATENA runs and the law of the country each
+> source comes from apply, and the stricter of the two always wins. Where it is not certain that
+> something is allowed, ATENA does not do it.**
+
+This principle, set by the project author, stands above every other rule of the program and is
+written into its core: `crates/atena-core/src/legality.rs`. Every decision about what may be fetched,
+kept and shown goes through `legality::permission`; there is no other path.
+
+## How it works
+1. **Every country has a legal profile** (text and data mining, official texts, data protection).
+   The register refuses a source from a country without one.
+2. **Two laws at once**: the operator's (Slovakia/EU) and the source country's; only what both allow.
+3. **Uncertain means forbidden**: copyrighted content is kept as text only with **verified** terms of
+   use (`terms: allowed`), where **both** laws have a mining exception covering ATENA's purpose, and
+   without a publisher's reservation. (German courts have not settled whether a reservation written
+   only in the terms of use counts – OLG Hamburg, Dec 2025, left it open for the future – so the terms
+   must be read.)
+4. **Full text, full translations and originals** only for official texts free under both laws and
+   for openly licensed content.
+5. **Strict data protection** (China – PIPL, Russia – 152-FZ, South Korea – PIPA treated as strict):
+   metadata only, even for official and open texts.
+6. **Retroactive**: every `atena-ingest sync` reduces sources to metadata, or removes them completely,
+   when the principle no longer allows what was kept.
+7. **Tests** check the invariants for every country and every combination of licence, terms and
+   reservation, and that every country of the taxonomy has a profile.
+
+## Country profiles
+| Country | Mining of copyrighted content | Official texts free | Personal data | Copyrighted content |
+|---|---|---|---|---|
+| SK, CZ, PL, DE, AT, HU, FI, EE, NL, FR, SE, IT, EU | yes (Directive 2019/790 Art. 4, with opt-out) | yes | GDPR | text with verified terms |
+| IE | yes | **no** (state copyright) | GDPR | text with verified terms; official texts need an open licence |
+| WORLD (international organisations) | operator law | **no** | GDPR | text with verified terms; documents need an open licence |
+| GB-ENG, GB-SCT | **non-commercial research only** (CDPA s. 29A) | **no** (Crown copyright; OGL) | UK GDPR | metadata only unless openly licensed |
+| US | **no** (fair use is case by case) | federal works only (17 U.S.C. § 105) | state laws | metadata only unless federal official or open |
+| CA, AU | **no** | **no** (Crown copyright) | PIPEDA / Privacy Act | metadata only unless openly licensed |
+| NZ | **no** | yes (s. 27) | Privacy Act 2020 | metadata only unless official or open |
+| JP | yes (Art. 30-4) | yes (Art. 13) | APPI | text with verified terms |
+| SG | yes (s. 244) | **no** | PDPA | text with verified terms |
+| KR | **no** | yes (Art. 7) | PIPA (strict) | **always metadata only** |
+| CN | **no** | yes (Art. 5) | PIPL (strict) | **always metadata only** |
+| RU | **no** | yes (Art. 1259) | 152-FZ (processing in Russia only) | **always metadata only** |
+
+The profiles are conservative summaries, not legal advice. Anyone may make a profile **stricter**;
+making one more permissive requires a legal review recorded in the pull request.
+
+## Today
+`atena-ingest legality` prints the decision for every source. Of 186 sources, 185 may be crawled
+(YouTube's terms forbid it), 5 legal databases may keep and show texts, and all others keep metadata
+only until their licence and terms are verified.
