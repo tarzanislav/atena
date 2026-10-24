@@ -58,5 +58,6 @@ resource (after decompression), only the content types it can process. It sends 
 * **TLS** via rustls with the operating system's certificate store.
 
 Known limits of this version: per-host state is kept in memory without pruning (fine for thousands of
-hosts); feeds in encodings other than UTF-8 are read with replacement characters; HTML `<meta>` rules and
-PDF/EPUB TDMRep metadata are applied by the extractor, which comes next.
+hosts); feeds in encodings other than UTF-8 are read with replacement characters. HTML `<meta>` rules and
+TDMRep in HTML and PDF are read by `atena-extract` and merged with the HTTP rules in the processing
+pipeline; EPUB is not read yet.

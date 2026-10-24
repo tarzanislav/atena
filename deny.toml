@@ -18,6 +18,12 @@ targets = [
 
 [advisories]
 yanked = "deny"
+ignore = [
+    # ttf-parser (unmaintained) comes with lopdf, but only lopdf's FontData / add_font use it –
+    # code for creating PDFs with embedded fonts. ATENA only reads PDFs and never calls it.
+    # Remove when pdf-extract moves to a lopdf without ttf-parser, or when PDFium replaces it.
+    { id = "RUSTSEC-2026-0192", reason = "only reachable when writing PDFs; ATENA only reads them" },
+]
 
 [licenses]
 allow = [
