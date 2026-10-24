@@ -17,8 +17,10 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
       - run: pip install -e ".[dev]"
+        working-directory: prototyp-v0.1
       - name: Testy (vrátane databázových a koniec-koncov)
         env: {ATENA_TEST_DATABASE_URL: "postgresql://postgres:test@localhost:5432/atena_test"}
         run: pytest -q
+        working-directory: prototyp-v0.1
       - name: Docker obraz sa dá zostaviť
-        run: docker build -t atena:ci .
+        run: docker build -t atena:ci prototyp-v0.1
