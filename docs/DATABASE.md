@@ -45,8 +45,8 @@ was not kept).
   interface respect them (a `noarchive` copy is kept for change detection but never shown).
 
 ## File store
-Only originals of documents (PDF, DOCX, ODT) of public bodies and international organisations, or under an
-official or open licence, are kept; of web pages only the cleaned text is stored
+Only originals of documents (PDF, DOCX, ODT) whose text may be shown in full (official texts, open
+licences – see [LEGALITY.md](LEGALITY.md)) are kept; of web pages only the cleaned text is stored
 (see [PRIVACY-AND-RIGHTS.md](PRIVACY-AND-RIGHTS.md)). Files live under `<root>/ab/cd/<hash>` (BLAKE3 of the original bytes), written to a temporary name and
 renamed, so a crash never leaves a broken file under a valid name. HTML, XML, JSON and plain text are
 stored gzip-compressed; reading verifies the hash. Identical files are stored once.

@@ -19,6 +19,7 @@ cargo run --release -p atena-ingest -- sync      # načíta register zdrojov dat
 cargo run --release -p atena-ingest -- run       # zbiera, kým ho nezastavíte (Ctrl+C)
 cargo run --release -p atena-ingest -- run --once --concurrency 8   # zbiera, kým je čo
 cargo run --release -p atena-ingest -- fetch https://www.minedu.sk/  # jedna adresa, bez databázy
+cargo run --release -p atena-ingest -- legality  # čo zásada zákonnosti dovoľuje pri každom zdroji
 cargo run --release -p atena-ingest -- forget ADRESA --reason "žiadosť z 24. 10. 2026" [--prefix]
                                                  # žiadosť o výmaz: vymaže a navždy zablokuje
 ```
@@ -41,6 +42,7 @@ aj na rôznych počítačoch; ten istý server pritom nikdy nespracúvajú dva n
 | `new`, `changed` | prvá verzia, nová verzia |
 | `unchanged`, `not_modified` | text sa nezmenil / server odpovedal „nezmenené“ (304) |
 | `feed`, `sitemap` | položky pridané na kontrolu |
+| `not_permitted` | zásada zákonnosti zber zo zdroja nedovoľuje |
 | `robots` | robots.txt ATENE zakazuje prístup |
 | `robots_unreachable` | robots.txt sa nedal stiahnuť, preto sa nesmie sťahovať nič; skúsi sa znova o 1 h, 4 h, 16 h… |
 | `retry_later` | server žiada prestávku (429/503); celý server počká |

@@ -26,10 +26,11 @@ Each source has a `licence` in the register:
 | open licence (`CC0-1.0`, `CC-BY-4.0`, `CC-BY-SA-4.0`, IGO variants, ODC, OGL…) | open educational resources, open data | full text, with attribution as the licence requires |
 | `copyrighted` (**default**) | everything not verified | title, metadata, ATENA's classification and a link to the original – no full text |
 
-Analysing copyrighted content internally (change detection, classification) relies on the text and
-data mining exception (Art. 4 of the Directive), which applies to lawfully accessible content and is
-excluded by the publisher's reservation. Until a source's licence and terms are verified, it is treated
-as `copyrighted` with `unknown` terms.
+Keeping the text of copyrighted content (for change detection and classification) is decided by the
+legality principle ([LEGALITY.md](LEGALITY.md)): only with verified terms of use, where both the
+operator's and the source country's law have a mining exception covering ATENA, and without a
+publisher's reservation – otherwise only metadata is kept. Until a source's licence and terms are
+verified, it is treated as `copyrighted` with `unknown` terms.
 
 ## 3. Personal data (GDPR)
 School and authority pages name people – teachers, head teachers, officials – and give their contact
@@ -39,7 +40,7 @@ personal data as possible:
 | Measure | Where |
 |---|---|
 | **E-mail addresses and telephone numbers are removed** from texts, titles, descriptions and link texts before anything is fingerprinted or stored (also obfuscated forms such as `name(at)school.sk`) | `atena-ingest/src/privacy.rs` |
-| **No originals of web pages** – only the cleaned text. Originals are kept only for PDF/office documents of public bodies and international organisations or under an official/open licence | `pipeline::keep_original` |
+| **No originals of web pages** – only the cleaned text. Originals are kept only for PDF/office documents whose text may be shown in full (official texts, open licences) | `legality::permission` |
 | **Pages about people are not followed**: photo galleries, staff lists, contacts, profiles, accounts | `urls::is_personal_page` |
 | **Authors of web pages are not stored** (usually the webmaster); authors of documents are | pipeline |
 | **Erasure on request** (Art. 17): `atena-ingest forget URL --reason …` removes documents, versions, links, check records and unshared originals and blocks the URL (or everything below a prefix) for good | `Store::forget`, `blocked_url`, `erasure_log` |

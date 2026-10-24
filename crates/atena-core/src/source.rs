@@ -73,6 +73,11 @@ impl TryFrom<String> for Licence {
 }
 
 impl Licence {
+    /// A value read back from the database; anything unexpected is `Copyrighted`, the strictest.
+    pub fn parse(text: &str) -> Self {
+        Self::try_from(text.to_string()).unwrap_or_default()
+    }
+
     /// The value stored in the register and the database.
     pub fn as_str(&self) -> &str {
         match self {
@@ -102,6 +107,15 @@ pub enum Terms {
 }
 
 impl Terms {
+    /// A value read back from the database; anything unexpected is `Unknown`.
+    pub fn parse(text: &str) -> Self {
+        match text {
+            "allowed" => Self::Allowed,
+            "forbidden" => Self::Forbidden,
+            _ => Self::Unknown,
+        }
+    }
+
     /// The value stored in the database.
     pub fn as_str(self) -> &'static str {
         match self {
@@ -173,6 +187,9 @@ pub enum RegisterError {
     /// The address is not http(s).
     #[error("source {0}: the address must start with http:// or https://")]
     Address(String),
+    /// The entry conflicts with the legality principle (see `legality`).
+    #[error("{0}")]
+    Legality(String),
 }
 
 /// Loads the register and checks it against the taxonomy.
@@ -196,6 +213,7 @@ pub fn load_sources(yaml: &str, taxonomy: &Taxonomy) -> Result<Vec<Source>, Regi
         if !ok(&s.url) || s.feed.as_deref().is_some_and(|f| !ok(f)) {
             return Err(RegisterError::Address(s.id.clone()));
         }
+        crate::legality::check_source(s).map_err(RegisterError::Legality)?;
     }
     Ok(raw.sources)
 }

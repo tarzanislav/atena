@@ -33,9 +33,11 @@ and always links each item back to its original source.
 3. Automatic classification and translation are always marked as suggestions until a human reviews them.
 4. Unknown values stay "unknown" – nothing is filled in by guessing.
 5. Alternative pedagogical approaches are never ranked down.
-6. **Only open sources, lawfully used**: publicly accessible content only; robots.txt, TDM reservations and
-   terms of use obeyed; full text shown only for official texts and open licences; contact details removed,
-   erasure on request – see [docs/PRIVACY-AND-RIGHTS.md](docs/PRIVACY-AND-RIGHTS.md).
+6. **The legality principle stands above every other rule**: only open sources; nothing may infringe the
+   law, misuse data or breach data protection – in Slovakia, the EU or any other country; the operator's
+   law and each source country's law apply and the stricter wins; what is uncertain is not done.
+   Written into the core (`atena-core/src/legality.rs`) – see [docs/LEGALITY.md](docs/LEGALITY.md) and
+   [docs/PRIVACY-AND-RIGHTS.md](docs/PRIVACY-AND-RIGHTS.md).
 
 ## Contributing
 * Code, identifiers, commit messages and technical documentation: **English**.

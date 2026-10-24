@@ -118,6 +118,10 @@ pub struct Endpoint {
     pub source_authority: String,
     /// Licence of the source's content.
     pub source_licence: String,
+    /// Country of the source.
+    pub source_country: String,
+    /// Terms of use of the source on automated access.
+    pub source_terms: String,
     /// Failed checks in a row.
     pub fail_count: i32,
     /// `ETag` of the last full response.
@@ -222,6 +226,8 @@ fn endpoint_from(row: &sqlx::postgres::PgRow) -> Result<Endpoint> {
         source_interval_s: row.try_get("source_interval_s")?,
         source_authority: row.try_get("source_authority")?,
         source_licence: row.try_get("source_licence")?,
+        source_country: row.try_get("source_country")?,
+        source_terms: row.try_get("source_terms")?,
         fail_count: row.try_get("fail_count")?,
         etag: row.try_get("etag")?,
         last_modified: row.try_get("last_modified")?,
@@ -230,7 +236,8 @@ fn endpoint_from(row: &sqlx::postgres::PgRow) -> Result<Endpoint> {
 
 const ENDPOINT_COLUMNS: &str = "e.id, e.source_id, e.host_id, e.url, e.kind, e.origin, e.follow_links, \
      e.interval_s, s.interval_s AS source_interval_s, s.authority AS source_authority, \
-     s.licence AS source_licence, e.fail_count, e.etag, e.last_modified";
+     s.licence AS source_licence, s.country AS source_country, s.terms AS source_terms, \
+     e.fail_count, e.etag, e.last_modified";
 
 impl Store {
     /// Adds endpoints found on `discovered_from` (feed items, sitemap entries, links); URLs that
