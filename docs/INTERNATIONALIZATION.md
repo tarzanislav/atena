@@ -16,6 +16,16 @@ is blocked if any core locale has missing strings (checked in CI). Further langu
 the same gate. UI language and country pack are independent: a Russian-speaking teacher in Slovakia uses the
 Russian UI with the Slovak pack.
 
+### Reference, pivot and core languages
+* **Reference locale – Slovak (one only).** Every UI message is created and approved in Slovak first; it is the
+  single source of truth for message IDs and meaning, and the CI completeness check compares all locales to it.
+  Two or more references would conflict whenever their texts differ.
+* **Pivot locale – English.** Kept in lockstep with Slovak so that translators of any further language work
+  from English.
+* **Core locales – Czech, Russian, Chinese (Simplified).** Equal status with Slovak and English: always complete,
+  reviewed and release-blocking. A UI string translated by AI stays marked as a draft until a native speaker
+  approves it.
+
 ### What the five languages require
 * **Search:** diacritics folded for sk/cs, `ё → е` for Russian, Chinese segmented into words (jieba-rs, MIT)
   with a per-character fallback (ALTAIS indexes each character as a word; ATENA adds word segmentation).

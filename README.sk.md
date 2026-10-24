@@ -28,3 +28,9 @@ vedie späť na pôvodný zdroj.
 3. Automatické zaradenie a preklad sú vždy označené ako návrh, kým ich neskontroluje človek.
 4. Neznámy údaj ostáva „nezistený“ – nič sa nedopĺňa odhadom.
 5. Alternatívne pedagogické smery sa nepenalizujú.
+
+## Jazyky v projekte
+* **Anglicky:** zdrojový kód, názvy v kóde, popisy zmien (commity) a technická dokumentácia – aby mohli prispievať aj zahraniční vývojári.
+* **Slovensky:** prvý a referenčný jazyk rozhrania, používateľská príručka a komunikácia s autorom; slovenské verzie dokumentov sú v `docs/sk/`.
+* **Texty rozhrania** nie sú v kóde, ale v súboroch prekladov (Project Fluent, ako v ALTAIS); nový jazyk sa pridá preložením súboru, bez zmeny programu.
+* **Nosné jazyky** s rovnakým postavením: slovenčina (referenčná), angličtina (sprostredkujúca pre ďalších prekladateľov), čeština, ruština, čínština.

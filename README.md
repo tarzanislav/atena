@@ -30,5 +30,8 @@ and always links each item back to its original source.
 5. Alternative pedagogical approaches are never ranked down.
 
 ## Contributing
-Code, identifiers, commit messages and technical documentation are in English.
-User interface texts live in locale files (Project Fluent); the Slovak locale is the reference.
+* Code, identifiers, commit messages and technical documentation: **English**.
+* User interface: texts never in code, only in locale files (Project Fluent); a new language is added by
+  translating a file, without changing the program. **Slovak** is the reference locale, English the pivot for
+  translators, Czech, Russian and Chinese are core locales of equal status.
+* User guide and communication with the project author: **Slovak** (`docs/sk/`).
