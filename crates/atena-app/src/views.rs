@@ -521,6 +521,72 @@ impl From<Hit> for HitView {
     }
 }
 
+/// A version in a document's history.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VersionView {
+    /// Version number, from 1.
+    pub number: i32,
+    /// When it was captured.
+    pub fetched_at: Timestamp,
+    /// `initial`, `minor`, `substantive` or `changed`.
+    pub change: String,
+    /// Paragraphs added.
+    pub paragraphs_added: i32,
+    /// Paragraphs removed.
+    pub paragraphs_removed: i32,
+    /// A number or a date changed.
+    pub numbers_changed: bool,
+}
+
+impl From<atena_store::VersionSummary> for VersionView {
+    fn from(v: atena_store::VersionSummary) -> Self {
+        Self {
+            number: v.version_no,
+            fetched_at: v.fetched_at,
+            change: v.change_kind,
+            paragraphs_added: v.paragraphs_added,
+            paragraphs_removed: v.paragraphs_removed,
+            numbers_changed: v.numbers_changed,
+        }
+    }
+}
+
+/// A document card: what is known about it and, where the legality principle allows showing it
+/// in full, its text.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DocumentView {
+    /// Document ID.
+    pub id: i64,
+    /// Title (may be empty).
+    pub title: String,
+    /// Address of the original.
+    pub url: String,
+    /// Source ID.
+    pub source_id: String,
+    /// Source name.
+    pub source_name: String,
+    /// Country of the source.
+    pub country: String,
+    /// Authority level.
+    pub authority: String,
+    /// Licence.
+    pub licence: String,
+    /// Language.
+    pub language: Option<String>,
+    /// Publication time.
+    pub published: Option<Timestamp>,
+    /// Last change of its text.
+    pub last_changed: Timestamp,
+    /// Taxonomy labels `scheme/concept`.
+    pub labels: Vec<String>,
+    /// The text, only where it may be shown in full.
+    pub text: Option<String>,
+    /// The versions, newest first.
+    pub versions: Vec<VersionView>,
+}
+
 /// A value of a facet and how many documents found have it.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]

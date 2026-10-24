@@ -72,6 +72,8 @@ kontroluje každý vstup bez ohľadu na to, čo rozhranie poslalo:
 | `sources` | všetky zdroje s tým, čo dovoľuje zásada zákonnosti, a prečo nie viac (kódy) |
 | `taxonomy(language)` | schémy a pojmy s názvami v jazyku rozhrania |
 | `search(query)` | strana s 20 výsledkami; ukážky textu prichádzajú po kúskoch s označenými slovami |
+| `newest(filters, limit)` | najnovšie dokumenty – všetky alebo zo sekcie, krajiny, zdroja … |
+| `document(id)` | karta dokumentu: čo smie vyhľadávanie ukázať, jeho verzie a text tam, kde sa smie ukázať celý |
 | `import(text, country)` | posúdi adresy alebo DOI a uloží ich ako návrhy |
 | `proposals(state)` | importované zdroje s najnovším automatickým návrhom |
 | `confirm(id, choice, reason)` / `reject(id, reason)` | rozhodnutie človeka; meno sa berie z nastavení |

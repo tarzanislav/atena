@@ -6,10 +6,10 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use atena_assess::{Assessor, parse_input};
-use atena_core::Taxonomy;
-use atena_core::legality::profile;
+use atena_core::legality::{SourceFacts, permission, profile};
 use atena_core::safety::clean_text;
 use atena_core::source::{BUNDLED_SOURCES, load_sources};
+use atena_core::{Licence, Taxonomy, Terms};
 use atena_crawl::{Config, Fetcher};
 use atena_ingest::import::{Choice, Proposed, confirm, propose};
 use atena_ingest::indexing::keep_fresh;
@@ -26,8 +26,9 @@ use crate::AppError;
 use crate::crawl::Crawl;
 use crate::settings::Settings;
 use crate::views::{
-    ConfirmedView, CrawlView, ErasureView, ImportView, OverviewView, PendingView, ProposalView,
-    ProposedView, ReceivedView, SearchQuery, SearchView, SourceView, SyncView, TaxonomyView,
+    ConfirmedView, CrawlView, DocumentView, ErasureView, HitView, ImportView, OverviewView,
+    PendingView, ProposalView, ProposedView, ReceivedView, SearchQuery, SearchView, SourceView,
+    SyncView, TaxonomyView, VersionView,
 };
 
 /// Hits per page of a search.
@@ -253,6 +254,72 @@ impl App {
             .await
             .map_err(internal)??;
         Ok(SearchView::new(results, page, PER_PAGE))
+    }
+
+    /// The newest documents that match `filters` (`section/changes`, `country/SK` …; all without
+    /// filters), at most `limit` (up to two pages).
+    pub async fn newest(
+        &self,
+        filters: Vec<String>,
+        limit: usize,
+    ) -> Result<Vec<HitView>, AppError> {
+        let limit = limit.clamp(1, 2 * PER_PAGE);
+        let (index, taxonomy) = (Arc::clone(&self.index), Arc::clone(&self.taxonomy));
+        let hits = tokio::task::spawn_blocking(move || index.newest(&taxonomy, &filters, limit))
+            .await
+            .map_err(internal)??;
+        Ok(hits.into_iter().map(HitView::from).collect())
+    }
+
+    /// The card of document `id`: what search may show about it, its versions, and its text where
+    /// the legality principle allows showing it in full. `None` for a document search may not
+    /// show (removed, `noindex`, of a source that may not be crawled).
+    pub async fn document(&self, id: i64) -> Result<Option<DocumentView>, AppError> {
+        let Some(row) = self.store.search_rows(&[id]).await?.into_iter().next() else {
+            return Ok(None);
+        };
+        let licence = Licence::parse(&row.licence);
+        let allowed = permission(
+            SourceFacts {
+                country: &row.country,
+                licence: &licence,
+                terms: Terms::parse(&row.terms),
+            },
+            row.tdm_reserved,
+        );
+        if row.status != "active" || !row.source_enabled || row.noindex || !allowed.crawl {
+            return Ok(None);
+        }
+        let text = (allowed.show_full_text && !row.noarchive)
+            .then_some(row.body)
+            .flatten();
+        let versions = self
+            .store
+            .versions(id)
+            .await?
+            .into_iter()
+            .map(VersionView::from)
+            .collect();
+        Ok(Some(DocumentView {
+            id,
+            title: row.title.unwrap_or_default(),
+            url: row.url,
+            source_id: row.source_id,
+            source_name: row.source_name,
+            country: row.country,
+            authority: row.authority,
+            licence: row.licence,
+            language: row.language,
+            published: row.published_at,
+            last_changed: row.last_changed_at,
+            labels: row
+                .labels
+                .into_iter()
+                .map(|(scheme, concept)| format!("{scheme}/{concept}"))
+                .collect(),
+            text,
+            versions,
+        }))
     }
 
     /// Assesses the addresses or DOIs in `text` (one per line) and stores them as proposals;

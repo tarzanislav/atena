@@ -67,6 +67,8 @@ profile, addresses only `http`/`https`, settings cleaned and bounded.
 | `sources` | every source with what the legality principle allows and why not more (codes) |
 | `taxonomy(language)` | schemes and concepts with labels in the interface language |
 | `search(query)` | a page of 20 hits; snippets come as pieces with marked words |
+| `newest(filters, limit)` | the newest documents, all or of a section, country, source … |
+| `document(id)` | a document card: what search may show, its versions, and the text where it may be shown in full |
 | `import(text, country)` | assesses addresses or DOIs and stores them as proposals |
 | `proposals(state)` | imported sources with the newest automatic proposal |
 | `confirm(id, choice, reason)` / `reject(id, reason)` | a person's decision; the name comes from the settings |

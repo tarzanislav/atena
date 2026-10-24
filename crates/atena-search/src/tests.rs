@@ -205,6 +205,37 @@ fn authority_and_freshness_rank() {
 }
 
 #[test]
+fn the_newest_documents_come_first_without_words() {
+    let mut rows = Vec::new();
+    for (id, year) in [(1, 2019), (2, 2026), (3, 2023)] {
+        let mut d = doc(id, "sk", "Oznam", "Oznam pre školy.");
+        d.published_at = Some(format!("{year}-09-01T00:00:00Z").parse().unwrap());
+        rows.push(d);
+    }
+    let mut hidden = doc(4, "sk", "Skryté", "Nemá sa nájsť.");
+    hidden.noindex = true;
+    hidden.published_at = Some("2026-10-01T00:00:00Z".parse().unwrap());
+    rows.push(hidden);
+    let i = index(&rows);
+    let newest = i.newest(&taxonomy(), &[], 10).unwrap();
+    let order: Vec<i64> = newest.iter().map(|h| h.document_id).collect();
+    assert_eq!(order, [2, 3, 1]);
+    // the text may be shown here: the opening of it serves as the snippet
+    assert!(
+        newest[0]
+            .snippet
+            .as_ref()
+            .unwrap()
+            .text
+            .starts_with("Oznam")
+    );
+    let only_sk = i.newest(&taxonomy(), &["language/en".into()], 10).unwrap();
+    assert!(only_sk.is_empty());
+    assert_eq!(i.newest(&taxonomy(), &[], 1).unwrap().len(), 1);
+    assert!(i.newest(&taxonomy(), &["nonsense".into()], 10).is_err());
+}
+
+#[test]
 fn any_word_when_not_all_match() {
     let i = index(&[doc(1, "sk", "Matematika", "Úlohy z matematiky.")]);
     let r = search(&i, "matematika", &[]);

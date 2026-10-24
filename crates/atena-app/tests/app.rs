@@ -54,6 +54,22 @@ async fn the_app_opens_with_the_register_of_its_version() {
     let empty = app.search(SearchQuery::default()).await.unwrap_err();
     assert_eq!(empty.code, "search-empty");
 
+    assert!(app.newest(Vec::new(), 10).await.unwrap().is_empty());
+    assert!(
+        app.newest(vec!["section/changes".into()], 10)
+            .await
+            .unwrap()
+            .is_empty()
+    );
+    assert_eq!(
+        app.newest(vec!["nonsense".into()], 10)
+            .await
+            .unwrap_err()
+            .code,
+        "search-filter"
+    );
+    assert_eq!(app.document(999).await.unwrap(), None);
+
     assert!(!app.crawl_status().await.running);
     app.close().await;
     std::fs::remove_dir_all(&folder).unwrap();
