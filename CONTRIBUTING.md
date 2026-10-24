@@ -1,5 +1,9 @@
 # Contributing to ATENA
 
+Every change must serve the four pillars of ATENA ([README.md](README.md)): seriousness, openness and
+moving human knowledge forward; anonymity and respect for privacy; security and protection against
+dangerous people, robots, code and processes; respect for the law.
+
 * **Original code.** Code is written for ATENA. Ideas from other projects (including the author's own) are
   re-thought and re-written, never copied: clean, readable, simple, efficient.
 * **Languages.** Code, identifiers, comments, commit messages and technical documentation in English.

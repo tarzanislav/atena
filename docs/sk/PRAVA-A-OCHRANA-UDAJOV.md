@@ -55,7 +55,8 @@ informácie o vzdelávaní, nie o ľuďoch, preto si osobných údajov necháva 
 | **Obmedzenie uchovávania**: záznamy o kontrolách sa po 90 dňoch zmažú | zberač |
 | Žiadne obrázky, žiadne cookies, žiadne sledovanie návštevníkov webov | zberač |
 | **Vyhľadávanie** nikdy nenájde dokument označený `noindex` ani dokument zo zdroja, ktorý ATENA nesmie zbierať. Ukážku textu ukáže len tam, kde sa text smie zobraziť, a len taký text uloží do indexu. Vymazaný dokument z indexu zmizne pri najbližšej aktualizácii ([VYHLADAVANIE.md](VYHLADAVANIE.md)) | `atena_search::searchable`, `search_queue` |
-| **Zdieľanie návrhov** posiela len importované adresy a kódy krajín, žiadne vyhodnotenia ani údaje o používateľovi. Stránky o ľuďoch sa nikdy neposielajú ani neukladajú. Vypína ho `ATENA_SHARE=0` ([IMPORT-A-ZDIELANIE.md](IMPORT-A-ZDIELANIE.md)) | `atena-ingest/src/share.rs` |
+| **Žiadne tretie strany**: ATENA nikomu neposiela nič o svojich používateľoch. Sama od seba sa spája len so zdrojmi (ako anonymný návštevník) a s vlastným serverom prevádzkovateľa, ktorý IP adresy neukladá – žiadni sprostredkovatelia, analytika ani písma a knižnice z cudzích serverov | `atena_core::legality::CONNECTIONS` |
+| **Zdieľanie návrhov** prebieha cez súbory so zoznamami, ktoré odovzdávajú sami používatelia. Obsahujú len importované adresy a kódy krajín, žiadne vyhodnotenia ani údaje o používateľovi. Stránky o ľuďoch sa do zoznamu nikdy nezapíšu. `ATENA_SHARE=0` nechá importy len v danej inštalácii ([IMPORT-A-ZDIELANIE.md](IMPORT-A-ZDIELANIE.md)) | `atena-ingest/src/share.rs` |
 
 Mená v samotnom texte (napr. „riaditeľka školy Mgr. J. Nováková“) sa automaticky neodstraňujú, lebo
 sú súčasťou zverejnenej úradnej informácie. Kto nesúhlasí, môže dať dokument alebo celú sekciu

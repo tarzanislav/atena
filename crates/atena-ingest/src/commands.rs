@@ -2,21 +2,18 @@
 
 use std::sync::Arc;
 
-use atena_assess::{Assessment, Assessor, Item, Target, parse_input};
+use atena_assess::{Assessment, Assessor, Item, MAX_ITEMS, Target, parse_input};
 use atena_core::Taxonomy;
 use atena_core::source::load_sources;
 use atena_crawl::{Config, Fetcher, ServiceClient};
 use atena_ingest::import::{decision, to_import};
-use atena_ingest::share::{
-    DEFAULT_RELAY, DEFAULT_REPOSITORY, Received, close_issue, pack, receive, receive_issues, send,
-};
+use atena_ingest::share::{HEADER, list_id, read_list, write_list};
 use atena_store::{ImportOutcome, ImportState, Store, Via};
 use url::Url;
 
 /// The shared register all installations read.
 pub const DEFAULT_SHARED_REGISTER: &str =
     "https://raw.githubusercontent.com/tarzanislav/atena/main/data/sources.yaml";
-const GITHUB_API: &str = "https://api.github.com/";
 
 fn env_or(name: &str, default: &str) -> String {
     std::env::var(name)
@@ -25,7 +22,7 @@ fn env_or(name: &str, default: &str) -> String {
         .unwrap_or_else(|| default.to_string())
 }
 
-/// Sharing is on unless `ATENA_SHARE` is `0`, `off`, `no` or `false`.
+/// Imported addresses are kept for sharing unless `ATENA_SHARE` is `0`, `off`, `no` or `false`.
 fn sharing_enabled() -> bool {
     !matches!(
         std::env::var("ATENA_SHARE")
@@ -35,11 +32,6 @@ fn sharing_enabled() -> bool {
             .as_str(),
         "0" | "off" | "no" | "false"
     )
-}
-
-fn relay() -> Result<Url, String> {
-    let text = env_or("ATENA_RELAY", DEFAULT_RELAY);
-    Url::parse(&text).map_err(|e| format!("ATENA_RELAY {text}: {e}"))
 }
 
 fn service() -> Result<ServiceClient, String> {
@@ -124,29 +116,39 @@ async fn assess_and_store(
     Ok(shareable)
 }
 
-/// Sends every queued list; returns how many were sent.
-pub async fn share_pending(store: &Store) -> Result<usize, String> {
-    let (client, relay) = (service()?, relay()?);
-    let mut sent = 0;
-    for message in store.outbox_pending().await.map_err(|e| e.to_string())? {
-        match send(&client, &relay, &message.body).await {
-            Ok(()) => {
-                store
-                    .outbox_sent(message.id)
-                    .await
-                    .map_err(|e| e.to_string())?;
-                sent += 1;
-            }
-            Err(e) => {
-                store
-                    .outbox_failed(message.id, &e)
-                    .await
-                    .map_err(|e| e.to_string())?;
-                eprintln!("sharing failed, the list stays queued: {e}");
-            }
-        }
+/// `share FILE` – writes every list waiting to be shared into one list file and marks them
+/// handed over. Nothing is sent anywhere: the user hands the file to the editor as they choose.
+pub async fn share(store: &Store, args: &[String]) -> Result<(), String> {
+    let [path] = args else {
+        return Err("share needs the name of the file to write".into());
+    };
+    if std::path::Path::new(path).exists() {
+        return Err(format!("{path} exists; choose a new file"));
     }
-    Ok(sent)
+    let pending = store.outbox_pending().await.map_err(|e| e.to_string())?;
+    let lines: Vec<String> = pending
+        .iter()
+        .filter_map(|m| read_list(&m.body))
+        .flatten()
+        .collect();
+    if lines.is_empty() {
+        println!("No proposals are waiting to be shared.");
+        return Ok(());
+    }
+    let list = write_list(lines.iter().map(String::as_str));
+    std::fs::write(path, &list).map_err(|e| format!("{path}: {e}"))?;
+    for message in &pending {
+        store
+            .outbox_sent(message.id)
+            .await
+            .map_err(|e| e.to_string())?;
+    }
+    println!(
+        "{} addresses written to {path} – addresses and country codes only. Hand the file to the \
+         ATENA editor as you choose; ATENA itself sends nothing anywhere.",
+        list.lines().count() - 1
+    );
+    Ok(())
 }
 
 /// `import [FILE] [--country CC] [--concurrency N] [--no-share]`
@@ -185,27 +187,16 @@ pub async fn import(store: &Store, args: &[String]) -> Result<(), String> {
         "\nNothing is crawled until a person confirms: atena-ingest confirm ID --by NAME --reason TEXT"
     );
     if share && !lines.is_empty() {
-        for message in pack(&lines) {
-            store
-                .outbox_add(&message)
-                .await
-                .map_err(|e| e.to_string())?;
-        }
-        let queued = pack(&lines).len();
-        let sent = share_pending(store).await?;
-        if sent >= queued {
-            println!(
-                "Shared {} addresses with the ATENA editor via {}: only the addresses and country \
-                 codes are sent. ATENA_SHARE=0 turns sharing off.",
-                lines.len(),
-                relay()?.host_str().unwrap_or_default()
-            );
-        } else {
-            println!(
-                "{} addresses are queued for sharing; `atena-ingest share` (or the next `run`) sends them.",
-                lines.len()
-            );
-        }
+        store
+            .outbox_add(&write_list(lines.iter().map(String::as_str)))
+            .await
+            .map_err(|e| e.to_string())?;
+        println!(
+            "{} addresses are kept for the shared register; `atena-ingest share FILE` writes them \
+             into a file for the ATENA editor. Nothing is sent anywhere. ATENA_SHARE=0 or \
+             --no-share keeps them to this installation.",
+            lines.len()
+        );
     }
     Ok(())
 }
@@ -352,66 +343,44 @@ pub async fn reject(store: &Store, args: &[String]) -> Result<(), String> {
     Ok(())
 }
 
-/// `proposals [--no-relay] [--no-github] [--close]` – on the editor's installation: reads the
-/// lists other installations shared, assesses every address and stores them as proposals.
+/// `proposals FILE…` – on the editor's installation: reads list files from other installations,
+/// assesses every address itself and stores them as proposals. A list read before is skipped.
 pub async fn proposals(store: &Store, args: &[String]) -> Result<(), String> {
-    let (mut from_relay, mut from_github, mut close) = (true, true, false);
-    for arg in args {
-        match arg.as_str() {
-            "--no-relay" => from_relay = false,
-            "--no-github" => from_github = false,
-            "--close" => close = true,
-            other => return Err(format!("unexpected argument {other}")),
-        }
+    if args.is_empty() {
+        return Err("proposals needs one or more list files".into());
     }
-    let client = service()?;
-    let repository = env_or("ATENA_GITHUB_REPOSITORY", DEFAULT_REPOSITORY);
-    let api = Url::parse(&env_or("ATENA_GITHUB_API", GITHUB_API)).map_err(|e| e.to_string())?;
-    let mut received: Vec<Received> = Vec::new();
-    if from_github {
-        match receive_issues(&client, &api, &repository).await {
-            Ok(r) => received.extend(r),
-            Err(e) => eprintln!("GitHub issues: {e}"),
+    for path in args {
+        let text = std::fs::read_to_string(path).map_err(|e| format!("{path}: {e}"))?;
+        let Some(lines) = read_list(&text) else {
+            eprintln!("{path}: not an ATENA list (the first line must be {HEADER})");
+            continue;
+        };
+        let id = list_id(&lines);
+        if !store
+            .inbox_known(std::slice::from_ref(&id))
+            .await
+            .map_err(|e| e.to_string())?
+            .is_empty()
+        {
+            println!("{path}: read before ({id})");
+            continue;
         }
-    }
-    if from_relay {
-        match receive(&client, &relay()?).await {
-            Ok(r) => {
-                // an issue copy of a message is preferred: it can be closed afterwards
-                let fresh: Vec<Received> = r
-                    .into_iter()
-                    .filter(|m| !received.iter().any(|k| k.id == m.id))
-                    .collect();
-                received.extend(fresh);
+        println!("\n{path}: {} lines", lines.len());
+        let mut accepted = 0;
+        // an import takes at most MAX_ITEMS lines at a time
+        for chunk in lines.chunks(MAX_ITEMS) {
+            let parsed = parse_input(&chunk.join("\n"));
+            for r in &parsed.rejected {
+                eprintln!("{:?}: {}", r.reason, r.text);
             }
-            Err(e) => eprintln!("relay: {e}"),
+            assess_and_store(store, &parsed.items, Via::Shared, 4).await?;
+            accepted += parsed.items.len();
         }
-    }
-    let ids: Vec<String> = received.iter().map(|m| m.id.clone()).collect();
-    let known = store.inbox_known(&ids).await.map_err(|e| e.to_string())?;
-    let new: Vec<&Received> = received.iter().filter(|m| !known.contains(&m.id)).collect();
-    println!("{} lists received, {} new", received.len(), new.len());
-    for message in &new {
-        let parsed = parse_input(&message.lines);
-        println!(
-            "\nlist {} ({} addresses, {} lines not accepted)",
-            message.id,
-            parsed.items.len(),
-            parsed.rejected.len()
-        );
-        assess_and_store(store, &parsed.items, Via::Shared, 4).await?;
-        let count = i32::try_from(parsed.items.len()).unwrap_or(i32::MAX);
+        let count = i32::try_from(accepted).unwrap_or(i32::MAX);
         store
-            .inbox_add(&message.id, &message.lines, count)
+            .inbox_add(&id, &lines.join("\n"), count)
             .await
             .map_err(|e| e.to_string())?;
-    }
-    if close {
-        let token = std::env::var("ATENA_GITHUB_TOKEN")
-            .map_err(|_| "--close needs ATENA_GITHUB_TOKEN (a token that may write issues)")?;
-        for number in received.iter().filter_map(|m| m.issue) {
-            close_issue(&client, &api, &repository, number, &token).await?;
-        }
     }
     Ok(())
 }

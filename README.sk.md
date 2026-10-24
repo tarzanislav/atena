@@ -6,6 +6,14 @@
 zo Slovenska a zo sveta, sleduje ich zmeny, triedi ich vo viacjazyčnej taxonómii a každú informáciu
 vedie späť na pôvodný zdroj.
 
+## Štyri piliere
+1. **Serióznosť, otvorenosť a snaha posunúť ľudské vedenie dopredu** – vedenie každého človeka.
+2. **Anonymita a rešpekt k súkromiu** – nášmu aj iných.
+3. **Bezpečnosť a ochrana** pred nebezpečnými ľuďmi, robotmi, kódmi a procesmi.
+4. **Dodržiavanie zákona** – žiaden zákon nemôže byť porušený; rešpekt pred zákonom.
+
+Zásady nižšie a pravidlá zapísané v jadre (`atena-core`) tieto piliere uvádzajú do praxe.
+
 * Licencia kódu **Apache-2.0** (voľne súkromne aj komerčne), dáta CC BY 4.0 / CC0, žiadne platené závislosti.
 * Technológie: jadro **Rust**, rozhranie **TypeScript + React**, program pre PC a mobil **Tauri 2**,
   databáza **PostgreSQL**, vyhľadávanie **Tantivy** – [docs/TECHNOLOGIE.md](docs/sk/TECHNOLOGIE.md).
@@ -40,6 +48,9 @@ vedie späť na pôvodný zdroj.
    právo prevádzkovateľa aj krajiny zdroja a vždy to prísnejšie; čo nie je isté, to sa nerobí. Zapísaná
    v jadre (`atena-core/src/legality.rs`) – [docs/sk/ZASADA-ZAKONNOSTI.md](docs/sk/ZASADA-ZAKONNOSTI.md)
    a [docs/sk/PRAVA-A-OCHRANA-UDAJOV.md](docs/sk/PRAVA-A-OCHRANA-UDAJOV.md).
+7. **Bezpečnosť popri zákonnosti**: ATENA nikomu neposiela nič o svojich používateľoch a nepoužíva
+   služby tretích strán. Sama od seba sa spája len so zdrojmi, ako anonymný návštevník, a s vlastným
+   serverom prevádzkovateľa, ktorý IP adresy neukladá (`legality::CONNECTIONS`).
 
 ## Jazyky v projekte
 * **Anglicky:** zdrojový kód, názvy v kóde, popisy zmien (commity) a technická dokumentácia – aby mohli prispievať aj zahraniční vývojári.

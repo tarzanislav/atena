@@ -5,7 +5,8 @@
 //!   TDMRep and `X-Robots-Tag`.
 //! * [`RobotsTxt`], [`TdmFile`], [`IndexRules`] – the publisher's rules, usable on their own.
 //! * [`parse_feed`], [`parse_sitemap`] – discovering new and changed items.
-//! * [`ServiceClient`] – requests to ATENA's own services (relay, shared register), not crawling.
+//! * [`ServiceClient`] – requests that are not crawling, made only on a user's explicit command
+//!   (the shared register) or to the operator's own server.
 //!
 //! The crate never decides what ATENA does with content; it reports what the publisher allows
 //! (`Page::tdm`, `Page::index`) and leaves the decision to the pipeline.

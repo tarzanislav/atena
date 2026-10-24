@@ -6,6 +6,14 @@
 practice sources from many countries, tracks every change, classifies content in a multilingual taxonomy
 and always links each item back to its original source.
 
+## The four pillars
+1. **Seriousness, openness and moving human knowledge forward** – the knowledge of every person.
+2. **Anonymity and respect for privacy** – ours and everyone else's.
+3. **Security and protection** against dangerous people, robots, code and processes.
+4. **Respect for the law** – no law may be broken, anywhere.
+
+The principles below and the rules written into the core (`atena-core`) put the pillars into practice.
+
 * Code licence **Apache-2.0** (free for private and commercial use), data CC BY 4.0 / CC0, no paid dependencies.
 * Multilingual and multi-country by design. **Core languages from the start: English, Slovak, Czech, Russian
   and Chinese (Simplified)**; Slovak is the reference locale, Slovakia the first country pack and Czechia the second – see [docs/INTERNATIONALIZATION.md](docs/INTERNATIONALIZATION.md).
@@ -40,6 +48,9 @@ and always links each item back to its original source.
    law and each source country's law apply and the stricter wins; what is uncertain is not done.
    Written into the core (`atena-core/src/legality.rs`) – see [docs/LEGALITY.md](docs/LEGALITY.md) and
    [docs/PRIVACY-AND-RIGHTS.md](docs/PRIVACY-AND-RIGHTS.md).
+7. **Security beside legality**: ATENA sends nothing about its users to anyone and uses no third-party
+   services; by itself it connects only to its sources, as an anonymous visitor, and to the operator's
+   own server, which stores no IP addresses (`legality::CONNECTIONS`).
 
 ## Contributing
 * Code, identifiers, commit messages and technical documentation: **English**.
