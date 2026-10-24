@@ -11,13 +11,17 @@ use url::Url;
 
 use crate::{Config, IpRange, NetPolicy};
 
-/// A received request: path with query, lower-cased header lines, arrival time.
+/// A received request: method, path with query, lower-cased header lines, body, arrival time.
 #[derive(Debug, Clone)]
 pub struct Seen {
+    /// Method (`GET`, `POST` …).
+    pub method: String,
     /// Path with query.
     pub path: String,
     /// Header lines, lower-cased.
     pub headers: Vec<String>,
+    /// Body (read when `content-length` announces one).
+    pub body: Vec<u8>,
     /// Arrival time.
     pub at: Instant,
 }
@@ -86,20 +90,39 @@ impl Server {
                             Ok(n) => raw.extend_from_slice(&buf[..n]),
                         }
                     }
-                    let text = String::from_utf8_lossy(&raw).to_string();
+                    let end = raw
+                        .windows(4)
+                        .position(|w| w == b"\r\n\r\n")
+                        .unwrap_or(raw.len())
+                        + 4;
+                    let text = String::from_utf8_lossy(&raw[..end.min(raw.len())]).to_string();
                     let mut lines = text.split("\r\n");
-                    let path = lines
-                        .next()
-                        .and_then(|l| l.split(' ').nth(1))
-                        .unwrap_or("/")
-                        .to_string();
-                    let headers = lines
+                    let request_line = lines.next().unwrap_or_default().to_string();
+                    let mut parts = request_line.split(' ');
+                    let method = parts.next().unwrap_or("GET").to_string();
+                    let path = parts.next().unwrap_or("/").to_string();
+                    let headers: Vec<String> = lines
                         .take_while(|l| !l.is_empty())
                         .map(str::to_ascii_lowercase)
                         .collect();
+                    let length = headers
+                        .iter()
+                        .find_map(|h| h.strip_prefix("content-length:"))
+                        .and_then(|v| v.trim().parse::<usize>().ok())
+                        .unwrap_or(0)
+                        .min(1 << 20);
+                    let mut body = raw.get(end..).unwrap_or_default().to_vec();
+                    while body.len() < length {
+                        match stream.read(&mut buf).await {
+                            Ok(0) | Err(_) => break,
+                            Ok(n) => body.extend_from_slice(&buf[..n]),
+                        }
+                    }
                     let seen = Seen {
+                        method,
                         path,
                         headers,
+                        body,
                         at: Instant::now(),
                     };
                     log.lock().unwrap().push(seen.clone());

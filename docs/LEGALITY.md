@@ -30,6 +30,9 @@ kept and shown goes through `legality::permission`; there is no other path.
    when the principle no longer allows what was kept.
 7. **Tests** check the invariants for every country and every combination of licence, terms and
    reservation, and that every country of the taxonomy has a profile.
+8. **Sources proposed by users** are assessed automatically, but nothing is crawled until a person
+   confirms the proposal; the decision is checked and then `permission` applies to it like to any
+   register entry ([IMPORT-AND-SHARING.md](IMPORT-AND-SHARING.md)).
 
 ## Country profiles
 | Country | Mining of copyrighted content | Official texts free | Personal data | Copyrighted content |

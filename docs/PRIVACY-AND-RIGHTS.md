@@ -49,6 +49,7 @@ personal data as possible:
 | **Erasure on request** (Art. 17): `atena-ingest forget URL --reason …` removes documents, versions, links, check records and unshared originals and blocks the URL (or everything below a prefix) for good | `Store::forget`, `blocked_url`, `erasure_log` |
 | **Storage limitation**: the check log is deleted after 90 days | worker |
 | No images, no cookies, no tracking of visitors of the sites | crawler |
+| **Sharing of proposals** sends only the imported addresses and country codes – no assessments, no user data; pages about people are never sent or stored; `ATENA_SHARE=0` turns it off ([IMPORT-AND-SHARING.md](IMPORT-AND-SHARING.md)) | `atena-ingest/src/share.rs` |
 
 Names inside texts (e.g. "the head teacher Mgr. J. Novák") are not removed automatically; they are
 part of the published official information. A person who objects can have a document or a whole

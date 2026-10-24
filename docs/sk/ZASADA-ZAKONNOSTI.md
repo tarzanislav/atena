@@ -32,6 +32,9 @@ stiahnuť, uložiť a zobraziť, ide cez funkciu `permission`. Iná cesta v prog
    odstráni sa celý.
 7. **Testy:** pre každú krajinu a každú kombináciu licencie, podmienok a výhrady testy overujú, že sa
    pravidlá nikdy neporušia. Každá krajina v taxonómii musí mať profil.
+8. **Zdroje, ktoré navrhnú používatelia,** sa vyhodnotia automaticky, ale nič sa nezbiera, kým návrh
+   nepotvrdí človek. Rozhodnutie sa skontroluje a potom sa naň uplatní `permission` rovnako ako na
+   záznam v registri ([IMPORT-A-ZDIELANIE.md](IMPORT-A-ZDIELANIE.md)).
 
 ## Právne profily krajín
 | Krajina | Vyťažovanie chráneného obsahu | Úradné texty voľné | Osobné údaje | Výsledok pre chránený obsah |

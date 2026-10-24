@@ -9,7 +9,9 @@ store**. The database is the source of truth; search indexes are derived from it
 ## Tables
 | Table | Holds |
 |---|---|
-| `source` | the source register (`data/sources.yaml`), kept in sync; sources that leave it are disabled, never deleted |
+| `source` | the source register (`data/sources.yaml`), kept in sync; sources that leave it are disabled, never deleted. Imported sources (`origin = 'import'`) are `proposed` and disabled until a person confirms them |
+| `assessment` | rights assessments of imported sources: the automatic one (with its evidence as JSON) and the decisions of people |
+| `inbox` / `outbox` | lists of proposed addresses received from other installations / waiting to be shared |
 | `host` | one row per host name: when it is next due, who holds its lease, back-off after `429`/`503` |
 | `endpoint` | every URL that is checked: feeds, sitemaps and pages; schedule, validators (`ETag`, `Last-Modified`), failures |
 | `fetch_log` | one row per check (outcome, status, size, time); pruned after 90 days |

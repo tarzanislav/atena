@@ -10,6 +10,8 @@ dajú kedykoľvek prepočítať. Všetky príkazy SQL sú v module `atena-store`
 | Tabuľka | Čo obsahuje |
 |---|---|
 | `source` | register zdrojov (`data/sources.yaml`); zdroj, ktorý z registra zmizne, sa vypne, nezmaže |
+| `assessment` | právne vyhodnotenia importovaných zdrojov: automatické (s dokladmi ako JSON) a rozhodnutia ľudí. Importovaný zdroj (`origin = 'import'`) je `proposed` a vypnutý, kým ho človek nepotvrdí |
+| `inbox` / `outbox` | zoznamy navrhnutých adries prijaté z iných inštalácií / čakajúce na odoslanie |
 | `host` | jeden riadok na server: kedy je na rade, kto ho práve spracúva, prestávka po `429`/`503` |
 | `endpoint` | každá sledovaná adresa: kanály, sitemapy, stránky; plán kontrol, `ETag`, `Last-Modified`, chyby |
 | `fetch_log` | záznam o každej kontrole; po 90 dňoch sa maže |
