@@ -36,7 +36,7 @@ apps/web              rozhranie React + TypeScript (dizajn ŠkVP)
 apps/desktop          Tauri 2 (Windows, neskôr Mac, Linux, mobil)
 data/                 taxonomia.yaml, zdroje.yaml
 prototyp-v0.1/        Python prototyp – špecifikácia a testovacie scenáre
-nastroje/             meranie jazykov a ďalšie nástroje
+tools/                meranie jazykov a ďalšie nástroje
 ```
 
 ## Meranie
