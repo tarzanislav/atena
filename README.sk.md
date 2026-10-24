@@ -21,6 +21,7 @@ Zásady nižšie a pravidlá zapísané v jadre (`atena-core`) tieto piliere uv�
 * Nosné jazyky od začiatku: **angličtina, slovenčina, čeština, ruština a čínština (zjednodušená)**; slovenčina je referenčný jazyk, Slovensko prvý balík krajiny, Česko druhý.
 * Medzinárodnosť a balíky krajín (anglicky) – [docs/INTERNATIONALIZATION.md](docs/INTERNATIONALIZATION.md).
 * Licencie súčastí a modelov AI – [docs/LICENCIE.md](docs/sk/LICENCIE.md).
+* Aplikácia pre počítač: príručka pre používateľa – [docs/sk/PRIRUCKA.md](docs/sk/PRIRUCKA.md).
 
 ## Obsah repozitára
 | Priečinok | Čo obsahuje |
@@ -33,6 +34,7 @@ Zásady nižšie a pravidlá zapísané v jadre (`atena-core`) tieto piliere uv�
 | `crates/atena-search/` | viacjazyčné fulltextové vyhľadávanie (Tantivy) v tom, čo dovoľuje zásada zákonnosti: vlastné stemmery pre slovenčinu, češtinu a poľštinu, pojmy naprieč jazykmi – [docs/sk/VYHLADAVANIE.md](docs/sk/VYHLADAVANIE.md) |
 | `crates/atena-ingest/` | program zberača: register → sťahovanie → spracovanie → verzie → zaradenie → index vyhľadávania; import a zdieľané návrhy – [docs/sk/SPUSTENIE.md](docs/sk/SPUSTENIE.md), [docs/sk/IMPORT-A-ZDIELANIE.md](docs/sk/IMPORT-A-ZDIELANIE.md) |
 | `crates/atena-app/` | aplikácia pre počítač bez okna: databáza vo vnútri aplikácie (súkromný PostgreSQL len pre tento počítač), operácie rozhrania, chyby ako preložiteľné kódy – [docs/sk/APLIKACIA.md](docs/sk/APLIKACIA.md) |
+| `apps/desktop/` | aplikácia pre počítač: okno Tauri 2, rozhranie v Reacte v piatich jazykoch (Fluent), inštalátor pre Windows s PostgreSQL vo vnútri – [docs/sk/APLIKACIA.md](docs/sk/APLIKACIA.md) |
 | `data/` | taxonómia (296 pojmov, 15 osí, 8 jazykov) a register 186 zdrojov |
 | `prototyp-v0.1/` | funkčný prototyp v Pythone (zber, verzie, zaradenie, vyhľadávanie, web, 41 testov) – špecifikácia pre jadro v Ruste |
 | `tools/language-benchmark/` | meranie rýchlosti Rust, Go, Java, Node, Python na úlohe ATENA |

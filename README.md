@@ -21,6 +21,7 @@ The principles below and the rules written into the core (`atena-core`) put the 
   **Tantivy** search – see [docs/TECHNOLOGY.md](docs/TECHNOLOGY.md).
 * Design: Windows 11 / Fluent style, calm pastel section colours, light and dark themes – see [docs/DESIGN.md](docs/DESIGN.md).
 * Licences of all components and AI models – see [docs/LICENSES.md](docs/LICENSES.md).
+* The desktop app: user guide (Slovak) – see [docs/sk/PRIRUCKA.md](docs/sk/PRIRUCKA.md).
 
 ## Repository
 | Folder | Contents |
@@ -33,6 +34,7 @@ The principles below and the rules written into the core (`atena-core`) put the 
 | `crates/atena-search/` | multilingual full-text search (Tantivy) of what the legality principle allows: own stemmers for Slovak, Czech and Polish, concepts across languages – see [docs/SEARCH.md](docs/SEARCH.md) |
 | `crates/atena-ingest/` | the crawler program: register → fetch → extraction → versions → classification → search index; imports and shared proposals – see [docs/RUNNING.md](docs/RUNNING.md), [docs/IMPORT-AND-SHARING.md](docs/IMPORT-AND-SHARING.md) |
 | `crates/atena-app/` | the desktop app without its window: the database inside the app (a private PostgreSQL for this computer only), the operations of the interface, errors as translatable codes – see [docs/DESKTOP.md](docs/DESKTOP.md) |
+| `apps/desktop/` | the desktop app: Tauri 2 window, React interface in five languages (Fluent), Windows installer with PostgreSQL inside – see [apps/desktop/README.md](apps/desktop/README.md) |
 | `data/` | taxonomy (296 concepts, 15 facets, 8 languages) and a register of 186 sources |
 | `prototyp-v0.1/` | working Python prototype (crawling, versions, classification, search, web, 41 tests) – the executable specification for the Rust core |
 | `tools/language-benchmark/` | benchmark of Rust, Go, Java, Node and Python on ATENA's classification task |

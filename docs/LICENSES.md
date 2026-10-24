@@ -37,6 +37,30 @@ The full tree is checked by `cargo deny` on every pull request (`deny.toml`).
 | tantivy 0.27 (without default features: memory-mapped files, Snowball stemmers, LZ4; no zstd) | MIT; Snowball stemmers (frostem) BSD-3-Clause | full-text search |
 | getrandom | MIT OR Apache-2.0 | the random password of the database inside the desktop app |
 
+## Desktop app (`apps/desktop`)
+
+The window crate has its own `Cargo.lock`; CI checks it with the same `deny.toml`. The installer
+carries the licence texts of every part (`notices/` in the app's folder, written by
+`apps/desktop/scripts/notices.mjs` and `postgres-notices.mjs`).
+
+| Component | Licence | Used for |
+|---|---|---|
+| Tauri 2 (wry, tao and the system web view: WebView2 on Windows, WebKitGTK on Linux) | Apache-2.0 OR MIT | the window |
+| open | MIT | opening the original of a document in the user's browser |
+| React, React DOM, scheduler | MIT | the interface |
+| @fluent/bundle (Project Fluent) | Apache-2.0 | texts of the interface in every language |
+| @tauri-apps/api | Apache-2.0 OR MIT | calling the commands of the window |
+| Fluent UI System Icons (@fluentui/svg-icons) | MIT | icons |
+| Open Sans, Noto Sans SC (@fontsource) | OFL-1.1 (fonts), MIT (packaging) | type in Latin, Cyrillic and Chinese |
+| Vite, TypeScript, @vitejs/plugin-react, @tauri-apps/cli | MIT, Apache-2.0 | building only – not part of the app |
+| PostgreSQL 17 (official Windows binaries of EnterpriseDB) | PostgreSQL License | the database inside the app |
+| libraries of those binaries: OpenSSL, ICU, libxml2, libxslt, zlib, LZ4, Zstandard, MIT Kerberos, mingw-w64 winpthreads, Microsoft Visual C++ runtime | Apache-2.0, Unicode-3.0, MIT, Zlib, BSD, redistribution terms | used by PostgreSQL |
+| GNU libiconv, GNU gettext (libintl) | LGPL-2.1-or-later | used by PostgreSQL unmodified, as separate libraries; licence text and source links in the notices |
+
+The build stops when the PostgreSQL binaries bring a library that `postgres-notices.mjs` does not
+know, so that a person checks its licence first. `proc-macro-error` (unmaintained) comes with the
+Linux GTK bindings of Tauri as a build-time macro and is excepted in `deny.toml`.
+
 ## Prototype v0.1 (Python)
 
 | Component | Licence | Note |

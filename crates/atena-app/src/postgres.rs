@@ -12,7 +12,7 @@
 //! and started anew; the caller makes sure that only one app uses a folder at a time.
 
 use std::path::{Path, PathBuf};
-use std::process::{Command, Output};
+use std::process::{Command, Output, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use crate::AppError;
@@ -85,6 +85,40 @@ fn run(command: &mut Command, code: &'static str, what: &str) -> Result<(), AppE
         Err(AppError::new(
             code,
             format!("{what}: {}", String::from_utf8_lossy(&out.stderr).trim()),
+        ))
+    }
+}
+
+/// The last lines of the server log, for the detail of an error.
+fn log_tail(log: &Path) -> String {
+    let text = std::fs::read_to_string(log).unwrap_or_default();
+    let lines: Vec<&str> = text.lines().rev().take(8).collect();
+    lines.into_iter().rev().collect::<Vec<_>>().join(" | ")
+}
+
+/// Starts the server. Its output goes to the log file only: the server inherits the standard
+/// handles of `pg_ctl` (on Windows), so pipes to them would stay open as long as the server runs
+/// and waiting for their end would never return.
+fn start_server(bin: &Path, data: &Path, log: &Path, port: u16) -> Result<(), AppError> {
+    let status = program(bin, "pg_ctl")
+        .arg("start")
+        .arg("-D")
+        .arg(data)
+        .arg("-l")
+        .arg(log)
+        .args(["-w", "-t", WAIT_S, "-o"])
+        .arg(format!("-p {port}"))
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status()
+        .map_err(|e| AppError::new("database-start", format!("starting the database: {e}")))?;
+    if status.success() {
+        Ok(())
+    } else {
+        Err(AppError::new(
+            "database-start",
+            format!("starting the database ({status}): {}", log_tail(log)),
         ))
     }
 }
@@ -187,18 +221,7 @@ impl EmbeddedPostgres {
                 .map_err(|e| AppError::io(&log, e))?;
         }
         let port = free_port()?;
-        run(
-            program(bin, "pg_ctl")
-                .arg("start")
-                .arg("-D")
-                .arg(&data)
-                .arg("-l")
-                .arg(&log)
-                .args(["-w", "-t", WAIT_S, "-o"])
-                .arg(format!("-p {port}")),
-            "database-start",
-            "starting the database",
-        )?;
+        start_server(bin, &data, &log, port)?;
         Ok(Self {
             bin: bin.to_path_buf(),
             data,
