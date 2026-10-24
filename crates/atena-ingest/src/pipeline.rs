@@ -20,7 +20,7 @@ use atena_store::{
 use url::Url;
 
 use crate::privacy;
-use crate::urls::{MAX_LINKS_PER_PAGE, follow, host, normalize};
+use crate::urls::{MAX_LINKS_PER_PAGE, follow, host, is_personal_page, normalize, on_site};
 
 /// Settings of the pipeline.
 #[derive(Debug, Clone)]
@@ -189,7 +189,9 @@ impl Pipeline {
         origin: Origin,
     ) -> Option<NewEndpoint> {
         let url = normalize(url);
-        if !is_storable_url(url.as_str()) {
+        // only addresses that may be stored, on the endpoint's own site, and never pages about people
+        let own_site = Url::parse(&ep.url).is_ok_and(|from| on_site(&from, &url));
+        if !is_storable_url(url.as_str()) || !own_site || is_personal_page(&url) {
             return None;
         }
         Some(NewEndpoint {
@@ -297,6 +299,22 @@ impl Pipeline {
             Ok(Fetched::Page(page)) => {
                 check.status = Some(page.status);
                 check.bytes = Some(page.body.len() as u64);
+                // content another site serves after a redirect is not the source's content, and an
+                // erased address does not come back through a redirect either
+                let elsewhere = !on_site(url, &page.url);
+                if elsewhere || self.store.is_blocked(normalize(&page.url).as_str()).await? {
+                    check.outcome = if elsewhere {
+                        "moved_elsewhere"
+                    } else {
+                        "erased"
+                    }
+                    .into();
+                    check.detail = Some(format!("redirected to {}", page.url));
+                    check.failed = true;
+                    check.disable = !elsewhere || ep.origin != Origin::Register;
+                    check.next_in = Self::retry_in(ep);
+                    return Ok(());
+                }
                 let processed = match ep.kind {
                     EndpointKind::Feed => self.feed(ep, &page).await?,
                     EndpointKind::Sitemap => self.sitemap(ep, &page).await?,
@@ -601,7 +619,7 @@ impl Pipeline {
             found.extend(
                 doc.feeds
                     .iter()
-                    .filter(|f| host(f) == host(&page_url))
+                    .filter(|f| on_site(&page_url, f))
                     .filter_map(|f| self.new_endpoint(ep, f, EndpointKind::Feed, Origin::Link)),
             );
             discovered = self

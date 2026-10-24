@@ -32,6 +32,8 @@ The full tree is checked by `cargo deny` on every pull request (`deny.toml`).
 | sqlx 0.8 (PostgreSQL, migrations) | MIT OR Apache-2.0 | database access (0.9 needs Rust 1.94) |
 | jiff-sqlx | Unlicense OR MIT | dates in the database |
 | tracing, tracing-subscriber | MIT | log of the crawler |
+| cap | MIT OR Apache-2.0 | memory limit of the parsing worker |
+| psl | MIT OR Apache-2.0 | public suffix list: which hosts belong to one site |
 | tantivy 0.27 (without default features: memory-mapped files, Snowball stemmers, LZ4; no zstd) | MIT; Snowball stemmers (frostem) BSD-3-Clause | full-text search |
 
 ## Prototype v0.1 (Python)
