@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import { api, type Erasure, type Theme } from "../api";
 import { ErrorNotice } from "../components/ErrorNotice";
+import { PrivateAccountCard } from "../components/PrivateAccount";
 import { useApp } from "../context";
 import { LANGUAGES, languageName, useI18n } from "../i18n";
 import { Icon } from "../icons";
@@ -39,6 +40,7 @@ export function SettingsScreen() {
       <ErrorNotice error={error} />
 
       <div className="grid two">
+        <PrivateAccountCard />
         <div className="card">
           <h2>{i18n.t("settings-appearance")}</h2>
           <label className="field">

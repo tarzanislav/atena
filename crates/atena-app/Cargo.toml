@@ -17,6 +17,7 @@ atena-extract = { path = "../atena-extract" }
 atena-ingest = { path = "../atena-ingest" }
 atena-search = { path = "../atena-search" }
 atena-store = { path = "../atena-store" }
+atena-vault = { path = "../atena-vault" }
 getrandom = "0.4.3"
 jiff = { version = "0.2.38", features = ["serde"] }
 serde.workspace = true

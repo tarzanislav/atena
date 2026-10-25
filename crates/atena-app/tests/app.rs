@@ -4,7 +4,7 @@
 use std::path::PathBuf;
 
 use atena_app::views::SearchQuery;
-use atena_app::{App, Choice, Settings};
+use atena_app::{App, Choice, Keychain, Settings};
 use atena_store::testing::TestDb;
 
 fn folder(name: &str) -> PathBuf {
@@ -247,6 +247,137 @@ async fn proposals_wait_to_be_handed_over_by_the_user() {
     assert_eq!(too_long.unwrap_err().code, "input-too-long");
     let bad_country = app.import("https://a.example.sk/", Some("XX")).await;
     assert_eq!(bad_country.unwrap_err().code, "decision-country");
+    app.close().await;
+    std::fs::remove_dir_all(&folder).unwrap();
+    db.drop().await;
+}
+
+#[tokio::test]
+async fn the_private_account_stays_on_this_computer() {
+    let Some(db) = TestDb::new().await else {
+        return;
+    };
+    let folder = folder("private");
+    // without a credential store: no persistent sign-in
+    let app = App::open_with_keychain(db.store.clone(), &folder, None)
+        .await
+        .unwrap();
+    let status = app.private_status().await.unwrap();
+    assert!(!status.exists && !status.unlocked);
+    assert_eq!(
+        app.private_change_password("a".into(), "b".into())
+            .await
+            .unwrap_err()
+            .code,
+        "private-locked"
+    );
+    assert_eq!(
+        app.private_create("Ján".into(), "krátke".into())
+            .await
+            .unwrap_err()
+            .code,
+        "private-weak"
+    );
+    let created = app
+        .private_create("Ján Hraško".into(), "moje dlhé heslo".into())
+        .await
+        .unwrap();
+    assert!(created.recovery_key.starts_with("ATENA-"));
+    assert!(created.status.exists && created.status.unlocked);
+    assert_eq!(created.status.name.as_deref(), Some("Ján Hraško"));
+    // the account file holds neither the password nor the recovery key
+    let file = std::fs::read_to_string(folder.join("private").join("account.json")).unwrap();
+    assert!(!file.contains("moje dlhé heslo") && !file.contains(&created.recovery_key[6..]));
+
+    assert!(!app.private_lock().await.unwrap().unlocked);
+    assert_eq!(
+        app.private_unlock("Ján Hraško".into(), "zlé heslo 123".into())
+            .await
+            .unwrap_err()
+            .code,
+        "private-login"
+    );
+    assert!(
+        app.private_unlock("ján hraško".into(), "moje dlhé heslo".into())
+            .await
+            .unwrap()
+            .unlocked
+    );
+    app.private_change_password("moje dlhé heslo".into(), "druhé dlhé heslo".into())
+        .await
+        .unwrap();
+    app.private_lock().await.unwrap();
+    assert!(
+        app.private_recover(created.recovery_key.clone(), "tretie dlhé heslo".into())
+            .await
+            .unwrap()
+            .unlocked
+    );
+    assert_eq!(
+        app.private_create("Iný".into(), "iné dlhé heslo".into())
+            .await
+            .unwrap_err()
+            .code,
+        "private-exists"
+    );
+    let status = app.private_status().await.unwrap();
+    assert!(!status.remember_available && !status.remembered);
+    assert_eq!(
+        app.private_remember().await.unwrap_err().code,
+        "private-remember-none"
+    );
+    app.close().await;
+    assert!(!app.private_status().await.unwrap().unlocked);
+    std::fs::remove_dir_all(&folder).unwrap();
+    db.drop().await;
+}
+
+#[tokio::test]
+async fn the_persistent_sign_in_opens_the_private_part_at_start() {
+    let Some(db) = TestDb::new().await else {
+        return;
+    };
+    let folder = folder("remember");
+    let keychain = Keychain::memory().unwrap();
+    let app = App::open_with_keychain(db.store.clone(), &folder, Some(keychain.clone()))
+        .await
+        .unwrap();
+    assert!(app.private_status().await.unwrap().remember_available);
+    app.private_create("Eva".into(), "moje dlhé heslo".into())
+        .await
+        .unwrap();
+    app.private_lock().await.unwrap();
+    // only the open account can be remembered
+    assert_eq!(
+        app.private_remember().await.unwrap_err().code,
+        "private-locked"
+    );
+    app.private_unlock("Eva".into(), "moje dlhé heslo".into())
+        .await
+        .unwrap();
+    assert!(app.private_remember().await.unwrap().remembered);
+    app.close().await;
+    db.drop().await;
+
+    // the next start opens it without the password (the private part lives in the folder; a
+    // closed app has closed its database, so each start gets one of its own)
+    let db = TestDb::new().await.unwrap();
+    let app = App::open_with_keychain(db.store.clone(), &folder, Some(keychain.clone()))
+        .await
+        .unwrap();
+    let status = app.private_status().await.unwrap();
+    assert!(status.unlocked && status.remembered);
+    assert_eq!(status.name.as_deref(), Some("Eva"));
+    // turned off, it stays open now and is locked at the next start
+    let status = app.private_forget().await.unwrap();
+    assert!(status.unlocked && !status.remembered);
+    app.close().await;
+    db.drop().await;
+    let db = TestDb::new().await.unwrap();
+    let app = App::open_with_keychain(db.store.clone(), &folder, Some(keychain))
+        .await
+        .unwrap();
+    assert!(!app.private_status().await.unwrap().unlocked);
     app.close().await;
     std::fs::remove_dir_all(&folder).unwrap();
     db.drop().await;

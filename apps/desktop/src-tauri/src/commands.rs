@@ -6,8 +6,8 @@ use std::sync::Arc;
 
 use atena_app::views::{
     ChoiceInput, ConfirmedView, CrawlView, DecisionOptions, DocumentView, ErasureView, HitView,
-    ImportView, OverviewView, PendingView, ProposalView, ReceivedView, SearchQuery, SearchView,
-    SourceView, SyncView, TallyView, TaxonomyView, ToolView,
+    ImportView, OverviewView, PendingView, PrivateCreatedView, PrivateStatusView, ProposalView,
+    ReceivedView, SearchQuery, SearchView, SourceView, SyncView, TallyView, TaxonomyView, ToolView,
 };
 use atena_app::{App, AppError, Settings};
 use serde::Serialize;
@@ -82,6 +82,73 @@ pub async fn taxonomy(shared: State<'_, Shared>, language: String) -> Answer<Tax
 #[tauri::command]
 pub async fn search(shared: State<'_, Shared>, query: SearchQuery) -> Answer<SearchView> {
     app(&shared).await?.search(query).await
+}
+
+/// The private account: whether there is one and whether it is open.
+#[tauri::command]
+pub async fn private_status(shared: State<'_, Shared>) -> Answer<PrivateStatusView> {
+    app(&shared).await?.private_status().await
+}
+
+/// Makes the private account and opens it.
+#[tauri::command]
+pub async fn private_create(
+    shared: State<'_, Shared>,
+    name: String,
+    password: String,
+) -> Answer<PrivateCreatedView> {
+    app(&shared).await?.private_create(name, password).await
+}
+
+/// Opens the private account.
+#[tauri::command]
+pub async fn private_unlock(
+    shared: State<'_, Shared>,
+    name: String,
+    password: String,
+) -> Answer<PrivateStatusView> {
+    app(&shared).await?.private_unlock(name, password).await
+}
+
+/// Closes the private account.
+#[tauri::command]
+pub async fn private_lock(shared: State<'_, Shared>) -> Answer<PrivateStatusView> {
+    app(&shared).await?.private_lock().await
+}
+
+/// Turns the persistent sign-in on (the user ticked that they do it at their own risk).
+#[tauri::command]
+pub async fn private_remember(shared: State<'_, Shared>) -> Answer<PrivateStatusView> {
+    app(&shared).await?.private_remember().await
+}
+
+/// Turns the persistent sign-in off.
+#[tauri::command]
+pub async fn private_forget(shared: State<'_, Shared>) -> Answer<PrivateStatusView> {
+    app(&shared).await?.private_forget().await
+}
+
+/// Sets a new password with the recovery key.
+#[tauri::command]
+pub async fn private_recover(
+    shared: State<'_, Shared>,
+    recovery_key: String,
+    new_password: String,
+) -> Answer<PrivateStatusView> {
+    app(&shared)
+        .await?
+        .private_recover(recovery_key, new_password)
+        .await
+}
+
+/// Changes the password of the open account.
+#[tauri::command]
+pub async fn private_change_password(
+    shared: State<'_, Shared>,
+    old: String,
+    new: String,
+) -> Answer<()> {
+    app(&shared).await?.private_change_password(old, new).await
 }
 
 /// The tools of the register in the interface language.

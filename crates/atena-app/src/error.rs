@@ -5,6 +5,7 @@ use atena_ingest::import::{ConfirmError, DecisionError};
 use atena_ingest::register::SharedRegisterError;
 use atena_search::SearchError;
 use atena_store::StoreError;
+use atena_vault::VaultError;
 use serde::Serialize;
 
 /// An error of the application.
@@ -38,6 +39,16 @@ pub const CODES: &[&str] = &[
     "not-a-list",
     "not-found",
     "not-ready",
+    "private-damaged",
+    "private-exists",
+    "private-keychain",
+    "private-locked",
+    "private-login",
+    "private-name",
+    "private-none",
+    "private-recovery",
+    "private-remember-none",
+    "private-weak",
     "reason-missing",
     "search",
     "search-empty",
@@ -114,6 +125,25 @@ impl From<SharedRegisterError> for AppError {
             | SharedRegisterError::NotHttps(_)
             | SharedRegisterError::NotText(_)
             | SharedRegisterError::Invalid { .. } => "shared-register-invalid",
+        };
+        Self::new(code, e.to_string())
+    }
+}
+
+impl From<VaultError> for AppError {
+    fn from(e: VaultError) -> Self {
+        let code = match &e {
+            VaultError::NoAccount => "private-none",
+            VaultError::Exists => "private-exists",
+            VaultError::WrongLogin => "private-login",
+            VaultError::WrongRecoveryKey => "private-recovery",
+            VaultError::WeakPassword => "private-weak",
+            VaultError::BadName => "private-name",
+            VaultError::Damaged(_) => "private-damaged",
+            VaultError::Io { .. } => "io",
+            VaultError::Random(_) => "internal",
+            VaultError::NoKeychain => "private-remember-none",
+            VaultError::Keychain(_) => "private-keychain",
         };
         Self::new(code, e.to_string())
     }

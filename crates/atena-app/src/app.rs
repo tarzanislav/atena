@@ -30,9 +30,10 @@ use crate::crawl::Crawl;
 use crate::settings::Settings;
 use crate::views::{
     ConfirmedView, CrawlView, DocumentView, ErasureView, HitView, ImportView, OverviewView,
-    PendingView, ProposalView, ProposedView, ReceivedView, SearchQuery, SearchView, SourceView,
-    SyncView, TallyView, TaxonomyView, ToolView, VersionView,
+    PendingView, PrivateCreatedView, PrivateStatusView, ProposalView, ProposedView, ReceivedView,
+    SearchQuery, SearchView, SourceView, SyncView, TallyView, TaxonomyView, ToolView, VersionView,
 };
+use atena_vault::{DataKey, Keychain, Vault};
 use jiff::Timestamp;
 
 /// "New" in the overview: first seen within this many days.
@@ -51,6 +52,10 @@ const CLOSE_WAIT: Duration = Duration::from_secs(30);
 /// The application: the database, the search index and the crawler of one installation.
 pub struct App {
     store: Store,
+    /// The private account of this installation (`private/` in the app's folder).
+    vault: Vault,
+    /// The open private account: its name and data key, until it is locked or ATENA closes.
+    private: std::sync::Mutex<Option<(String, DataKey)>>,
     /// The register last synced: the bundled one, or the shared one when the user fetched it.
     register: std::sync::RwLock<Vec<atena_core::Source>>,
     index: Arc<SearchIndex>,
@@ -173,10 +178,36 @@ async fn open_index(store: &Store, path: &Path) -> Result<SearchIndex, AppError>
     }
 }
 
+/// The account opened by a persistent sign-in, if it is on and still fits.
+fn remembered(vault: &Vault) -> Option<(String, DataKey)> {
+    match vault.remembered() {
+        Ok(Some(key)) => {
+            let name = vault.account().ok().flatten()?.name;
+            tracing::info!("the private part was opened by the persistent sign-in");
+            Some((name, key))
+        }
+        Ok(None) => None,
+        Err(e) => {
+            tracing::warn!(error = %e, "the persistent sign-in could not open the private part");
+            None
+        }
+    }
+}
+
 impl App {
     /// Opens the application on `store` with its files in `folder`: brings the database up to
-    /// date, syncs the bundled register when it changed and keeps the search index fresh.
+    /// date, syncs the bundled register when it changed and keeps the search index fresh. A
+    /// persistent sign-in (Windows Credential Manager) opens the private part at once.
     pub async fn open(store: Store, folder: &Path) -> Result<Self, AppError> {
+        Self::open_with_keychain(store, folder, Keychain::system()).await
+    }
+
+    /// [`App::open`] with another credential store for the persistent sign-in (`None`: none).
+    pub async fn open_with_keychain(
+        store: Store,
+        folder: &Path,
+        keychain: Option<Keychain>,
+    ) -> Result<Self, AppError> {
         std::fs::create_dir_all(folder).map_err(|e| AppError::io(folder, e))?;
         store.migrate().await?;
         // only this installation uses the database: leases of an app that crashed are void
@@ -191,6 +222,8 @@ impl App {
             folder,
             Arc::clone(&nudge),
         );
+        let vault = Vault::new(folder.join("private")).with_keychain(keychain);
+        let private = remembered(&vault);
         let (stop, stop_rx) = watch::channel(false);
         let indexer = keep_fresh(
             store.clone(),
@@ -201,6 +234,8 @@ impl App {
         Ok(Self {
             settings: std::sync::Mutex::new(Settings::load(&folder.join("settings.json"))),
             register: std::sync::RwLock::new(register),
+            vault,
+            private: std::sync::Mutex::new(private),
             store,
             index,
             taxonomy,
@@ -276,6 +311,118 @@ impl App {
             .into_iter()
             .map(SourceView::from)
             .collect())
+    }
+
+    fn private_session(&self) -> std::sync::MutexGuard<'_, Option<(String, DataKey)>> {
+        self.private
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+    }
+
+    /// Runs a key derivation (deliberately slow) off the async threads.
+    async fn vault<T: Send + 'static>(
+        &self,
+        work: impl FnOnce(&Vault) -> Result<T, atena_vault::VaultError> + Send + 'static,
+    ) -> Result<T, AppError> {
+        let vault = self.vault.clone();
+        Ok(tokio::task::spawn_blocking(move || work(&vault))
+            .await
+            .map_err(internal)??)
+    }
+
+    /// The private account: whether there is one and whether it is open.
+    pub async fn private_status(&self) -> Result<PrivateStatusView, AppError> {
+        let account = self.vault.account()?;
+        let unlocked = self.private_session().is_some();
+        Ok(PrivateStatusView {
+            exists: account.is_some(),
+            name: account.map(|a| a.name),
+            unlocked,
+            remembered: self.vault.is_remembered(),
+            remember_available: self.vault.can_remember(),
+        })
+    }
+
+    fn open_private(&self, name: String, key: DataKey) {
+        *self.private_session() = Some((name, key));
+    }
+
+    /// Makes the private account of this installation and opens it; the recovery key is returned
+    /// once to be shown to the user.
+    pub async fn private_create(
+        &self,
+        name: String,
+        password: String,
+    ) -> Result<PrivateCreatedView, AppError> {
+        let (key, recovery) = self.vault(move |v| v.create(&name, &password)).await?;
+        let name = self.vault.account()?.map(|a| a.name).unwrap_or_default();
+        self.open_private(name, key);
+        Ok(PrivateCreatedView {
+            recovery_key: recovery.as_str().to_string(),
+            status: self.private_status().await?,
+        })
+    }
+
+    /// Opens the private account.
+    pub async fn private_unlock(
+        &self,
+        name: String,
+        password: String,
+    ) -> Result<PrivateStatusView, AppError> {
+        let key = self.vault(move |v| v.unlock(&name, &password)).await?;
+        let name = self.vault.account()?.map(|a| a.name).unwrap_or_default();
+        self.open_private(name, key);
+        self.private_status().await
+    }
+
+    /// Closes the private account; its key is wiped from memory.
+    pub async fn private_lock(&self) -> Result<PrivateStatusView, AppError> {
+        self.private_session().take();
+        self.private_status().await
+    }
+
+    /// Sets a new password with the recovery key and opens the account.
+    pub async fn private_recover(
+        &self,
+        recovery_key: String,
+        new_password: String,
+    ) -> Result<PrivateStatusView, AppError> {
+        let key = self
+            .vault(move |v| v.recover(&recovery_key, &new_password))
+            .await?;
+        let name = self.vault.account()?.map(|a| a.name).unwrap_or_default();
+        self.open_private(name, key);
+        self.private_status().await
+    }
+
+    /// Turns the persistent sign-in on for the open account: the user ticked that they do it at
+    /// their own risk (whoever signs in to their Windows account opens the private part).
+    pub async fn private_remember(&self) -> Result<PrivateStatusView, AppError> {
+        {
+            let session = self.private_session();
+            let (_, key) = session.as_ref().ok_or_else(|| {
+                AppError::new("private-locked", "the private account is not open")
+            })?;
+            self.vault.remember(key)?;
+        }
+        self.private_status().await
+    }
+
+    /// Turns the persistent sign-in off; the account stays as it is (open or locked).
+    pub async fn private_forget(&self) -> Result<PrivateStatusView, AppError> {
+        self.vault.forget()?;
+        self.private_status().await
+    }
+
+    /// Changes the password of the open account.
+    pub async fn private_change_password(&self, old: String, new: String) -> Result<(), AppError> {
+        let name = self
+            .private_session()
+            .as_ref()
+            .map(|(name, _)| name.clone())
+            .ok_or_else(|| AppError::new("private-locked", "the private account is not open"))?;
+        self.vault(move |v| v.change_password(&name, &old, &new))
+            .await
     }
 
     /// The tools of the register (dictionaries, corpora, applications – linked, never crawled),
@@ -604,6 +751,8 @@ impl App {
     /// Ends everything cleanly: the crawler finishes its checks (at most [`CLOSE_WAIT`]), the
     /// index takes what they stored, the database connections close.
     pub async fn close(&self) {
+        // the private key leaves memory first
+        self.private_session().take();
         if tokio::time::timeout(CLOSE_WAIT, self.crawl.stop())
             .await
             .is_err()
