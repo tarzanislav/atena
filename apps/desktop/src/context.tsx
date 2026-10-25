@@ -3,9 +3,13 @@
 
 import { createContext, useContext } from "react";
 
-import type { Settings, Taxonomy } from "./api";
+import type { PrivateStatus, Settings, Taxonomy } from "./api";
 
-export type Screen = "overview" | "search" | "tools" | "sources" | "proposals" | "crawl" | "settings";
+/** The private screens: the private overview and the sections drawn out of the overview. */
+export const PRIVATE_SECTIONS = ["changes", "practice", "curriculum", "literacies"] as const;
+export type PrivateScreen = "private-overview" | `private-${(typeof PRIVATE_SECTIONS)[number]}`;
+
+export type Screen = "overview" | "search" | "tools" | "sources" | "proposals" | "crawl" | "settings" | PrivateScreen;
 
 export interface SearchStart {
   text?: string;
@@ -24,6 +28,10 @@ export interface AppContextValue {
   broaderOf: (key: string) => string | null;
   navigate: (screen: Screen, search?: SearchStart) => void;
   openDocument: (id: number) => void;
+  /** The private account of this computer. */
+  privateStatus: PrivateStatus;
+  /** Reads the private account's state again (after creating, opening or closing it). */
+  setPrivateStatus: (status: PrivateStatus) => void;
   /** Proposals waiting and whether the crawler runs, for the navigation. */
   refreshBadges: () => void;
   version: string;

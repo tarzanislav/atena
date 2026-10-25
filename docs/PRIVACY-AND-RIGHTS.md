@@ -63,7 +63,21 @@ section erased with `forget`.
 verified information about education, with the balancing test documented in the DPIA. The operator
 publishes a privacy notice (Art. 14) naming a contact for objections and erasure requests.
 
+## 3a. The private part of the desktop app
+* One local account per installation (`atena-vault`): no server, no e-mail, no recovery through a
+  third party. The password is never stored; Argon2id (64 MiB, 3 passes) derives the key that
+  unwraps a random 256-bit data key, which encrypts the private data with XChaCha20-Poly1305. The
+  data key is also wrapped by a random 160-bit recovery key shown once (`ATENA-XXXX-…`).
+* A wrong name and a wrong password give the same answer; the key is wiped from memory when the
+  part is locked or ATENA closes.
+* The private part exists for **copies for the user's own use** – private use by a natural person
+  under copyright law (in Slovakia, the private copy exception of Act 185/2015). The copies are made
+  on the user's click, stay encrypted on the user's computer and are never shared or sent.
+  Sources whose terms forbid automated access are excluded. This assessment is not legal advice and
+  is to be confirmed by a lawyer before a public launch (checklist below).
+
 ## 4. Operator checklist before a public launch
+* Have a lawyer confirm the private copy feature of the desktop app (section 3a).
 1. Keep the rights review of `data/sources.yaml` current – done for all sources on 24 Oct 2026; repeat it
    at least yearly and before launch in a new country.
 2. DPIA and legal review; record of processing activities (Art. 30).

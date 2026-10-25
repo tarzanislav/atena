@@ -1,0 +1,24 @@
+[package]
+name = "atena-vault"
+description = "ATENA's private part: a local account whose key encrypts the user's private data"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish.workspace = true
+
+[dependencies]
+argon2 = { version = "0.6.0", default-features = false, features = ["alloc", "zeroize"] }
+blake3 = "1.8.7"
+chacha20poly1305 = { version = "0.11.0", default-features = false, features = ["alloc", "zeroize"] }
+getrandom = "0.4.3"
+jiff = { version = "0.2.38", features = ["serde"] }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+zeroize = "1.9.1"
+
+[lints]
+workspace = true

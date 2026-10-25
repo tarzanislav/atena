@@ -769,6 +769,28 @@ impl ToolView {
     }
 }
 
+/// The private account as the interface sees it.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrivateStatusView {
+    /// An account exists on this computer.
+    pub exists: bool,
+    /// Its name.
+    pub name: Option<String>,
+    /// It is open now.
+    pub unlocked: bool,
+}
+
+/// A new private account: the recovery key is shown once and never again.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrivateCreatedView {
+    /// The recovery key to print or store.
+    pub recovery_key: String,
+    /// The account, now open.
+    pub status: PrivateStatusView,
+}
+
 /// Documents of one concept: all in the scope, and the new ones.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]

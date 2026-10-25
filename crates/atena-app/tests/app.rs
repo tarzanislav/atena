@@ -251,3 +251,74 @@ async fn proposals_wait_to_be_handed_over_by_the_user() {
     std::fs::remove_dir_all(&folder).unwrap();
     db.drop().await;
 }
+
+#[tokio::test]
+async fn the_private_account_stays_on_this_computer() {
+    let Some(db) = TestDb::new().await else {
+        return;
+    };
+    let folder = folder("private");
+    let app = App::open(db.store.clone(), &folder).await.unwrap();
+    let status = app.private_status().await.unwrap();
+    assert!(!status.exists && !status.unlocked);
+    assert_eq!(
+        app.private_change_password("a".into(), "b".into())
+            .await
+            .unwrap_err()
+            .code,
+        "private-locked"
+    );
+    assert_eq!(
+        app.private_create("Ján".into(), "krátke".into())
+            .await
+            .unwrap_err()
+            .code,
+        "private-weak"
+    );
+    let created = app
+        .private_create("Ján Hraško".into(), "moje dlhé heslo".into())
+        .await
+        .unwrap();
+    assert!(created.recovery_key.starts_with("ATENA-"));
+    assert!(created.status.exists && created.status.unlocked);
+    assert_eq!(created.status.name.as_deref(), Some("Ján Hraško"));
+    // the account file holds neither the password nor the recovery key
+    let file = std::fs::read_to_string(folder.join("private").join("account.json")).unwrap();
+    assert!(!file.contains("moje dlhé heslo") && !file.contains(&created.recovery_key[6..]));
+
+    assert!(!app.private_lock().await.unwrap().unlocked);
+    assert_eq!(
+        app.private_unlock("Ján Hraško".into(), "zlé heslo 123".into())
+            .await
+            .unwrap_err()
+            .code,
+        "private-login"
+    );
+    assert!(
+        app.private_unlock("ján hraško".into(), "moje dlhé heslo".into())
+            .await
+            .unwrap()
+            .unlocked
+    );
+    app.private_change_password("moje dlhé heslo".into(), "druhé dlhé heslo".into())
+        .await
+        .unwrap();
+    app.private_lock().await.unwrap();
+    assert!(
+        app.private_recover(created.recovery_key.clone(), "tretie dlhé heslo".into())
+            .await
+            .unwrap()
+            .unlocked
+    );
+    assert_eq!(
+        app.private_create("Iný".into(), "iné dlhé heslo".into())
+            .await
+            .unwrap_err()
+            .code,
+        "private-exists"
+    );
+    app.close().await;
+    assert!(!app.private_status().await.unwrap().unlocked);
+    std::fs::remove_dir_all(&folder).unwrap();
+    db.drop().await;
+}

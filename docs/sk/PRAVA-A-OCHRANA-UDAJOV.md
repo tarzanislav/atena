@@ -68,7 +68,21 @@ vymazať príkazom `forget`.
 poskytovaní overených informácií o vzdelávaní. Test proporcionality treba zapísať v DPIA.
 Prevádzkovateľ zverejní informácie o spracúvaní (čl. 14) s kontaktom na námietky a žiadosti o výmaz.
 
+## 3a. Súkromná časť aplikácie pre PC
+* Jedno miestne konto na inštaláciu (`atena-vault`): žiadny server, žiadny e-mail, žiadna obnova cez
+  tretiu stranu. Heslo sa neukladá; Argon2id (64 MiB, 3 prechody) z neho odvodí kľúč, ktorý odomkne
+  náhodný 256-bitový dátový kľúč; ten šifruje súkromné údaje (XChaCha20-Poly1305). Dátový kľúč je
+  zabalený aj náhodným 160-bitovým záchranným kľúčom, ktorý sa ukáže len raz (`ATENA-XXXX-…`).
+* Zlé meno aj zlé heslo dostanú rovnakú odpoveď; kľúč sa z pamäte zmaže pri zamknutí alebo
+  zatvorení ATENY.
+* Súkromná časť slúži na **kópie pre vlastnú potrebu** – súkromné použitie fyzickej osoby podľa
+  autorského zákona (výnimka na súkromnú rozmnoženinu v zákone č. 185/2015 Z. z.). Kópie vznikajú
+  na kliknutie používateľa, zostávajú zašifrované v jeho počítači a nikdy sa nezdieľajú ani
+  neposielajú. Zdroje, ktorých podmienky zakazujú automatizovaný prístup, sú vylúčené. Toto posúdenie
+  nie je právna rada; pred verejným spustením ho má potvrdiť právnik (zoznam nižšie).
+
 ## 4. Kontrolný zoznam pred verejným spustením
+* Dať právnikovi posúdiť kópie pre vlastnú potrebu v aplikácii pre PC (časť 3a).
 1. Udržiavať overenie práv zdrojov v `data/sources.yaml` aktuálne. Pri všetkých zdrojoch sa urobilo
    24. 10. 2026; opakovať ho aspoň raz za rok a pred spustením v novej krajine.
 2. Urobiť DPIA, dať riešenie posúdiť právnikovi a viesť záznamy o spracovateľských činnostiach (čl. 30).

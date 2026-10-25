@@ -118,6 +118,27 @@ Ak chcete, aby sa vaše návrhy dostali do spoločného registra pre všetkých,
 **Odovzdať editorovi**, zoznam skopírujte a pošlite editorovi ATENY, napríklad e-mailom.
 Zoznam obsahuje len adresy a kódy krajín. ATENA ho sama nikam neposiela.
 
+## Súkromná časť
+
+V ľavom menu pod Nastaveniami je orámovaná časť **Súkromné**: **Moja ATENA**, **Zmeny a
+legislatíva**, **Vyučovanie v praxi**, **Kurikulum a reformy** a **Gramotnosti a myslenie**
+(slovenské údaje).
+
+1. **Konto si vytvoríte v Nastaveniach → Súkromné konto** (meno a heslo, aspoň 10 znakov). Konto
+   je len na tomto počítači; ATENA nič neposiela na žiadny server. Na jednom počítači je jedno konto.
+2. **Záchranný kľúč** (`ATENA-XXXX-…`) sa ukáže len raz, pri vytvorení konta. Vytlačte si ho alebo
+   ho uložte mimo počítača. Keď zabudnete heslo, v Nastaveniach ním nastavíte nové
+   (**Zabudli ste heslo?**). Bez hesla a bez záchranného kľúča sa súkromná časť otvoriť nedá – ani
+   autori ATENY to nedokážu.
+3. **Prihlásenie:** kliknite na položku v časti Súkromné a zadajte meno a heslo. ATENA sa spýta, či
+   má prihlásenie pamätať **do zatvorenia ATENY**, alebo súkromnú časť **zamknúť hneď, ako ju
+   opustíte**. Zamknúť ju môžete aj tlačidlom **Zamknúť súkromnú časť**.
+4. Heslo sa nikde neukladá. Odvodí sa z neho kľúč (Argon2id), ktorý šifruje (XChaCha20-Poly1305)
+   vašu súkromnú časť v priečinku `private`.
+
+Súkromná časť slúži na **kópie pre vlastnú potrebu** – súkromné použitie fyzickej osoby podľa
+autorského zákona. Kópie patria ich autorom: nezdieľajte ich a nepoužívajte na iné účely.
+
 ## Súkromie a spojenia
 
 - ATENA nikomu neposiela nič o vás a nepoužíva služby tretích strán.
@@ -144,15 +165,17 @@ Všetky údaje ATENY sú v priečinku
 | `postgres` | databáza: zdroje, dokumenty, verzie, návrhy |
 | `index` | index vyhľadávania (dá sa kedykoľvek postaviť nanovo) |
 | `settings.json` | vaše nastavenia |
+| `private` | súkromné konto (`account.json` – bez hesla a bez kľúča v čitateľnej podobe) a zašifrovaná súkromná časť |
 | `logs` | záznamy o behu aplikácie – pri probléme ich priložte k hláseniu |
 
 Licencie všetkých súčastí sú v priečinku inštalácie v podpriečinku `notices`.
 
 ## Odinštalovanie
 
-ATENU odinštalujete v **Nastaveniach Windows → Aplikácie**. Ak odinštalátor ponúkne aj
-vymazanie údajov aplikácie, môžete ho zaškrtnúť. Inak vaše údaje ostanú v priečinku uvedenom
-vyššie; ak ich už nepotrebujete, priečinok zmažte.
+ATENU odinštalujete v **Nastaveniach Windows → Aplikácie**. Odinštalátor ponúkne aj
+**vymazanie všetkých údajov ATENY** (databázu, zozbierané dokumenty, nastavenia aj súkromnú
+časť) – **zaškrtnite ho len vtedy, keď ich naozaj už nechcete**; pri preinštalovaní na novú verziu
+ho nechajte prázdne. Inak vaše údaje ostanú v priečinku uvedenom vyššie.
 
 ## Keď niečo nejde
 

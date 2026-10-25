@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { api, type Settings, type Startup, type Taxonomy } from "./api";
+import { api, type PrivateStatus, type Settings, type Startup, type Taxonomy } from "./api";
 import { DocumentDialog } from "./components/DocumentDialog";
 import { ErrorNotice } from "./components/ErrorNotice";
-import { AppContext, type AppContextValue, type Screen, type SearchStart } from "./context";
+import { AppContext, PRIVATE_SECTIONS, type AppContextValue, type Screen, type SearchStart } from "./context";
+import { UnlockDialog } from "./components/PrivateAccount";
 import { I18nProvider, useI18n } from "./i18n";
 import { Icon, type IconName } from "./icons";
 import { CrawlScreen } from "./screens/Crawl";
 import { OverviewScreen } from "./screens/Overview";
+import { PrivateOverviewScreen, PrivateSectionScreen } from "./screens/Private";
 import { ProposalsScreen } from "./screens/Proposals";
 import { SearchScreen } from "./screens/Search";
 import { SettingsScreen } from "./screens/Settings";
@@ -138,6 +140,14 @@ function Workspace({
   const [documentId, setDocumentId] = useState<number | null>(null);
   const [taxonomy, setTaxonomy] = useState<Taxonomy>({ draft: false, schemes: [] });
   const [badges, setBadges] = useState({ proposals: 0, crawling: false });
+  const [privateStatus, setPrivateStatus] = useState<PrivateStatus>({ exists: false, name: null, unlocked: false });
+  // where to go once the private account is open, and whether it stays open outside its screens
+  const [unlockFor, setUnlockFor] = useState<Screen | null>(null);
+  const [rememberPrivate, setRememberPrivate] = useState(false);
+
+  useEffect(() => {
+    api.privateStatus().then(setPrivateStatus, () => undefined);
+  }, []);
 
   useEffect(() => {
     api.taxonomy(settings.language).then(setTaxonomy, () => undefined);
@@ -165,6 +175,27 @@ function Workspace({
     return map;
   }, [taxonomy]);
 
+  const isPrivate = (s: Screen) => s.startsWith("private-");
+  /** Moves to a screen; the private screens need the open account, and leaving them closes it
+   * unless the user chose to stay signed in. */
+  const go = (next: Screen, search?: SearchStart) => {
+    if (isPrivate(next) && !privateStatus.unlocked) {
+      if (!privateStatus.exists) {
+        setScreen("settings");
+      } else {
+        setUnlockFor(next);
+      }
+      return;
+    }
+    if (!isPrivate(next) && isPrivate(screen) && privateStatus.unlocked && !rememberPrivate) {
+      api.privateLock().then(setPrivateStatus, () => undefined);
+    }
+    if (search) setSearchStart({ ...search });
+    setScreen(next);
+  };
+
+  const conceptLabelOf = (section: string) => concepts.get(`section/${section}`)?.label ?? section;
+
   const context: AppContextValue = {
     settings,
     saveSettings: async (next) => {
@@ -173,12 +204,17 @@ function Workspace({
     taxonomy,
     conceptLabel: (key) => concepts.get(key)?.label ?? key.split("/").pop() ?? key,
     broaderOf: (key) => concepts.get(key)?.broader ?? null,
-    navigate: (next, search) => {
-      if (search) setSearchStart({ ...search });
-      setScreen(next);
-    },
+    navigate: (next, search) => go(next, search),
     openDocument: setDocumentId,
     refreshBadges,
+    privateStatus,
+    setPrivateStatus: (status) => {
+      setPrivateStatus(status);
+      if (!status.unlocked) {
+        setRememberPrivate(false);
+        if (isPrivate(screen)) setScreen("settings");
+      }
+    },
     version,
   };
 
@@ -202,7 +238,7 @@ function Workspace({
               aria-current={screen === s ? "page" : undefined}
               onClick={() => {
                 if (s === "search") setSearchStart({});
-                setScreen(s);
+                go(s);
               }}
             >
               <Icon name={icon} />
@@ -211,6 +247,35 @@ function Workspace({
               {s === "crawl" && badges.crawling && <span className="nav-dot" title={i18n.t("crawl-running")} />}
             </button>
           ))}
+          <div className={privateStatus.unlocked ? "nav-private open" : "nav-private"} role="group" aria-label={i18n.t("private-group")}>
+            <div className="nav-private-head">
+              <Icon name={privateStatus.unlocked ? "lockOpen" : "lockClosed"} size={16} />
+              <span>{i18n.t("private-group")}</span>
+            </div>
+            {(["private-overview", ...PRIVATE_SECTIONS.map((id) => `private-${id}` as const)] as Screen[]).map((s) => (
+              <button
+                key={s}
+                className="nav-item"
+                aria-current={screen === s ? "page" : undefined}
+                aria-disabled={!privateStatus.unlocked}
+                title={privateStatus.exists ? undefined : i18n.t("private-create-first")}
+                onClick={() => go(s)}
+              >
+                <span>{s === "private-overview" ? i18n.t("private-overview-title") : conceptLabelOf(s.slice(8))}</span>
+              </button>
+            ))}
+            {privateStatus.unlocked && (
+              <button
+                className="nav-item small"
+                onClick={() => {
+                  api.privateLock().then(context.setPrivateStatus, () => undefined);
+                }}
+              >
+                <Icon name="lockClosed" size={16} />
+                <span>{i18n.t("private-lock")}</span>
+              </button>
+            )}
+          </div>
           <div className="nav-foot">{i18n.t("app-version", { version })}</div>
         </nav>
         <main className="main">
@@ -221,9 +286,26 @@ function Workspace({
           {screen === "proposals" && <ProposalsScreen />}
           {screen === "crawl" && <CrawlScreen />}
           {screen === "settings" && <SettingsScreen />}
+          {screen === "private-overview" && privateStatus.unlocked && <PrivateOverviewScreen />}
+          {PRIVATE_SECTIONS.map(
+            (id) =>
+              screen === `private-${id}` &&
+              privateStatus.unlocked && <PrivateSectionScreen key={id} section={id} />,
+          )}
         </main>
       </div>
       {documentId !== null && <DocumentDialog id={documentId} onClose={() => setDocumentId(null)} />}
+      {unlockFor !== null && (
+        <UnlockDialog
+          onClose={() => setUnlockFor(null)}
+          onUnlocked={(status, remember) => {
+            setPrivateStatus(status);
+            setRememberPrivate(remember);
+            setScreen(unlockFor);
+            setUnlockFor(null);
+          }}
+        />
+      )}
     </AppContext.Provider>
   );
 }
