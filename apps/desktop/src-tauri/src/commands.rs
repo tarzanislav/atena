@@ -157,6 +157,16 @@ pub async fn private_open_file(shared: State<'_, Shared>, id: String) -> Answer<
     })
 }
 
+/// Opens the original file of a document from ATENA's archive in the system's viewer.
+#[tauri::command]
+pub async fn open_archived_file(shared: State<'_, Shared>, document_id: i64) -> Answer<()> {
+    let path = app(&shared).await?.open_archived_file(document_id).await?;
+    open::that_detached(&path).map_err(|e| {
+        tracing::warn!("opening {}: {e}", path.display());
+        AppError::new("io", e.to_string())
+    })
+}
+
 /// Removes saved documents.
 #[tauri::command]
 pub async fn private_remove(shared: State<'_, Shared>, ids: Vec<String>) -> Answer<usize> {

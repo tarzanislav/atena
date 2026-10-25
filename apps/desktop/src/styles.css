@@ -1192,3 +1192,30 @@ details > summary {
   padding: 10px 14px;
   gap: 4px;
 }
+
+/* ------------------------------------------------------------------ archive */
+
+.archive-card {
+  gap: 8px;
+  padding: 12px 14px;
+  border-color: var(--line);
+  background: var(--chip);
+}
+
+.archive-card.gone {
+  border-color: var(--private-line);
+  background: var(--private-bg);
+}
+
+.gone-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--private-line);
+  background: var(--private-bg);
+  color: var(--private-ink);
+}

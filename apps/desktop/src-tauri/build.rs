@@ -24,6 +24,7 @@ const COMMANDS: &[&str] = &[
     "private_read",
     "private_open_file",
     "private_remove",
+    "open_archived_file",
     "document",
     "import_addresses",
     "proposals",

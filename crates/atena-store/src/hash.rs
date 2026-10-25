@@ -1,8 +1,9 @@
 //! Fingerprints: BLAKE3 hashes of what a publisher served and of normalised texts.
 //!
-//! ATENA keeps no original files (pillars 2 and 3: a file may carry harmful content or personal
-//! data that cannot be removed from it reliably). The hash of the original bytes is kept with every
-//! version instead: it proves what was served, and anyone holding a copy can verify it.
+//! ATENA keeps original files only in its archive of official and openly licensed documents
+//! (pillars 2 and 3: a file may carry harmful content or personal data that cannot be removed from
+//! it reliably). The hash of the original bytes is kept with every version: it proves what was
+//! served, and anyone holding a copy can verify it.
 
 /// A 32-byte BLAKE3 digest.
 pub type Hash = [u8; 32];

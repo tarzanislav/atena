@@ -569,3 +569,18 @@ private-kind-reference-title = Úradný alebo voľne licencovaný dokument – u
 private-kind-copy = Kópia pre seba
 private-kind-reference = Odkaz
 private-copy-right = Kópia pre vlastnú potrebu: podľa § 42 Autorského zákona (č. 185/2015 Z. z.) smie fyzická osoba bez súhlasu autora vyhotoviť rozmnoženinu diela pre svoju súkromnú potrebu, ak nejde o priamo ani nepriamo obchodný účel. ATENA kópiu stiahne z webu vydavateľa až na váš pokyn, rešpektuje jeho pravidlá (robots.txt, zákaz kópií) a uloží ju zašifrovanú len pre vás. Kópie nezdieľajte, nešírte a nepoužívajte na iné účely – autorské práva zostávajú autorom.
+
+# ATENA's archive of original files
+facet-archive = Archív ATENY
+archive-facet-removed = Odstránené z webu
+archive-gone = Vydavateľ dokument odstránil z webu ({ $date }).
+archive-gone-text = ATENA ho uchováva vo svojom archíve, lebo ide o dokument, ktorý smie každý kopírovať a zobrazovať ({ $licence }). Zdroj a licencia ostávajú uvedené.
+archive-text = Pôvodný súbor uchováva archív ATENY – zostane dostupný, aj keď ho vydavateľ z webu odstráni ({ $licence }).
+archive-file = Pôvodný súbor v archíve od { $date } · { $size }
+archive-open = Otvoriť pôvodný súbor z archívu
+archive-open-size = Otvoriť pôvodný súbor z archívu ({ $size })
+archive-gone-hit = Odstránené z webu
+archive-gone-hit-title = Vydavateľ dokument odstránil z webu; ATENA ho uchováva vo svojom archíve.
+overview-archive = Archív: { $files } pôvodných súborov ({ $size }) · odstránené z webu: { $gone }
+settings-keep-originals = Uchovávať pôvodné súbory úradných a voľne licencovaných dokumentov
+settings-keep-originals-explain = PDF a dokumenty Word/OpenDocument, ktoré smie každý kopírovať, ostanú dostupné, aj keď ich vydavateľ z webu odstráni. Ukladajú sa len po kontrole nebezpečného obsahu a len ak ich text neobsahuje osobné údaje. Zaberajú miesto na disku.

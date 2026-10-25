@@ -30,6 +30,8 @@ export interface Settings {
   region: Region;
   /** The language chosen among foreign data; `null`: every language. */
   abroadLanguage: string | null;
+  /** Keep the original files of official and openly licensed documents. */
+  keepOriginals: boolean;
 }
 
 export interface Startup {
@@ -52,6 +54,18 @@ export interface Overview {
   checksLastDay: number;
   waitingToShare: number;
   crawling: boolean;
+  /** Original files in ATENA's archive, and their size. */
+  archivedFiles: number;
+  archivedBytes: number;
+  /** Documents the publishers removed from the web. */
+  gone: number;
+}
+
+/** An original file in ATENA's archive. */
+export interface ArchivedFile {
+  mediaType: string;
+  byteSize: number;
+  storedAt: string;
 }
 
 export interface Allowed {
@@ -121,6 +135,8 @@ export interface Hit {
   labels: string[];
   snippet: Segment[] | null;
   fullText: boolean;
+  /** The publisher removed it from the web; ATENA's archive keeps it. */
+  gone: boolean;
 }
 
 export interface Facet {
@@ -211,6 +227,10 @@ export interface PrivateRead {
   item: PrivateItem;
   /** The kept copy, or the text of the public part for a reference (null when it is gone). */
   text: string | null;
+  /** For a reference: the original file in ATENA's archive. */
+  archivedFile: ArchivedFile | null;
+  /** For a reference: when the publisher removed it from the web. */
+  goneAt: string | null;
 }
 
 export interface PrivateCreated {
@@ -261,6 +281,9 @@ export interface DocumentCard {
   lastChanged: string;
   labels: string[];
   text: string | null;
+  /** When the publisher removed it from the web (ATENA's archive keeps it). */
+  goneAt: string | null;
+  archivedFile: ArchivedFile | null;
   versions: Version[];
 }
 
@@ -394,6 +417,7 @@ export const api = {
   privateRead: (id: string) => invoke<PrivateRead>("private_read", { id }),
   privateOpenFile: (id: string) => invoke<void>("private_open_file", { id }),
   privateRemove: (ids: string[]) => invoke<number>("private_remove", { ids }),
+  openArchivedFile: (documentId: number) => invoke<void>("open_archived_file", { documentId }),
   privateRecover: (recoveryKey: string, newPassword: string) =>
     invoke<PrivateStatus>("private_recover", { recoveryKey, newPassword }),
   privateChangePassword: (old: string, next: string) => invoke<void>("private_change_password", { old, new: next }),

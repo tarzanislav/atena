@@ -34,6 +34,7 @@ impl Crawl {
         store: &Store,
         taxonomy: &Arc<Taxonomy>,
         concurrency: usize,
+        archive_files: bool,
         finished: Arc<Notify>,
     ) -> Result<(), AppError> {
         let mut running = self.running.lock().await;
@@ -48,6 +49,7 @@ impl Crawl {
             Arc::clone(taxonomy),
             PipelineConfig {
                 parser: atena_ingest::parser(),
+                archive_files,
                 ..PipelineConfig::default()
             },
         ));

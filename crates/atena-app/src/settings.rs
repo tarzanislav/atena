@@ -57,6 +57,9 @@ pub struct Settings {
     pub region: Region,
     /// The language chosen among foreign data (an ISO 639 code); `None`: every language.
     pub abroad_language: Option<String>,
+    /// Keep the original files of official and openly licensed PDF and office documents, so they
+    /// stay available after the publisher removes them.
+    pub keep_originals: bool,
 }
 
 impl Default for Settings {
@@ -69,6 +72,7 @@ impl Default for Settings {
             concurrency: 4,
             region: Region::Sk,
             abroad_language: None,
+            keep_originals: true,
         }
     }
 }
@@ -174,6 +178,7 @@ mod tests {
             concurrency: 2,
             region: Region::Abroad,
             abroad_language: Some("en".into()),
+            keep_originals: false,
         };
         mine.save(&path).unwrap();
         assert_eq!(Settings::load(&path), mine);

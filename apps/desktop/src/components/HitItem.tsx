@@ -38,6 +38,12 @@ export function HitItem({
         </button>
         <div className="meta">
           <Trust value={hit.trust} authority={hit.authority} />
+          {hit.gone && (
+            <span className="gone-tag" title={i18n.t("archive-gone-hit-title")}>
+              <Icon name="archive" size={14} />
+              {i18n.t("archive-gone-hit")}
+            </span>
+          )}
           <span>{hit.sourceName}</span>
           {hit.published && (
             <>

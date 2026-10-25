@@ -39,8 +39,9 @@ balíku.
    - vydavateľ si vyťažovanie nevyhradil – ani protokolom TDMRep, ani v podmienkach webu
      (`terms: reserved`), ani tým, že v robots.txt zakázal roboty, ktoré zbierajú pre umelú inteligenciu.
 4. **Zobraziť celý text** sa smie len pri úradných textoch, ktoré sú voľné podľa oboch práv, a pri
-   otvorených licenciách. Rovnako to platí pre preklad celého textu. Pôvodné súbory sa neukladajú nikdy,
-   bez ohľadu na licenciu ([DATABAZA.md](DATABAZA.md)).
+   otvorených licenciách. Rovnako to platí pre preklad celého textu. Pôvodné súbory sa uchovávajú len
+   v archíve dokumentov, ktoré smie každý kopírovať a zobrazovať (úradné texty, otvorené licencie), po
+   kontrole nebezpečného obsahu a bez osobných údajov ([DATABAZA.md](DATABAZA.md)).
 5. **Prísne právo o osobných údajoch** (Čína – PIPL, Rusko – 152-FZ, Južná Kórea – PIPA): z týchto
    krajín sa ukladajú len metadáta, a to ani pri úradných a otvorených textoch nie.
 6. **Spätná platnosť:** pri každom načítaní registra (`atena-ingest sync`) sa odstráni všetko, čo

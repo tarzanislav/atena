@@ -29,6 +29,12 @@ pub struct Overview {
     pub checks_last_day: i64,
     /// Lists of proposals waiting to be handed to the editor.
     pub waiting_to_share: i64,
+    /// Original files in the archive.
+    pub archived_files: i64,
+    /// Their size in bytes.
+    pub archived_bytes: i64,
+    /// Documents the publishers removed from the web.
+    pub gone: i64,
 }
 
 /// A source with what was collected from it.
@@ -86,7 +92,10 @@ impl Store {
                   WHERE e.enabled AND s.enabled AND e.next_fetch_at <= now()) AS endpoints_due,
                 (SELECT max(last_fetch_at) FROM endpoint) AS last_check,
                 (SELECT count(*) FROM fetch_log WHERE at > now() - interval '1 day') AS checks_last_day,
-                (SELECT count(*) FROM outbox) AS waiting_to_share",
+                (SELECT count(*) FROM outbox) AS waiting_to_share,
+                (SELECT count(*) FROM version_file) AS archived_files,
+                (SELECT COALESCE(sum(byte_size), 0)::bigint FROM version_file) AS archived_bytes,
+                (SELECT count(*) FROM document WHERE status = 'gone') AS gone",
         )
         .fetch_one(&self.pool)
         .await?;
@@ -101,6 +110,9 @@ impl Store {
             last_check: timestamp(&row, "last_check")?,
             checks_last_day: row.try_get("checks_last_day")?,
             waiting_to_share: row.try_get("waiting_to_share")?,
+            archived_files: row.try_get("archived_files")?,
+            archived_bytes: row.try_get("archived_bytes")?,
+            gone: row.try_get("gone")?,
         })
     }
 

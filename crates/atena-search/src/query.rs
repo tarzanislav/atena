@@ -35,7 +35,7 @@ use tantivy::{DateTime, DocId, Order, Score, Searcher, SegmentReader, TantivyDoc
 
 use crate::analysis::group_of;
 use crate::index::SearchIndex;
-use crate::schema::{LANGUAGE, REGION, SOURCE, TRUST};
+use crate::schema::{ARCHIVE, ARCHIVE_REMOVED, LANGUAGE, REGION, SOURCE, TRUST};
 use crate::{Result, SearchError};
 
 /// Weight of the title fields.
@@ -131,6 +131,8 @@ pub struct Hit {
     pub snippet: Option<Snippet>,
     /// The whole text may be shown in ATENA.
     pub full_text: bool,
+    /// The publisher removed it from the web; ATENA's archive keeps it.
+    pub gone: bool,
 }
 
 /// How many hits have a value of a facet.
@@ -239,6 +241,7 @@ impl SearchIndex {
                 SOURCE => terms.push(one(value.to_string())),
                 REGION if REGIONS.contains(&value) => terms.push(one(value.to_string())),
                 TRUST if TRUST_GROUPS.contains(&value) => terms.push(one(value.to_string())),
+                ARCHIVE if value == ARCHIVE_REMOVED => terms.push(one(value.to_string())),
                 scheme if taxonomy.get(scheme, value).is_some() => {
                     terms.extend(taxonomy.members(scheme, value));
                 }
@@ -328,7 +331,7 @@ impl SearchIndex {
         let query = Self::filtered(main, &filters);
 
         let mut namespaces: Vec<&str> = taxonomy.schemes.keys().map(String::as_str).collect();
-        namespaces.extend([LANGUAGE, SOURCE, REGION, TRUST]);
+        namespaces.extend([LANGUAGE, SOURCE, REGION, TRUST, ARCHIVE]);
         let mut facets = FacetCollector::for_field("labels");
         for namespace in &namespaces {
             facets.add_facet(Facet::from_path([*namespace]));
@@ -460,11 +463,16 @@ impl SearchIndex {
             }
             None => None,
         };
+        let mut gone = false;
         let labels = doc
             .get_all(f.labels)
             .filter_map(|v| v.as_facet())
             .filter_map(|encoded| Facet::from_encoded(encoded.as_bytes().to_vec()).ok())
             .filter_map(|facet| match facet.to_path().as_slice() {
+                [namespace, value] if *namespace == ARCHIVE => {
+                    gone |= *value == ARCHIVE_REMOVED;
+                    None
+                }
                 [namespace, value] if ![LANGUAGE, SOURCE, REGION, TRUST].contains(namespace) => {
                     Some(format!("{namespace}/{value}"))
                 }
@@ -496,6 +504,7 @@ impl SearchIndex {
                 .get_first(f.full_text)
                 .and_then(|v| v.as_bool())
                 .unwrap_or(false),
+            gone,
         })
     }
 }

@@ -105,6 +105,14 @@ export function SettingsScreen() {
             />
           </label>
           <p className="small muted">{i18n.t("settings-concurrency-explain")}</p>
+          <label className="check">
+            <input type="checkbox" checked={settings.keepOriginals} onChange={(e) => void save({ keepOriginals: e.target.checked })} />
+            <span>
+              {i18n.t("settings-keep-originals")}
+              <br />
+              <span className="small muted">{i18n.t("settings-keep-originals-explain")}</span>
+            </span>
+          </label>
         </div>
 
         <ErasureCard />

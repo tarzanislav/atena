@@ -23,6 +23,10 @@ pub(crate) const AUTHORITY: &str = "authority";
 pub(crate) const REGION: &str = atena_core::scope::REGION;
 /// The trust group of the source (`atena_core::scope`).
 pub(crate) const TRUST: &str = atena_core::scope::TRUST;
+/// The archive: `archive/removed` for documents the publisher removed from the web, kept by ATENA.
+pub const ARCHIVE: &str = "archive";
+/// The value of [`ARCHIVE`] for a removed document.
+pub const ARCHIVE_REMOVED: &str = "removed";
 
 /// Handles of all fields.
 #[derive(Debug, Clone)]

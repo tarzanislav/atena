@@ -44,8 +44,14 @@ recognised. Labels an editor rejected do not count.
 
 ## Filters
 `scheme/concept`, `country/SK`, `authority/A1`, `language/sk`, `source/SK01`, `region/sk|abroad`,
-`trust/official|expert|other`. Values of one namespace are alternatives; different namespaces must all
-hold. The result counts the values of every namespace among the documents found (facets).
+`trust/official|expert|other`, `archive/removed`. Values of one namespace are alternatives; different
+namespaces must all hold. The result counts the values of every namespace among the documents found
+(facets).
+
+* **Removed documents** (`archive/removed`, index format 3): a document the publisher removed from the
+  web (HTTP 404/410) stays findable from ATENA's archive only where its whole text may be shown
+  (official texts, open licences, no `noarchive`); every other removed document leaves the index.
+  The hit says so (`gone`); the facet is not shown among its labels.
 
 * A concept stands for its **members** (`Taxonomy::members`): itself, its narrower concepts and what it
   `includes` in `data/taxonomy.yaml` – concepts of other schemes (with their narrower concepts) or a

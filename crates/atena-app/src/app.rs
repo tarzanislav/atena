@@ -36,6 +36,7 @@ use crate::views::{
 use atena_vault::{DataKey, Keychain, Vault};
 use jiff::Timestamp;
 
+mod archive;
 mod library;
 pub use library::PrivateFetch;
 
@@ -230,8 +231,13 @@ impl App {
             Arc::clone(&nudge),
         );
         let vault = Vault::new(folder.join("private")).with_keychain(keychain);
-        // files of the private part opened last time are not left behind
+        // files of the private part and of the archive opened last time are not left behind
         library::wipe_opened(folder);
+        archive::wipe_opened(folder);
+        // the register may have changed the rights of archived documents
+        if let Err(e) = archive::prune(&store).await {
+            tracing::warn!(error = %e, "the archive could not be checked");
+        }
         let private = remembered(&vault);
         let (stop, stop_rx) = watch::channel(false);
         let indexer = keep_fresh(
@@ -310,6 +316,9 @@ impl App {
             checks_last_day: o.checks_last_day,
             waiting_to_share: o.waiting_to_share,
             crawling: self.crawl.is_running().await,
+            archived_files: o.archived_files,
+            archived_bytes: o.archived_bytes,
+            gone: o.gone,
         })
     }
 
@@ -522,12 +531,20 @@ impl App {
             },
             row.tdm_reserved,
         );
-        if row.status != "active" || !row.source_enabled || row.noindex || !allowed.crawl {
+        if !row.source_enabled || row.noindex || !allowed.crawl {
             return Ok(None);
         }
-        let text = (allowed.show_full_text && !row.noarchive)
-            .then_some(row.body)
-            .flatten();
+        // what ATENA may show in full stays in its archive when the publisher removes it
+        let archive = allowed.show_full_text && !row.noarchive;
+        if row.status != "active" && !(archive && row.body.is_some()) {
+            return Ok(None);
+        }
+        let text = archive.then_some(row.body).flatten();
+        let archived_file = if archive {
+            self.store.archived_file(id).await?.map(Into::into)
+        } else {
+            None
+        };
         let versions = self
             .store
             .versions(id)
@@ -554,6 +571,8 @@ impl App {
                 .map(|(scheme, concept)| format!("{scheme}/{concept}"))
                 .collect(),
             text,
+            gone_at: (row.status == "gone").then_some(row.gone_at).flatten(),
+            archived_file,
             versions,
         }))
     }
@@ -737,12 +756,13 @@ impl App {
 
     /// Starts the crawler (on the user's command only).
     pub async fn crawl_start(&self) -> Result<CrawlView, AppError> {
-        let concurrency = self.settings().concurrency;
+        let settings = self.settings();
         self.crawl
             .start(
                 &self.store,
                 &self.taxonomy,
-                concurrency,
+                settings.concurrency,
+                settings.keep_originals,
                 Arc::clone(&self.nudge),
             )
             .await?;
@@ -766,6 +786,7 @@ impl App {
         // the private key leaves memory first, opened private files the disk
         self.private_session().take();
         library::wipe_opened(&self.folder);
+        archive::wipe_opened(&self.folder);
         if tokio::time::timeout(CLOSE_WAIT, self.crawl.stop())
             .await
             .is_err()

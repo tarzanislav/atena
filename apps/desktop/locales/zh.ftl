@@ -509,3 +509,18 @@ private-kind-reference-title = 官方或开放许可的文件——由 ATENA 公
 private-kind-copy = 我的副本
 private-kind-reference = 链接
 private-copy-right = 个人使用的副本：根据斯洛伐克《著作权法》（第 185/2015 号）第 42 条，自然人可不经作者同意，为个人私人用途复制作品，前提是目的既非直接也非间接的商业用途。ATENA 只在您要求时从出版者网站下载副本，遵守其规则（robots.txt、禁止副本的要求），并加密保存，仅供您本人使用。请勿分享、传播副本或将其用于其他目的——著作权仍归作者所有。
+
+# ATENA's archive of original files
+facet-archive = ATENA 档案
+archive-facet-removed = 已从网上删除
+archive-gone = 出版者已将该文件从网上删除（{ $date }）。
+archive-gone-text = ATENA 将其保存在档案中，因为这是任何人都可以复制和展示的文件（{ $licence }）。来源和许可仍会注明。
+archive-text = ATENA 档案保存原始文件——即使出版者将其从网上删除，也仍可使用（{ $licence }）。
+archive-file = 原始文件自 { $date } 存入档案 · { $size }
+archive-open = 从档案打开原始文件
+archive-open-size = 从档案打开原始文件（{ $size }）
+archive-gone-hit = 已从网上删除
+archive-gone-hit-title = 出版者已将该文件从网上删除；ATENA 将其保存在档案中。
+overview-archive = 档案：原始文件 { $files } 个（{ $size }）· 已从网上删除：{ $gone }
+settings-keep-originals = 保存官方文件和开放许可文件的原始文件
+settings-keep-originals-explain = 任何人都可复制的 PDF 和 Word/OpenDocument 文件，即使出版者将其从网上删除，也仍可使用。仅在通过危险内容检查且文本不含个人数据时保存。会占用磁盘空间。

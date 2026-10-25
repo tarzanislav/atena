@@ -121,6 +121,7 @@ pub fn run() -> tauri::Result<()> {
             commands::private_read,
             commands::private_open_file,
             commands::private_remove,
+            commands::open_archived_file,
             commands::document,
             commands::import_addresses,
             commands::proposals,

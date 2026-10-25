@@ -27,6 +27,7 @@
     "allow-private-read",
     "allow-private-open-file",
     "allow-private-remove",
+    "allow-open-archived-file",
     "allow-document",
     "allow-import-addresses",
     "allow-proposals",

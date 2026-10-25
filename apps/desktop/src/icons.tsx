@@ -33,6 +33,7 @@ import lockClosed from "@fluentui/svg-icons/icons/lock_closed_20_regular.svg";
 import lockOpen from "@fluentui/svg-icons/icons/lock_open_20_regular.svg";
 import save from "@fluentui/svg-icons/icons/save_20_regular.svg";
 import link from "@fluentui/svg-icons/icons/link_20_regular.svg";
+import archive from "@fluentui/svg-icons/icons/archive_20_regular.svg";
 
 const ICONS = {
   home,
@@ -67,6 +68,7 @@ const ICONS = {
   lockOpen,
   save,
   link,
+  archive,
 };
 
 export type IconName = keyof typeof ICONS;

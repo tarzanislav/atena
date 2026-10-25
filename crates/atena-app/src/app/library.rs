@@ -190,11 +190,13 @@ impl App {
             },
             row.tdm_reserved,
         );
-        if row.status != "active" {
-            return Ok(refused("gone"));
-        }
         if !row.source_enabled || !allowed.crawl || terms == Terms::Forbidden {
             return Ok(refused("not-allowed"));
+        }
+        // a removed document can still be referred to where ATENA's archive keeps it
+        let archived = allowed.show_full_text && !row.noarchive && row.body.is_some();
+        if row.status != "active" && !archived {
+            return Ok(refused("gone"));
         }
         let mut facts = ItemFacts {
             document_id: Some(document_id),
@@ -314,19 +316,23 @@ impl App {
             .with_library(move |l, k| Ok(l.items(k)?.into_iter().find(|item| item.id == wanted)))
             .await?
             .ok_or_else(not_found)?;
+        // a reference reads the public part, with its archived file and whether it left the web
+        let card = match (item.kind, item.facts.document_id) {
+            (Kind::Reference, Some(document_id)) => self.document(document_id).await?,
+            _ => None,
+        };
         let text = match item.kind {
             Kind::Copy => self
                 .with_library(move |l, k| l.text(k, &id))
                 .await?
                 .map(|text| text.to_string()),
-            Kind::Reference => match item.facts.document_id {
-                Some(document_id) => self.document(document_id).await?.and_then(|d| d.text),
-                None => None,
-            },
+            Kind::Reference => card.as_ref().and_then(|c| c.text.clone()),
         };
         Ok(PrivateReadView {
             item: item.into(),
             text,
+            archived_file: card.as_ref().and_then(|c| c.archived_file.clone()),
+            gone_at: card.and_then(|c| c.gone_at),
         })
     }
 

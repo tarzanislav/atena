@@ -2,19 +2,12 @@ import { useEffect, useState } from "react";
 
 import { api, type Hit, type PrivateItem, type PrivateRead } from "../api";
 import { useApp } from "../context";
-import { date, dateTime, host, number } from "../format";
+import { date, dateTime, fileSize, host, number } from "../format";
 import { useI18n } from "../i18n";
 import { Icon } from "../icons";
 import { Trust } from "./Badges";
 import { Dialog } from "./Dialog";
 import { ErrorNotice } from "./ErrorNotice";
-
-/** The size of a kept file: kB or MB in the interface language. */
-function size(locale: string, bytes: number) {
-  const mb = bytes / (1024 * 1024);
-  const format = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 });
-  return mb >= 1 ? `${format.format(mb)} MB` : `${format.format(Math.max(1, Math.round(bytes / 1024)))} kB`;
-}
 
 /** How an item is kept: a reference to the public part, or a copy for the user's own use. */
 export function KindTag({ item }: { item: PrivateItem }) {
@@ -173,6 +166,12 @@ export function PrivateItemDialog({ id, onClose }: { id: string; onClose: () => 
             <span aria-hidden="true">·</span>
             <span>{i18n.t("private-saved-on", { date: dateTime(i18n, item.savedAt) })}</span>
           </div>
+          {read.goneAt && (
+            <p className="small refused-note">
+              <Icon name="warning" size={14} />
+              {i18n.t("archive-gone", { date: date(i18n, read.goneAt) })}
+            </p>
+          )}
           <div className="private-card card tight-card">
             <span className="row" style={{ gap: 8 }}>
               <KindTag item={item} />
@@ -181,10 +180,19 @@ export function PrivateItemDialog({ id, onClose }: { id: string; onClose: () => 
             <span className="small muted">{i18n.t("private-licence", { licence: i18n.label("licence", item.licence) })}</span>
           </div>
           <div className="row">
+            {item.kind === "reference" && read.archivedFile && item.documentId !== null && (
+              <button
+                className="button primary"
+                onClick={() => void api.openArchivedFile(item.documentId ?? 0).catch(setError)}
+              >
+                <Icon name="archive" size={16} />
+                {i18n.t("archive-open-size", { size: fileSize(i18n, read.archivedFile.byteSize) })}
+              </button>
+            )}
             {item.fileBytes !== null && (
               <button className="button primary" onClick={() => void api.privateOpenFile(item.id).catch(setError)}>
                 <Icon name="documentText" size={16} />
-                {i18n.t("private-open-file", { size: size(i18n.intl, item.fileBytes) })}
+                {i18n.t("private-open-file", { size: fileSize(i18n, item.fileBytes) })}
               </button>
             )}
             <button className="button" onClick={() => void api.openLink(item.url)}>
@@ -255,7 +263,7 @@ export function SavedList({ section, onRead }: { section: string | null; onRead:
                   <span aria-hidden="true">·</span>
                   <span>
                     {item.fileBytes !== null
-                      ? size(i18n.intl, item.fileBytes)
+                      ? fileSize(i18n, item.fileBytes)
                       : i18n.t("private-text-chars", { chars: number(i18n, item.textChars) })}
                   </span>
                 </>

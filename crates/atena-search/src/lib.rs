@@ -27,6 +27,7 @@ pub use index::SearchIndex;
 pub use query::{
     FacetCount, Hit, MAX_LIMIT, MAX_OFFSET, RecognisedConcept, Results, SearchRequest, Snippet,
 };
+pub use schema::{ARCHIVE, ARCHIVE_REMOVED};
 pub use stem::Slavic;
 pub use tally::{ConceptCount, Tally};
 pub use update::{DEFAULT_BATCH, UpdateReport, rebuild, update};

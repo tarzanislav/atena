@@ -39,7 +39,7 @@ Disallow: /internal/
 ```
 
 ## Personal data and erasure
-ATENA removes e-mail addresses and telephone numbers before storing texts, keeps no original files, does not follow galleries, staff lists or contact pages, and erases a page or a whole section on
+ATENA removes e-mail addresses and telephone numbers before storing texts, keeps original files only in the archive of official and openly licensed documents, does not follow galleries, staff lists or contact pages, and erases a page or a whole section on
 request (it is then never fetched again). Requests: [GitHub issues](https://github.com/tarzanislav/atena/issues)
 or the contact of the installation's operator. Details: [PRIVACY-AND-RIGHTS.md](PRIVACY-AND-RIGHTS.md).
 
@@ -81,7 +81,7 @@ source holds more than 100,000 addresses.
   actions, embedded files, rich media or XFA forms – also written inline, in any dictionary or array
   nested in an object; Word documents with macros, ActiveX, OLE objects or
   remote templates; OpenDocument texts with macros or scripts. Nothing of such a file is kept and its
-  address is not tried again. Original files are never kept at all ([DATABASE.md](DATABASE.md)).
+  address is not tried again. Original files are kept only in the archive ([DATABASE.md](DATABASE.md)).
 * **Parsing in a separate, limited process** (`atena_extract::Parser`). Pages and documents are parsed
   by a child process that may use at most 768 MB and 60 seconds; a hostile file (a decompression bomb,
   a parser trap) can only end that child. Such a document counts as too demanding (`too_demanding`):
