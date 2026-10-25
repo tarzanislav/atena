@@ -29,6 +29,7 @@ tracing = "0.1.44"
 url = "2.5.8"
 
 [dev-dependencies]
+atena-crawl = { path = "../atena-crawl", features = ["testing"] }
 atena-store = { path = "../atena-store", features = ["testing"] }
 
 [lints]

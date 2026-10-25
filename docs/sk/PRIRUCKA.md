@@ -142,8 +142,31 @@ legislatíva**, **Vyučovanie v praxi**, **Kurikulum a reformy** a **Gramotnosti
 5. Heslo sa nikde neukladá. Odvodí sa z neho kľúč (Argon2id), ktorý šifruje (XChaCha20-Poly1305)
    vašu súkromnú časť v priečinku `private`.
 
-Súkromná časť slúži na **kópie pre vlastnú potrebu** – súkromné použitie fyzickej osoby podľa
-autorského zákona. Kópie patria ich autorom: nezdieľajte ich a nepoužívajte na iné účely.
+### Ukladanie dokumentov pre seba
+
+V kategóriách súkromnej časti (napríklad **Vyučovanie v praxi**) má každý dokument tlačidlo
+**Uložiť pre seba**. Nad zoznamom je **Uložiť vybrané** (zaškrtnuté dokumenty) a **Uložiť všetky
+v zozname** – to sa ešte raz spýta. Ukladá sa po jednom dokumente; priebeh vidíte hore
+a môžete ho **zastaviť**. Medzitým môžete pracovať ďalej.
+
+- **Úradné a voľne licencované dokumenty** (napríklad zákony) sa neukladajú druhýkrát: uloží sa
+  **odkaz** na verejnú časť ATENY, ktorá ich aj tak uchováva.
+- **Ostatné dokumenty** sa uložia ako **kópia pre vlastnú potrebu**: ATENA ich v tej chvíli
+  stiahne z webu vydavateľa a uloží **zašifrované** – text a pri PDF a dokumentoch Word/OpenDocument
+  aj súbor.
+- **Kedy sa dokument neuloží** (dôvod uvidíte pri ňom): vydavateľ si neželá ukladanie kópií,
+  robots.txt webu to nedovoľuje, podmienky webu zakazujú automatický prístup, súbor obsahuje skript
+  alebo iný aktívny obsah, alebo sa dokument nedá stiahnuť či prečítať.
+- Uložené dokumenty sú v **Mojej ATENE → Uložené dokumenty** a v každej kategórii na karte
+  **Uložené**. **Čítať** ukáže text aj **bez internetu**. **Otvoriť súbor** ho otvorí vo vašom
+  programe (napríklad v prehliadači PDF) – na ten čas sa súbor dešifruje do priečinka ATENY
+  a zmaže sa pri zamknutí súkromnej časti alebo zatvorení ATENY. **Odstrániť** ho zmaže z knižnice.
+
+**Kópia pre vlastnú potrebu:** podľa § 42 Autorského zákona (č. 185/2015 Z. z.) smie fyzická osoba
+bez súhlasu autora vyhotoviť rozmnoženinu diela pre svoju súkromnú potrebu, ak nejde o priamo ani
+nepriamo obchodný účel. Kópie patria ich autorom: **nezdieľajte ich, nešírte a nepoužívajte na iné
+účely**. Ak si nie ste istí, či vaše použitie (napríklad na vyučovaní) je ešte súkromnou potrebou,
+použite radšej odkaz na originál.
 
 ## Súkromie a spojenia
 
@@ -171,7 +194,8 @@ Všetky údaje ATENY sú v priečinku
 | `postgres` | databáza: zdroje, dokumenty, verzie, návrhy |
 | `index` | index vyhľadávania (dá sa kedykoľvek postaviť nanovo) |
 | `settings.json` | vaše nastavenia |
-| `private` | súkromné konto (`account.json` – bez hesla a bez kľúča v čitateľnej podobe), pri trvalom prihlásení `remember.json` a zašifrovaná súkromná časť |
+| `private` | súkromné konto (`account.json` – bez hesla a bez kľúča v čitateľnej podobe), pri trvalom prihlásení `remember.json` a zašifrovaná knižnica uložených dokumentov (`library`) |
+| `private-open` | súkromný súbor otvorený na prezeranie (dešifrovaný); zmaže sa pri zamknutí alebo zatvorení ATENY |
 | `logs` | záznamy o behu aplikácie – pri probléme ich priložte k hláseniu |
 
 Licencie všetkých súčastí sú v priečinku inštalácie v podpriečinku `notices`.

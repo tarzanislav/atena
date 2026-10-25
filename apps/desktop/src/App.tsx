@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { api, type PrivateStatus, type Settings, type Startup, type Taxonomy } from "./api";
 import { DocumentDialog } from "./components/DocumentDialog";
+import { useLibrary } from "./library";
 import { ErrorNotice } from "./components/ErrorNotice";
 import { AppContext, PRIVATE_SECTIONS, type AppContextValue, type Screen, type SearchStart } from "./context";
 import { UnlockDialog } from "./components/PrivateAccount";
@@ -155,6 +156,13 @@ function Workspace({
     api.privateStatus().then(setPrivateStatus, () => undefined);
   }, []);
 
+  const library = useLibrary();
+  const { refresh: refreshLibrary, clear: clearLibrary } = library;
+  useEffect(() => {
+    if (privateStatus.unlocked) refreshLibrary();
+    else clearLibrary();
+  }, [privateStatus.unlocked, refreshLibrary, clearLibrary]);
+
   useEffect(() => {
     api.taxonomy(settings.language).then(setTaxonomy, () => undefined);
   }, [settings.language]);
@@ -213,6 +221,7 @@ function Workspace({
     navigate: (next, search) => go(next, search),
     openDocument: setDocumentId,
     refreshBadges,
+    library,
     privateStatus,
     setPrivateStatus: (status) => {
       setPrivateStatus(status);

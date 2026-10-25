@@ -23,7 +23,9 @@ use jiff::Timestamp;
 use serde::{Deserialize, Serialize};
 use zeroize::{Zeroize, Zeroizing};
 
+pub mod library;
 pub mod remember;
+pub use library::{Added, Item, ItemFacts, Kind, Library};
 pub use remember::{Keychain, REMEMBER_FILE};
 
 /// Name of the account file in the private folder.
@@ -85,6 +87,9 @@ pub enum VaultError {
     /// The system has no credential store for a persistent sign-in.
     #[error("this system has no credential store for a persistent sign-in")]
     NoKeychain,
+    /// The private library holds as many items as it may.
+    #[error("the private library is full ({} items)", library::MAX_ITEMS)]
+    LibraryFull,
     /// The credential store failed (e.g. it is locked).
     #[error("the credential store failed: {0}")]
     Keychain(String),
@@ -92,7 +97,8 @@ pub enum VaultError {
 
 type Result<T> = std::result::Result<T, VaultError>;
 
-/// The key that encrypts the private data; wiped when dropped.
+/// The key that encrypts the private data; wiped when dropped (every copy).
+#[derive(Clone)]
 pub struct DataKey(Zeroizing<[u8; 32]>);
 
 impl fmt::Debug for DataKey {
@@ -207,6 +213,23 @@ fn random<const N: usize>() -> Result<Zeroizing<[u8; N]>> {
     let mut out = Zeroizing::new([0u8; N]);
     getrandom::fill(&mut *out).map_err(|e| VaultError::Random(e.to_string()))?;
     Ok(out)
+}
+
+/// Writes `bytes` to `path` in `folder` through a temporary file, so a crash leaves the old file
+/// intact; on Unix the file is readable by the user only.
+fn write_secret(folder: &Path, path: &Path, bytes: &[u8]) -> Result<()> {
+    fs::create_dir_all(folder).map_err(io(folder))?;
+    let mut temporary = path.as_os_str().to_owned();
+    temporary.push(".new");
+    let temporary = PathBuf::from(temporary);
+    fs::write(&temporary, bytes).map_err(io(&temporary))?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        fs::set_permissions(&temporary, fs::Permissions::from_mode(0o600))
+            .map_err(io(&temporary))?;
+    }
+    fs::rename(&temporary, path).map_err(io(path))
 }
 
 fn hex(bytes: &[u8]) -> String {
@@ -389,16 +412,7 @@ impl Vault {
 
     /// Writes a file of the folder through a temporary file, readable by the user only.
     fn write_private(&self, path: &Path, text: &str) -> Result<()> {
-        fs::create_dir_all(&self.folder).map_err(io(&self.folder))?;
-        let temporary = path.with_extension("json.new");
-        fs::write(&temporary, text).map_err(io(&temporary))?;
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            fs::set_permissions(&temporary, fs::Permissions::from_mode(0o600))
-                .map_err(io(&temporary))?;
-        }
-        fs::rename(&temporary, path).map_err(io(path))
+        write_secret(&self.folder, path, text.as_bytes())
     }
 
     fn wrap_password(&self, key: &[u8; 32], password: &str) -> Result<Wrapped> {

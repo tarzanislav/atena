@@ -79,7 +79,8 @@ a žiadny zdroj nemá viac ako 100 000 adries.
   * sa odmietnu binárne dáta vydávané za text.
 * **Programy a aktívny obsah sa odmietnu** (`atena-extract/src/danger.rs`): programy a skripty, nech ich
   server nazýva akokoľvek; súbory, ktoré sa len tvária ako PDF; PDF s JavaScriptom, spúšťacími akciami,
-  vloženými súbormi, multimédiami alebo formulármi XFA; dokumenty Word s makrami, ActiveX, objektmi OLE
+  vloženými súbormi, multimédiami alebo formulármi XFA – aj zapísanými priamo vo vnorenom slovníku
+  alebo poli; dokumenty Word s makrami, ActiveX, objektmi OLE
   alebo vzdialenými šablónami; dokumenty OpenDocument s makrami alebo skriptmi. Z takého súboru sa nič
   neuloží a jeho adresa sa už neskúša. Pôvodné súbory sa neukladajú vôbec ([DATABAZA.md](DATABAZA.md)).
 * **Spracovanie v samostatnom, obmedzenom procese** (`atena_extract::Parser`). Stránky a dokumenty

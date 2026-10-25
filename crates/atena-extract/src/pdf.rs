@@ -238,6 +238,55 @@ pub(crate) mod tests {
         assert!(extract_pdf(&sample_pdf(&["Oznam riaditela"])).is_ok());
     }
 
+    #[test]
+    fn active_content_written_inline_is_refused() {
+        use pdf_extract::{Dictionary, StringFormat};
+
+        let mut doc = Document::load_mem(&sample_pdf(&["Oznam riaditela"])).unwrap();
+        let catalog_id = doc.trailer.get(b"Root").unwrap().as_reference().unwrap();
+        let catalog = doc
+            .get_object_mut(catalog_id)
+            .unwrap()
+            .as_dict_mut()
+            .unwrap();
+        // an action inside the catalog, and a launch action deep in an array
+        let mut action = Dictionary::new();
+        action.set("S", Object::Name(b"JavaScript".to_vec()));
+        action.set(
+            "JS",
+            Object::String(b"app.alert(1)".to_vec(), StringFormat::Literal),
+        );
+        catalog.set("OpenAction", Object::Dictionary(action));
+        let mut bytes = Vec::new();
+        doc.save_to(&mut bytes).unwrap();
+        assert!(matches!(
+            extract_pdf(&bytes),
+            Err(PdfError::Dangerous("JavaScript"))
+        ));
+
+        let mut doc = Document::load_mem(&sample_pdf(&["Oznam riaditela"])).unwrap();
+        let catalog_id = doc.trailer.get(b"Root").unwrap().as_reference().unwrap();
+        let catalog = doc
+            .get_object_mut(catalog_id)
+            .unwrap()
+            .as_dict_mut()
+            .unwrap();
+        let mut launch = Dictionary::new();
+        launch.set("S", Object::Name(b"Launch".to_vec()));
+        let mut annotation = Dictionary::new();
+        annotation.set("A", Object::Dictionary(launch));
+        catalog.set(
+            "Extra",
+            Object::Array(vec![Object::Array(vec![Object::Dictionary(annotation)])]),
+        );
+        let mut bytes = Vec::new();
+        doc.save_to(&mut bytes).unwrap();
+        assert!(matches!(
+            extract_pdf(&bytes),
+            Err(PdfError::Dangerous("a launch action"))
+        ));
+    }
+
     /// A one-page PDF with Helvetica text, document information and XMP metadata.
     pub(crate) fn sample_pdf(lines: &[&str]) -> Vec<u8> {
         use pdf_extract::content::{Content, Operation};

@@ -81,11 +81,27 @@ Prevádzkovateľ zverejní informácie o spracúvaní (čl. 14) s kontaktom na n
   počítači, nikdy v cestovnom profile); dátový kľúč, zašifrovaný ním a viazaný na konto, je
   v `private/remember.json`. Žiadna z polovíc sama nič neotvorí; vypnutie zmaže obe. Nič
   neodchádza z počítača.
-* Súkromná časť slúži na **kópie pre vlastnú potrebu** – súkromné použitie fyzickej osoby podľa
-  autorského zákona (výnimka na súkromnú rozmnoženinu v zákone č. 185/2015 Z. z.). Kópie vznikajú
-  na kliknutie používateľa, zostávajú zašifrované v jeho počítači a nikdy sa nezdieľajú ani
-  neposielajú. Zdroje, ktorých podmienky zakazujú automatizovaný prístup, sú vylúčené. Toto posúdenie
-  nie je právna rada; pred verejným spustením ho má potvrdiť právnik (zoznam nižšie).
+* Súkromná časť slúži na **kópie pre vlastnú potrebu** – podľa § 42 Autorského zákona
+  (č. 185/2015 Z. z.) smie fyzická osoba bez súhlasu autora vyhotoviť rozmnoženinu diela pre svoju
+  súkromnú potrebu, ak nejde o priamo ani nepriamo obchodný účel; podľa § 35 ods. 3 nesmie pôvod
+  rozmnoženiny porušovať práva autora – tu je zdrojom vlastný web vydavateľa. Ako to funguje
+  (`atena-vault::library`, `atena-app/src/app/library.rs`):
+  * **len na kliknutie používateľa** („Uložiť pre seba“, „Uložiť vybrané“, „Uložiť všetky
+    v zozname“ s potvrdením), dokument po dokumente;
+  * dokumenty, ktoré verejná časť aj tak uchováva a zobrazuje celé (úradné texty, otvorené
+    licencie), sa uložia ako **odkaz** – bez druhej kópie;
+  * ostatné sa stiahnu z webu vydavateľa **rovnako ako pri zbere** (robots.txt a tempo servera) a
+    odmietnu sa, keď si vydavateľ neželá ukladanie kópií (`noarchive` v údajoch registra,
+    v hlavičke `X-Robots-Tag` alebo na stránke), keď podmienky zdroja zakazujú automatizovaný prístup
+    alebo keď čítačka nájde aktívny obsah (kontrola nebezpečných súborov verejnej časti); uloží sa
+    text a pri PDF a kancelárskych dokumentoch aj súbor;
+  * všetko – aj katalóg s názvami – je zašifrované dátovým kľúčom (XChaCha20-Poly1305, každá časť
+    viazaná na svoju položku) v `private/library`; nič sa nezdieľa ani neposiela. Súbor otvorený na
+    prezeranie sa dešifruje do `private-open` a zmaže sa pri zamknutí alebo zatvorení ATENY (alebo pri
+    ďalšom spustení, ak ho prehliadač ešte držal).
+  * Texty rozhrania uvádzajú právo aj jeho hranice na každej súkromnej obrazovke.
+  Toto posúdenie nie je právna rada; pred verejným spustením ho má potvrdiť právnik (zoznam nižšie) –
+  najmä či je použitie učiteľom na vyučovanie ešte „súkromná potreba“.
 
 ## 4. Kontrolný zoznam pred verejným spustením
 * Dať právnikovi posúdiť kópie pre vlastnú potrebu v aplikácii pre PC (časť 3a).

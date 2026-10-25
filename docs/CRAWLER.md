@@ -78,7 +78,8 @@ source holds more than 100,000 addresses.
   * binary data declared as text is refused.
 * **Programs and active content are refused** (`atena-extract/src/danger.rs`): programs and scripts,
   whatever the server calls them; files that only pretend to be a PDF; PDFs with JavaScript, launch
-  actions, embedded files, rich media or XFA forms; Word documents with macros, ActiveX, OLE objects or
+  actions, embedded files, rich media or XFA forms – also written inline, in any dictionary or array
+  nested in an object; Word documents with macros, ActiveX, OLE objects or
   remote templates; OpenDocument texts with macros or scripts. Nothing of such a file is kept and its
   address is not tried again. Original files are never kept at all ([DATABASE.md](DATABASE.md)).
 * **Parsing in a separate, limited process** (`atena_extract::Parser`). Pages and documents are parsed

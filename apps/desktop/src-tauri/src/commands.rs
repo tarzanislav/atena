@@ -6,8 +6,9 @@ use std::sync::Arc;
 
 use atena_app::views::{
     ChoiceInput, ConfirmedView, CrawlView, DecisionOptions, DocumentView, ErasureView, HitView,
-    ImportView, OverviewView, PendingView, PrivateCreatedView, PrivateStatusView, ProposalView,
-    ReceivedView, SearchQuery, SearchView, SourceView, SyncView, TallyView, TaxonomyView, ToolView,
+    ImportView, OverviewView, PendingView, PrivateCreatedView, PrivateItemView, PrivateReadView,
+    PrivateSavedView, PrivateStatusView, ProposalView, ReceivedView, SearchQuery, SearchView,
+    SourceView, SyncView, TallyView, TaxonomyView, ToolView,
 };
 use atena_app::{App, AppError, Settings};
 use serde::Serialize;
@@ -126,6 +127,40 @@ pub async fn private_remember(shared: State<'_, Shared>) -> Answer<PrivateStatus
 #[tauri::command]
 pub async fn private_forget(shared: State<'_, Shared>) -> Answer<PrivateStatusView> {
     app(&shared).await?.private_forget().await
+}
+
+/// The documents saved in the private library.
+#[tauri::command]
+pub async fn private_library(shared: State<'_, Shared>) -> Answer<Vec<PrivateItemView>> {
+    app(&shared).await?.private_library().await
+}
+
+/// Saves a document for the user: a reference or a copy for their own use.
+#[tauri::command]
+pub async fn private_save(shared: State<'_, Shared>, document_id: i64) -> Answer<PrivateSavedView> {
+    app(&shared).await?.private_save(document_id).await
+}
+
+/// A saved document with its text.
+#[tauri::command]
+pub async fn private_read(shared: State<'_, Shared>, id: String) -> Answer<PrivateReadView> {
+    app(&shared).await?.private_read(id).await
+}
+
+/// Opens the kept file of a copy in the system's viewer (decrypted until the part is locked).
+#[tauri::command]
+pub async fn private_open_file(shared: State<'_, Shared>, id: String) -> Answer<()> {
+    let path = app(&shared).await?.private_open_file(id).await?;
+    open::that_detached(&path).map_err(|e| {
+        tracing::warn!("opening {}: {e}", path.display());
+        AppError::new("io", e.to_string())
+    })
+}
+
+/// Removes saved documents.
+#[tauri::command]
+pub async fn private_remove(shared: State<'_, Shared>, ids: Vec<String>) -> Answer<usize> {
+    app(&shared).await?.private_remove(ids).await
 }
 
 /// Sets a new password with the recovery key.
