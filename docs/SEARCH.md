@@ -43,9 +43,31 @@ gramotnosť` finds English and Chinese documents on reading literacy. The result
 recognised. Labels an editor rejected do not count.
 
 ## Filters
-`scheme/concept` (narrower concepts included), `country/SK`, `authority/A1`, `language/sk`,
-`source/SK01`. Values of one scheme are alternatives; different schemes must all hold. The result counts
-the values of every scheme among the documents found (facets).
+`scheme/concept`, `country/SK`, `authority/A1`, `language/sk`, `source/SK01`, `region/sk|abroad`,
+`trust/official|expert|other`. Values of one namespace are alternatives; different namespaces must all
+hold. The result counts the values of every namespace among the documents found (facets).
+
+* A concept stands for its **members** (`Taxonomy::members`): itself, its narrower concepts and what it
+  `includes` in `data/taxonomy.yaml` – concepts of other schemes (with their narrower concepts) or a
+  whole scheme. A section is thus a view of the facets that make it up: `section/practice` finds
+  documents labelled `method/jigsaw` or `resource-type/worksheet`. The facet counts of such schemes
+  are counted through the members as well.
+* **Region** (`atena_core::scope`): Slovak data are documents of Slovak sources and documents in
+  Slovak wherever they come from; everything else is foreign data.
+* **Trust** (`atena_core::scope`): the authority of the source in three groups – official (A1, A2),
+  expert (B1, B2, C1), other (C2, D, E). The interface shows it in words and colour.
+
+## Overview counts
+`SearchIndex::tally` counts the documents of every concept of a scheme within a scope (filters), all
+and those ATENA first saw since a given time (field `added`, from `document.first_seen_at`), together
+with the sizes of both regions and of the languages within the chosen region. The app counts the
+sections with "new" meaning the last 7 days (`NEW_DAYS`).
+
+## Classifying again
+When the taxonomy of a new version of ATENA differs from the one the stored documents were classified
+with, the app classifies them again in the background (`atena_ingest::classifying`, marker file
+`taxonomy.classified`). Classification sees exactly what the crawler saw and kept – the title and the
+kept text; only automatic suggestions are replaced, an editor's decisions stay.
 
 ## Ranking
 Relevance × authority of the source × freshness.

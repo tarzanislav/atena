@@ -32,7 +32,11 @@ schemes:
       zh: 栏目
     note:
       sk: Sekcie sú vstupné brány podľa toho, ČO používateľ potrebuje urobiť. Obsah nie je uväznený v jednej sekcii – každá položka môže byť vo
-        viacerých cez fazety (téma, druh školy, typ obsahu…).
+        viacerých cez fazety (téma, druh školy, typ obsahu…). Pole includes vymenúva pojmy iných osí (alebo celé osi), ktoré sekcia zahŕňa;
+        kľúčové slová má sekcia len tam, kde jej obsah žiadna iná os nepokrýva.
+      en: Sections are entry gates by what the user needs to do. A document belongs to every section whose members it is labelled with –
+        `includes` lists the concepts of other schemes (or whole schemes) a section gathers; a section has keywords of its own only where
+        no other scheme covers its content.
     concepts:
     - id: today
       labels:
@@ -48,6 +52,8 @@ schemes:
         cs: Změny a legislativa
         ru: Изменения и законодательство
         zh: 变化与法规
+      includes:
+      - topic/changes
     - id: acts-regulations
       broader: changes
       labels:
@@ -56,6 +62,9 @@ schemes:
         cs: Zákony, vyhlášky, nařízení
         ru: Законы и подзаконные акты
         zh: 法律、规章与条例
+      includes:
+      - topic/legislation
+      - resource-type/legal-act
     - id: guidance-instructions
       broader: changes
       labels:
@@ -64,6 +73,8 @@ schemes:
         cs: Metodické pokyny a doporučení
         ru: Методические указания и рекомендации
         zh: 指导意见与工作通知
+      includes:
+      - resource-type/guidance
     - id: drafts-consultations
       broader: changes
       labels:
@@ -72,6 +83,25 @@ schemes:
         cs: Návrhy a připomínková řízení
         ru: Проекты и общественные обсуждения
         zh: 草案与征求意见
+      keywords:
+        sk:
+        - pripomienkové konanie
+        - pripomienkového konania
+        - medzirezortné pripomienkové
+        - návrh zákona
+        - návrh vyhlášky
+        - verejná konzultácia
+        cs:
+        - připomínkové řízení
+        - meziresortní připomínkové
+        - návrh zákona
+        - návrh vyhlášky
+        - veřejná konzultace
+        en:
+        - public consultation
+        - call for evidence
+        - draft regulation
+        - consultation paper
     - id: deadlines-school-year
       broader: changes
       labels:
@@ -80,6 +110,24 @@ schemes:
         cs: Termíny a organizace školního roku
         ru: Сроки и организация учебного года
         zh: 时间节点与学年安排
+      keywords:
+        sk:
+        - organizácia školského roka
+        - školské prázdniny
+        - termíny prázdnin
+        - termíny prijímacích skúšok
+        - začiatok školského roka
+        - koniec školského roka
+        cs:
+        - organizace školního roku
+        - školní prázdniny
+        - termíny přijímacích zkoušek
+        - začátek školního roku
+        en:
+        - school calendar
+        - term dates
+        - school holidays
+        - academic calendar
     - id: funding-calls-grants
       broader: changes
       labels:
@@ -88,6 +136,8 @@ schemes:
         cs: Financování, výzvy a granty
         ru: Финансирование, конкурсы и гранты
         zh: 经费、项目申报与资助
+      includes:
+      - resource-type/call
     - id: foreign-regulations
       broader: changes
       labels:
@@ -103,6 +153,8 @@ schemes:
         cs: Kurikulum a reformy
         ru: Содержание образования и реформы
         zh: 课程与改革
+      includes:
+      - topic/vocational-education
     - id: national-curriculum
       broader: curriculum
       labels:
@@ -111,6 +163,9 @@ schemes:
         cs: RVP a vzdělávací oblasti
         ru: Образовательные стандарты и предметные области
         zh: 国家课程方案与学习领域
+      includes:
+      - resource-type/curriculum-document
+      - topic/learning-areas
     - id: standards-progressions
       broader: curriculum
       labels:
@@ -119,6 +174,25 @@ schemes:
         cs: Standardy a progrese učení
         ru: Стандарты и траектории освоения
         zh: 标准与学习进阶
+      keywords:
+        sk:
+        - výkonový štandard
+        - výkonové štandardy
+        - obsahový štandard
+        - obsahové štandardy
+        - vzdelávací štandard
+        - gradačné postupnosti
+        - gradačná postupnosť
+        cs:
+        - očekávané výstupy
+        - standardy vzdělávání
+        - standard základního vzdělávání
+        en:
+        - learning progression
+        - learning progressions
+        - achievement standards
+        - learning standards
+        - performance standards
     - id: school-curriculum-design
       broader: curriculum
       labels:
@@ -127,6 +201,25 @@ schemes:
         cs: Tvorba ŠVP a učebních osnov
         ru: Разработка образовательной программы школы
         zh: 校本课程与教学大纲编制
+      keywords:
+        sk:
+        - školský vzdelávací program
+        - školského vzdelávacieho programu
+        - škvp
+        - učebné osnovy
+        - učebných osnov
+        - učebný plán
+        - rámcový učebný plán
+        cs:
+        - školní vzdělávací program
+        - školního vzdělávacího programu
+        - učební plán
+        - učební osnovy
+        en:
+        - school curriculum
+        - school-based curriculum
+        - school curriculum design
+        - syllabus design
     - id: curriculum-reform
       broader: curriculum
       labels:
@@ -135,6 +228,8 @@ schemes:
         cs: Kurikulární reforma
         ru: Реформа содержания образования
         zh: 课程改革
+      includes:
+      - topic/curriculum-reform
     - id: foreign-curricula
       broader: curriculum
       labels:
@@ -151,6 +246,31 @@ schemes:
         cs: Kompetenční rámce (DigComp, SERR…)
         ru: Рамки компетенций (DigComp, CEFR…)
         zh: 能力框架（DigComp、CEFR等）
+      keywords:
+        sk:
+        - kompetenčný rámec
+        - kompetenčného rámca
+        - digcomp
+        - digcompedu
+        - entrecomp
+        - lifecomp
+        - greencomp
+        - spoločný európsky referenčný rámec
+        cs:
+        - kompetenční rámec
+        - kompetenčního rámce
+        - digcomp
+        - digcompedu
+        - společný evropský referenční rámec
+        en:
+        - competence framework
+        - competency framework
+        - digcomp
+        - digcompedu
+        - entrecomp
+        - lifecomp
+        - greencomp
+        - common european framework of reference
     - id: practice
       labels:
         sk: Vyučovanie v praxi
@@ -166,6 +286,9 @@ schemes:
         cs: Výukové metody
         ru: Методы обучения
         zh: 教学方法
+      includes:
+      - method
+      - topic/teaching-methods
     - id: active-learning-methods
       broader: practice
       labels:
@@ -174,6 +297,8 @@ schemes:
         cs: Aktivizační metody
         ru: Активные методы обучения
         zh: 主动学习方法
+      includes:
+      - topic/active-learning-methods
     - id: teaching-strategies
       broader: practice
       labels:
@@ -182,6 +307,9 @@ schemes:
         cs: Výukové strategie
         ru: Стратегии обучения
         zh: 教学策略
+      includes:
+      - strategy
+      - topic/teaching-strategies
     - id: organisational-forms
       broader: practice
       labels:
@@ -190,6 +318,8 @@ schemes:
         cs: Organizační formy výuky
         ru: Формы организации обучения
         zh: 教学组织形式
+      includes:
+      - form
     - id: lesson-phases
       broader: practice
       labels:
@@ -198,6 +328,9 @@ schemes:
         cs: Fáze vyučovací hodiny
         ru: Этапы урока
         zh: 课堂教学环节
+      includes:
+      - topic/lesson-phases
+      - lesson-phase-framework
     - id: assessment-feedback
       broader: practice
       labels:
@@ -206,6 +339,9 @@ schemes:
         cs: Hodnocení a zpětná vazba
         ru: Оценивание и обратная связь
         zh: 评价与反馈
+      includes:
+      - topic/student-assessment
+      - method/exit-ticket
     - id: lesson-plans
       broader: practice
       labels:
@@ -214,6 +350,8 @@ schemes:
         cs: Scénáře a přípravy hodin
         ru: Сценарии и планы уроков
         zh: 教案与课时计划
+      includes:
+      - resource-type/lesson-plan
     - id: lesson-videos
       broader: practice
       labels:
@@ -222,6 +360,9 @@ schemes:
         cs: Videoukázky hodin (hospitace)
         ru: Видеозаписи уроков (посещение уроков)
         zh: 课堂实录（观课）
+      includes:
+      - resource-type/lesson-video
+      - topic/lesson-demonstrations
     - id: worksheets-materials
       broader: practice
       labels:
@@ -230,6 +371,10 @@ schemes:
         cs: Pracovní listy a materiály
         ru: Рабочие листы и материалы
         zh: 学习单与教学材料
+      includes:
+      - resource-type/worksheet
+      - resource-type/interactive
+      - resource-type/teacher-guide
     - id: educational-games
       broader: practice
       labels:
@@ -238,6 +383,10 @@ schemes:
         cs: Vzdělávací hry
         ru: Образовательные игры
         zh: 教育游戏
+      includes:
+      - topic/educational-games
+      - resource-type/educational-game
+      - strategy/gamification
     - id: projects-inquiry
       broader: practice
       labels:
@@ -246,6 +395,11 @@ schemes:
         cs: Projekty a badatelská výuka
         ru: Проекты и исследовательская деятельность
         zh: 项目与探究
+      includes:
+      - strategy/project-based-learning
+      - strategy/inquiry-based-learning
+      - strategy/problem-based-learning
+      - strategy/stem-steam
     - id: subject-didactics
       broader: practice
       labels:
@@ -254,6 +408,33 @@ schemes:
         cs: Oborové didaktiky
         ru: Методики преподавания предметов
         zh: 学科教学法
+      keywords:
+        sk:
+        - predmetová didaktika
+        - odborová didaktika
+        - didaktika matematiky
+        - didaktika informatiky
+        - didaktika fyziky
+        - didaktika chémie
+        - didaktika biológie
+        - didaktika geografie
+        - didaktika dejepisu
+        - didaktika slovenského jazyka
+        - didaktika cudzích jazykov
+        cs:
+        - oborová didaktika
+        - oborové didaktiky
+        - didaktika matematiky
+        - didaktika informatiky
+        - didaktika fyziky
+        - didaktika chemie
+        - didaktika dějepisu
+        en:
+        - subject didactics
+        - mathematics education
+        - teaching of mathematics
+        - science education
+        - didactics of
     - id: literacies
       labels:
         sk: Gramotnosti a myslenie
@@ -261,6 +442,11 @@ schemes:
         cs: Gramotnosti a myšlení
         ru: Грамотности и мышление
         zh: 素养与思维
+      includes:
+      - literacy
+      - topic/reading-literacy
+      - topic/critical-thinking
+      - comprehension-framework
     - id: inclusion
       labels:
         sk: Inklúzia a podpora
@@ -268,6 +454,9 @@ schemes:
         cs: Inkluze a podpora
         ru: Инклюзия и поддержка
         zh: 全纳与支持
+      includes:
+      - topic/inclusion
+      - school-type/special-education
     - id: digital
       labels:
         sk: Digitálne vzdelávanie a AI
@@ -275,6 +464,116 @@ schemes:
         cs: Digitální vzdělávání a AI
         ru: Цифровое образование и ИИ
         zh: 数字教育与人工智能
+      includes:
+      - topic/digital-learning
+      - topic/ai
+      - literacy/digital
+      - literacy/computer
+      - literacy/ai-literacy
+      - form/distance
+      - strategy/blended-learning
+    - id: e-testing
+      broader: digital
+      labels:
+        sk: Elektronické testovanie
+        en: Electronic testing
+        cs: Elektronické testování
+        ru: Электронное тестирование
+        zh: 电子测试
+      keywords:
+        sk:
+        - elektronické testovanie
+        - elektronického testovania
+        - elektronický test
+        - e-test
+        - online test
+        - testovanie online
+        - testovací systém
+        - testovacia platforma
+        cs:
+        - elektronické testování
+        - elektronický test
+        - e-test
+        - online test
+        - testovací systém
+        en:
+        - e-assessment
+        - computer-based assessment
+        - computer-based testing
+        - online assessment
+        - online testing
+        - digital assessment
+        - e-test
+        ru:
+        - электронное тестирование
+        - онлайн-тестирование
+        - компьютерное тестирование
+        zh:
+        - 电子测试
+        - 在线测试
+        - 机考
+    - id: question-types
+      broader: e-testing
+      labels:
+        sk: Typy a druhy otázok
+        en: Question and item types
+        cs: Typy a druhy otázek
+        ru: Типы и виды вопросов
+        zh: 题目类型
+      includes:
+      - resource-type/test-items
+      keywords:
+        sk:
+        - typy úloh
+        - typy otázok
+        - druhy otázok
+        - druhy úloh
+        - úloha s výberom odpovede
+        - úlohy s výberom odpovede
+        - výber z možností
+        - otvorená úloha
+        - otvorené úlohy
+        - uzavretá úloha
+        - uzavreté úlohy
+        - priraďovacia úloha
+        - priraďovacie úlohy
+        - doplňovacia úloha
+        - úloha s krátkou odpoveďou
+        - dichotomická úloha
+        - multiple choice
+        - testová položka
+        - testové položky
+        cs:
+        - typy úloh
+        - typy otázek
+        - druhy otázek
+        - úloha s výběrem odpovědi
+        - uzavřená úloha
+        - otevřená úloha
+        - přiřazovací úloha
+        - doplňovací úloha
+        - testová položka
+        en:
+        - question types
+        - item types
+        - item format
+        - multiple choice
+        - multiple-choice
+        - constructed response
+        - short answer question
+        - matching item
+        - true false item
+        - test item
+        ru:
+        - типы заданий
+        - тестовые задания
+        - задания с выбором ответа
+        - виды вопросов
+        zh:
+        - 题型
+        - 选择题
+        - 填空题
+        - 判断题
     - id: approaches
       labels:
         sk: Pedagogické smery a prístupy
@@ -282,6 +581,9 @@ schemes:
         cs: Pedagogické směry a přístupy
         ru: Педагогические направления и подходы
         zh: 教育流派与理念
+      includes:
+      - approach
+      - topic/alternative-pedagogies
     - id: non-formal
       labels:
         sk: Neformálne a celoživotné vzdelávanie
@@ -289,6 +591,11 @@ schemes:
         cs: Neformální a celoživotní vzdělávání
         ru: Неформальное и непрерывное образование
         zh: 非正规教育与终身学习
+      includes:
+      - topic/non-formal
+      - topic/lifelong-learning
+      - topic/professional-development
+      - school-type/lifelong-learning
     - id: leadership
       labels:
         sk: Riadenie školy
@@ -296,6 +603,9 @@ schemes:
         cs: Řízení školy
         ru: Управление школой
         zh: 学校管理
+      includes:
+      - topic/school-leadership
+      - topic/family-partnership
     - id: research
       labels:
         sk: Výskum, dáta a trendy
@@ -303,6 +613,8 @@ schemes:
         cs: Výzkum, data a trendy
         ru: Исследования, данные и тенденции
         zh: 研究、数据与趋势
+      includes:
+      - topic/research-evidence
     - id: evidence-syntheses
       broader: research
       labels:
@@ -311,6 +623,8 @@ schemes:
         cs: Syntézy důkazů
         ru: Обобщения доказательных данных
         zh: 证据综述
+      includes:
+      - resource-type/systematic-review
     - id: assessments
       broader: research
       labels:
@@ -319,6 +633,8 @@ schemes:
         cs: Mezinárodní a národní šetření
         ru: Международные и национальные исследования качества
         zh: 国际与国家测评
+      includes:
+      - topic/statistics-assessments
     - id: statistics
       broader: research
       labels:
@@ -327,6 +643,8 @@ schemes:
         cs: Statistiky
         ru: Статистика
         zh: 统计
+      includes:
+      - resource-type/dataset
     - id: trend-radar
       broader: research
       labels:
@@ -335,6 +653,8 @@ schemes:
         cs: Radar trendů
         ru: Радар трендов
         zh: 趋势雷达
+      includes:
+      - topic/trends
     - id: world
       labels:
         sk: Svet a inšpirácia
@@ -349,6 +669,9 @@ schemes:
         cs: Pojmy
         ru: Термины
         zh: 术语
+      includes:
+      - topic/terminology
+      - resource-type/term
     - id: calendar
       labels:
         sk: Kalendár

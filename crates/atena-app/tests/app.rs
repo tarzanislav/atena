@@ -70,6 +70,41 @@ async fn the_app_opens_with_the_register_of_its_version() {
     );
     assert_eq!(app.document(999).await.unwrap(), None);
 
+    // the overview counts every section, also when it is empty
+    let tally = app.tally(vec!["region/sk".into()]).await.unwrap();
+    assert_eq!((tally.total, tally.new, tally.new_days), (0, 0, 7));
+    assert!(
+        tally
+            .sections
+            .iter()
+            .any(|c| c.key == "section/e-testing" && c.total == 0)
+    );
+    assert_eq!(
+        tally.sections.len(),
+        app.taxonomy("sk")
+            .schemes
+            .iter()
+            .find(|s| s.id == "section")
+            .unwrap()
+            .concepts
+            .len()
+    );
+    assert_eq!(
+        app.tally(vec!["region/moon".into()])
+            .await
+            .unwrap_err()
+            .code,
+        "search-filter"
+    );
+    // the stored documents are classified with this taxonomy in the background
+    for _ in 0..100 {
+        if folder.join("taxonomy.classified").exists() {
+            break;
+        }
+        tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+    }
+    assert!(folder.join("taxonomy.classified").exists());
+
     assert!(!app.crawl_status().await.running);
     app.close().await;
     std::fs::remove_dir_all(&folder).unwrap();

@@ -15,12 +15,21 @@ export function isAppError(e: unknown): e is AppError {
 
 export type Theme = "system" | "light" | "dark";
 
+/** Slovak data (Slovak sources and texts in Slovak) or foreign data. */
+export type Region = "sk" | "abroad";
+
+/** How much a source is to be trusted (from its authority A1…E). */
+export type Trust = "official" | "expert" | "other";
+
 export interface Settings {
   language: string;
   theme: Theme;
   editor: string;
   shareProposals: boolean;
   concurrency: number;
+  region: Region;
+  /** The language chosen among foreign data; `null`: every language. */
+  abroadLanguage: string | null;
 }
 
 export interface Startup {
@@ -58,6 +67,7 @@ export interface Source {
   url: string;
   country: string;
   authority: string;
+  trust: Trust;
   licence: string;
   terms: string;
   register: boolean;
@@ -99,6 +109,8 @@ export interface Hit {
   sourceName: string;
   country: string;
   authority: string;
+  trust: Trust;
+  region: Region;
   licence: string;
   language: string | null;
   published: string | null;
@@ -130,6 +142,24 @@ export interface SearchQuery {
   page: number;
 }
 
+export interface ConceptCount {
+  /** `scheme/concept`. */
+  key: string;
+  total: number;
+  new: number;
+}
+
+/** The overview's counts within a scope. */
+export interface Tally {
+  total: number;
+  new: number;
+  /** "New" means first seen within this many days. */
+  newDays: number;
+  sections: ConceptCount[];
+  regions: Partial<Record<Region, number>>;
+  languages: Facet[];
+}
+
 export interface Version {
   number: number;
   fetchedAt: string;
@@ -147,6 +177,7 @@ export interface DocumentCard {
   sourceName: string;
   country: string;
   authority: string;
+  trust: Trust;
   licence: string;
   language: string | null;
   published: string | null;
@@ -273,6 +304,7 @@ export const api = {
   taxonomy: (language: string) => invoke<Taxonomy>("taxonomy", { language }),
   search: (query: SearchQuery) => invoke<SearchResult>("search", { query }),
   newest: (filters: string[], limit: number) => invoke<Hit[]>("newest", { filters, limit }),
+  tally: (filters: string[]) => invoke<Tally>("tally", { filters }),
   document: (id: number) => invoke<DocumentCard | null>("document", { id }),
   importAddresses: (text: string, country: string | null) =>
     invoke<ImportResult>("import_addresses", { text, country }),

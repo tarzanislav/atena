@@ -42,12 +42,35 @@ počítači, chráni ju náhodné heslo a zapína sa a vypína spolu s ATENOU.
 
 | Obrazovka | Čo na nej nájdete |
 |---|---|
-| **Prehľad** | počty dokumentov a zdrojov, najnovšie dokumenty a sekcie – kliknutím na sekciu sa otvorí vyhľadávanie v nej |
-| **Hľadať** | vyhľadávanie v ľubovoľnom jazyku; výsledky zúžite vľavo podľa sekcie, druhu školy, krajiny, autority, jazyka alebo zdroja |
+| **Prehľad** | prepínač **Slovensko / Zahraničie**, kategórie s počtom nových a všetkých dokumentov, najnovšie dokumenty – kliknutím na kategóriu sa otvorí vyhľadávanie v nej |
+| **Hľadať** | vyhľadávanie v ľubovoľnom jazyku; výsledky zúžite vľavo podľa kategórie, dôveryhodnosti zdroja, druhu školy, krajiny, autority, jazyka alebo zdroja |
 | **Zdroje** | všetky zdroje a pri každom, čo smie ATENA robiť: zbierať, uchovať text, zobraziť celý text |
 | **Návrhy** | navrhnutie nových stránok, rozhodovanie o návrhoch a odovzdanie návrhov editorovi |
 | **Zber** | spustenie a zastavenie zberu a jeho priebeh |
 | **Nastavenia** | jazyk, svetlý alebo tmavý vzhľad, vaše meno pre rozhodnutia, žiadosti o vymazanie |
+
+### Slovensko alebo Zahraničie
+
+Prepínač navrchu Prehľadu aj Hľadania určuje, ktoré údaje vidíte:
+
+- **Slovensko** – dokumenty slovenských zdrojov a dokumenty v slovenčine;
+- **Zahraničie** – ostatné; pod prepínačom si vyberiete jazyk (alebo všetky jazyky).
+
+Voľba sa pamätá. Čísla pri kategóriách znamenajú **nové / všetky** – nové sú dokumenty, ktoré ATENA
+našla za posledných 7 dní.
+
+### Dôveryhodnosť zdroja
+
+Každý výsledok má štítok a farebný pruh vľavo:
+
+| Štítok | Zdroje |
+|---|---|
+| **Úradný zdroj** (modrý) | zákony, ministerstvo a štátne inštitúcie (A1, A2) |
+| **Odborný zdroj** (zelený) | medzinárodné organizácie, univerzity a výskum, odborné organizácie (B1, B2, C1) |
+| **Iný zdroj – overte** (oranžový) | asociácie, učitelia a autori, komunity, médiá (C2, D, E) – overte v pôvodnom zdroji |
+
+Pri rovnakej zhode sú úradné zdroje vo výsledkoch vyššie. Tlačidlom **Len úradné zdroje** pri
+vyhľadávaní ukážete len ich.
 
 ### Hľadanie
 
@@ -57,7 +80,8 @@ počítači, chráni ju náhodné heslo a zapína sa a vypína spolu s ATENOU.
   jazyk. Tlačidlom **Otvoriť originál** sa dokument otvorí vo vašom prehliadači.
 - Text sa ukazuje len tam, kde to dovoľuje licencia. Pri ostatných dokumentoch ATENA ukáže len
   názov a odkaz na originál.
-- Zaradenie do sekcií a tém je návrh ATENY, kým ho neoverí človek.
+- Zaradenie do kategórií a tém je návrh ATENY, kým ho neoverí človek. Po aktualizácii ATENY sa
+  už uložené dokumenty na pozadí znova zaradia podľa novej taxonómie.
 
 ### Zber
 

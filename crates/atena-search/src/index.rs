@@ -21,7 +21,7 @@ use crate::{Result, SearchError};
 /// Name of the marker file.
 const MARKER: &str = "atena-search.format";
 /// Format of the index; raised whenever fields or analyzers change, which requires a rebuild.
-const FORMAT: &str = "1";
+const FORMAT: &str = "2";
 /// Memory for the writer, shared by its threads (each needs at least 15 MB).
 const WRITER_MEMORY: usize = 64 * 1024 * 1024;
 /// Most writer threads.
@@ -200,6 +200,7 @@ impl SearchIndex {
             doc.add_date(f.published, date(published));
         }
         doc.add_date(f.dated, date(d.dated));
+        doc.add_date(f.added, date(d.added));
         doc.add_f64(f.weight, authority_weight(&d.authority));
         doc.add_bool(f.full_text, d.full_text);
         if let Some(text) = &d.text {

@@ -64,7 +64,38 @@ overview-last-check = Posledná kontrola: { $time } · za posledných 24 hodín 
 overview-never-checked = Zdroje ešte neboli skontrolované.
 overview-newest = Najnovšie
 overview-search-all = Hľadať vo všetkom
-overview-sections = Sekcie
+overview-sections = Kategórie
+overview-in-scope =
+    { $total ->
+        [one] { $total } dokument
+        [few] { $total } dokumenty
+       *[other] { $total } dokumentov
+    } v tomto výbere
+overview-new-in-scope =
+    { $new ->
+        [one] { $new } nový
+        [few] { $new } nové
+       *[other] { $new } nových
+    } za { $days } dní
+overview-counts-legend = Pri kategóriách: nové za posledných { $days } dní / všetky
+overview-counts-title =
+    { $new ->
+        [one] { $new } nový
+        [few] { $new } nové
+       *[other] { $new } nových
+    } za posledných { $days } dní, spolu { $total }
+overview-sources-line = Zbiera sa { $crawled } z { $sources } zdrojov
+
+## Slovenské alebo zahraničné údaje, dôveryhodnosť zdroja
+
+scope-label = Ktoré údaje zobraziť
+scope-sk = Slovensko
+scope-abroad = Zahraničie
+scope-languages = Jazyk zahraničných údajov
+scope-all-languages = Všetky jazyky
+trust-official = Úradný zdroj
+trust-expert = Odborný zdroj
+trust-other = Iný zdroj – overte
 
 ## Hľadanie
 
@@ -89,6 +120,7 @@ search-nothing = Skúste iné slová alebo zrušte niektoré zúženie.
 search-previous = Predchádzajúca
 search-next = Ďalšia
 search-page = Strana { $page } z { $pages }
+search-only-official = Len úradné zdroje
 hit-no-text = Text tohto zdroja sa v ATENE nezobrazuje – licencia to nedovoľuje. Otvorte originál.
 
 facet-section = Sekcia
@@ -99,6 +131,7 @@ facet-country = Krajina
 facet-authority = Autorita zdroja
 facet-language = Jazyk
 facet-source = Zdroj
+facet-trust = Dôveryhodnosť zdroja
 
 ## Karta dokumentu
 

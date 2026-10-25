@@ -65,7 +65,28 @@ overview-last-check = Последняя проверка: { $time } · за п�
 overview-never-checked = Источники ещё не проверялись.
 overview-newest = Новое
 overview-search-all = Искать везде
-overview-sections = Разделы
+overview-sections = Категории
+overview-in-scope =
+    { $total ->
+        [one] { $total } документ
+        [few] { $total } документа
+       *[other] { $total } документов
+    } в этой выборке
+overview-new-in-scope = новых за { $days } дн.: { $new }
+overview-counts-legend = У категорий: новые за последние { $days } дн. / все
+overview-counts-title = новых за последние { $days } дн.: { $new }, всего { $total }
+overview-sources-line = Собирается { $crawled } из { $sources } источников
+
+## Словацкие или зарубежные данные, надёжность источника
+
+scope-label = Какие данные показывать
+scope-sk = Словакия
+scope-abroad = Зарубежье
+scope-languages = Язык зарубежных данных
+scope-all-languages = Все языки
+trust-official = Официальный источник
+trust-expert = Экспертный источник
+trust-other = Другой источник – проверьте
 
 ## Поиск
 
@@ -90,6 +111,7 @@ search-nothing = Попробуйте другие слова или отмен�
 search-previous = Назад
 search-next = Далее
 search-page = Страница { $page } из { $pages }
+search-only-official = Только официальные источники
 hit-no-text = Текст этого источника в ATENA не показывается – лицензия этого не разрешает. Откройте оригинал.
 
 facet-section = Раздел
@@ -100,6 +122,7 @@ facet-country = Страна
 facet-authority = Авторитет источника
 facet-language = Язык
 facet-source = Источник
+facet-trust = Надёжность источника
 
 ## Карточка документа
 

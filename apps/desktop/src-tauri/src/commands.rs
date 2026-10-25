@@ -7,7 +7,7 @@ use std::sync::Arc;
 use atena_app::views::{
     ChoiceInput, ConfirmedView, CrawlView, DecisionOptions, DocumentView, ErasureView, HitView,
     ImportView, OverviewView, PendingView, ProposalView, ReceivedView, SearchQuery, SearchView,
-    SourceView, SyncView, TaxonomyView,
+    SourceView, SyncView, TallyView, TaxonomyView,
 };
 use atena_app::{App, AppError, Settings};
 use serde::Serialize;
@@ -82,6 +82,12 @@ pub async fn taxonomy(shared: State<'_, Shared>, language: String) -> Answer<Tax
 #[tauri::command]
 pub async fn search(shared: State<'_, Shared>, query: SearchQuery) -> Answer<SearchView> {
     app(&shared).await?.search(query).await
+}
+
+/// The overview's counts within a scope.
+#[tauri::command]
+pub async fn tally(shared: State<'_, Shared>, filters: Vec<String>) -> Answer<TallyView> {
+    app(&shared).await?.tally(filters).await
 }
 
 /// The newest documents.

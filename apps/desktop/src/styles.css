@@ -22,6 +22,10 @@
   --peach-line: #ecc8b8;
   --peach-ink: #6b3a26;
   --red-ink: #a4262c;
+  --blue-ink: #0b4f9c;
+  --trust-official: #4f86e3;
+  --trust-expert: #4fae7e;
+  --trust-other: #e0a060;
   --shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
   --font: "Segoe UI Variable Text", "Segoe UI", "Open Sans", "Noto Sans SC", system-ui, sans-serif;
   --font-display: "Segoe UI Variable Display", "Segoe UI", "Open Sans", "Noto Sans SC", system-ui, sans-serif;
@@ -50,6 +54,10 @@
   --peach-line: #6b5047;
   --peach-ink: #f3cdbd;
   --red-ink: #f1a7a7;
+  --blue-ink: #a9cdf7;
+  --trust-official: #6f9fec;
+  --trust-expert: #6cc196;
+  --trust-other: #e8b27a;
   --shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
   color-scheme: dark;
 }
@@ -293,8 +301,15 @@ textarea {
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
 }
 
-.grid.sections {
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+/* categories flow in columns, so a long one leaves no gaps beside it */
+.sections {
+  columns: 3 280px;
+  column-gap: 18px;
+}
+
+.sections > .section-tile {
+  break-inside: avoid;
+  margin-bottom: 18px;
 }
 
 .grid.two {
@@ -477,6 +492,180 @@ textarea {
 .authority.high {
   background: var(--green-bg);
   color: var(--green-ink);
+}
+
+/* how much a source is to be trusted: words first, colour second */
+.trust {
+  display: inline-block;
+  border-radius: 5px;
+  padding: 0 7px;
+  font-size: 12px;
+  font-weight: 600;
+  border-left: 3px solid var(--trust-other);
+  background: var(--peach-bg);
+  color: var(--peach-ink);
+}
+
+.trust.official {
+  border-left-color: var(--trust-official);
+  background: var(--accent-soft);
+  color: var(--blue-ink);
+}
+
+.trust.expert {
+  border-left-color: var(--trust-expert);
+  background: var(--green-bg);
+  color: var(--green-ink);
+}
+
+.trust-bar {
+  width: 4px;
+  background: var(--trust-other);
+}
+
+.trust-bar.official {
+  background: var(--trust-official);
+}
+
+.trust-bar.expert {
+  background: var(--trust-expert);
+}
+
+/* --------------------------------------------- Slovak or foreign data */
+
+.scope {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.segmented {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 4px;
+  gap: 4px;
+  border-radius: 12px;
+  background: var(--chip);
+  border: 1px solid var(--line);
+}
+
+.segment {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 6px 18px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 15.5px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.segment:hover {
+  color: var(--text);
+}
+
+.segment[aria-checked="true"] {
+  background: var(--card);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
+.segment-count {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--blue-ink);
+}
+
+/* ------------------------------------------------------- the overview */
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 18px;
+  font-size: 14px;
+}
+
+.counts {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.counts-new {
+  color: var(--green-ink);
+  font-weight: 700;
+}
+
+.section-tile {
+  border-top: 5px solid var(--colour, var(--line));
+  padding: 14px 16px;
+  gap: 8px;
+}
+
+.section-tile.empty-tile .section-head h3 {
+  color: var(--muted);
+}
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.section-head:hover h3 {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.subsections {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.subsection {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.subsection:hover {
+  background: var(--hover);
+}
+
+.subsection.dim {
+  color: var(--muted);
+}
+
+.subsection.nested {
+  padding-left: 22px;
+  font-size: 13.5px;
 }
 
 .draft {

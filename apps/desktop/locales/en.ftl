@@ -61,7 +61,27 @@ overview-last-check = Last check: { $time } · in the last 24 hours { $checks ->
 overview-never-checked = The sources have not been checked yet.
 overview-newest = Newest
 overview-search-all = Search everything
-overview-sections = Sections
+overview-sections = Categories
+overview-in-scope =
+    { $total ->
+        [one] { $total } document
+       *[other] { $total } documents
+    } in this selection
+overview-new-in-scope = { $new } new in { $days } days
+overview-counts-legend = Next to the categories: new in the last { $days } days / all
+overview-counts-title = { $new } new in the last { $days } days, { $total } in all
+overview-sources-line = { $crawled } of { $sources } sources are crawled
+
+## Slovak or foreign data, trust in the source
+
+scope-label = Which data to show
+scope-sk = Slovakia
+scope-abroad = Abroad
+scope-languages = Language of foreign data
+scope-all-languages = All languages
+trust-official = Official source
+trust-expert = Expert source
+trust-other = Other source – check it
 
 ## Search
 
@@ -85,6 +105,7 @@ search-nothing = Try other words or remove a filter.
 search-previous = Previous
 search-next = Next
 search-page = Page { $page } of { $pages }
+search-only-official = Official sources only
 hit-no-text = The text of this source is not shown in ATENA – its licence does not allow it. Open the original.
 
 facet-section = Section
@@ -95,6 +116,7 @@ facet-country = Country
 facet-authority = Authority of the source
 facet-language = Language
 facet-source = Source
+facet-trust = Trust in the source
 
 ## Document card
 

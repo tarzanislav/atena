@@ -46,6 +46,16 @@ pub enum TaxonomyError {
     /// A language marked as draft is not a taxonomy language, or is the reference language.
     #[error("draft label language {0} is unknown or is the reference language")]
     InvalidDraftLanguage(String),
+    /// A concept includes an unknown scheme or concept, or one of its own scheme.
+    #[error("concept {scheme}:{id} includes {include}, which is unknown or in its own scheme")]
+    InvalidInclude {
+        /// Scheme ID.
+        scheme: String,
+        /// Concept ID.
+        id: String,
+        /// The include as written.
+        include: String,
+    },
 }
 
 /// A scheme or concept without a label in a core language.
@@ -90,6 +100,8 @@ struct RawConcept {
     isced: Vec<String>,
     #[serde(default)]
     keywords: BTreeMap<String, Vec<String>>,
+    #[serde(default)]
+    includes: Vec<String>,
 }
 
 /// One token of a keyword phrase; tokens of four or more characters match as word prefixes.
@@ -136,6 +148,33 @@ pub struct Concept {
     pub isced: Vec<String>,
     /// Keywords by language code.
     pub keywords: BTreeMap<String, Vec<Keyword>>,
+    /// Concepts of other schemes this concept gathers (`scheme/concept`, or a whole `scheme`):
+    /// a section of the overview is a view of the facets that make it up.
+    pub includes: Vec<Include>,
+}
+
+/// A concept of another scheme gathered by a concept – or the whole scheme.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct Include {
+    /// Scheme ID.
+    pub scheme: String,
+    /// Concept ID; `None` for every concept of the scheme.
+    pub concept: Option<String>,
+}
+
+impl Include {
+    fn parse(text: &str) -> Self {
+        match text.trim().split_once('/') {
+            Some((scheme, concept)) => Self {
+                scheme: scheme.to_string(),
+                concept: Some(concept.to_string()),
+            },
+            None => Self {
+                scheme: text.trim().to_string(),
+                concept: None,
+            },
+        }
+    }
 }
 
 impl Concept {
@@ -266,6 +305,7 @@ impl Taxonomy {
                     .into_iter()
                     .map(|(lang, list)| (lang, list.iter().filter_map(|k| prepare(k)).collect()))
                     .collect();
+                let includes = rc.includes.iter().map(|i| Include::parse(i)).collect();
                 ids.push(rc.id.clone());
                 concepts.insert(
                     (sid.clone(), rc.id.clone()),
@@ -277,6 +317,7 @@ impl Taxonomy {
                         note: rc.note,
                         isced: rc.isced,
                         keywords,
+                        includes,
                     },
                 );
             }
@@ -289,6 +330,25 @@ impl Taxonomy {
                     concept_ids: ids,
                 },
             );
+        }
+        for c in concepts.values() {
+            for include in &c.includes {
+                let known = include.scheme != c.scheme
+                    && schemes.contains_key(&include.scheme)
+                    && include.concept.as_ref().is_none_or(|id| {
+                        concepts.contains_key(&(include.scheme.clone(), id.clone()))
+                    });
+                if !known {
+                    return Err(TaxonomyError::InvalidInclude {
+                        scheme: c.scheme.clone(),
+                        id: c.id.clone(),
+                        include: match &include.concept {
+                            Some(id) => format!("{}/{id}", include.scheme),
+                            None => include.scheme.clone(),
+                        },
+                    });
+                }
+            }
         }
         Ok(Self {
             version: raw.version,
@@ -341,6 +401,38 @@ impl Taxonomy {
             }
         }
         out
+    }
+
+    /// Everything a document may be labelled with to belong to a concept: the concept and its
+    /// descendants, and what they include (with descendants; `None` for a whole scheme).
+    /// Empty for an unknown concept.
+    pub fn members(&self, scheme: &str, id: &str) -> Vec<Include> {
+        if self.get(scheme, id).is_none() {
+            return Vec::new();
+        }
+        let own = std::iter::once(id.to_string()).chain(self.descendants(scheme, id));
+        let mut out = std::collections::BTreeSet::new();
+        for concept in own {
+            let Some(c) = self.get(scheme, &concept) else {
+                continue;
+            };
+            for include in &c.includes {
+                if let Some(target) = &include.concept {
+                    for d in self.descendants(&include.scheme, target) {
+                        out.insert(Include {
+                            scheme: include.scheme.clone(),
+                            concept: Some(d),
+                        });
+                    }
+                }
+                out.insert(include.clone());
+            }
+            out.insert(Include {
+                scheme: scheme.to_string(),
+                concept: Some(concept),
+            });
+        }
+        out.into_iter().collect()
     }
 
     /// `true` when labels in `lang` are drafts awaiting review.
@@ -494,6 +586,59 @@ mod tests {
             Taxonomy::from_yaml(&no_ref),
             Err(TaxonomyError::MissingReferenceLabel { .. })
         ));
+    }
+
+    #[test]
+    fn sections_gather_concepts_of_other_schemes() {
+        let t = Taxonomy::bundled().unwrap();
+        let include = |scheme: &str, concept: Option<&str>| Include {
+            scheme: scheme.into(),
+            concept: concept.map(Into::into),
+        };
+        let practice = t.members("section", "practice");
+        for expected in [
+            include("section", Some("practice")),
+            include("section", Some("teaching-methods")),
+            include("method", None),
+            include("strategy", Some("project-based-learning")),
+            include("resource-type", Some("worksheet")),
+        ] {
+            assert!(practice.contains(&expected), "{expected:?}");
+        }
+        // an included concept brings its narrower concepts along
+        let inclusion = t.members("section", "inclusion");
+        assert!(inclusion.contains(&include("topic", Some("gifted"))));
+        assert!(inclusion.contains(&include("school-type", Some("special-primary"))));
+        // electronic testing sits in the digital section, question types under it
+        let digital = t.members("section", "digital");
+        assert!(digital.contains(&include("section", Some("e-testing"))));
+        assert!(digital.contains(&include("section", Some("question-types"))));
+        assert!(digital.contains(&include("resource-type", Some("test-items"))));
+        assert!(t.members("section", "nothing").is_empty());
+        // a concept without includes is just itself and its descendants
+        assert_eq!(t.members("topic", "ai"), [include("topic", Some("ai"))]);
+    }
+
+    #[test]
+    fn rejects_unknown_includes_and_includes_of_the_own_scheme() {
+        let yaml = |include: &str| {
+            format!(
+                "version: 2\nreference_language: sk\ncore_languages: [sk]\nlanguages: [sk]\nschemes:\n  \
+                 a:\n    labels: {{sk: A}}\n    concepts:\n    - {{id: x, labels: {{sk: X}}, includes: [{include}]}}\n  \
+                 b:\n    labels: {{sk: B}}\n    concepts:\n    - {{id: y, labels: {{sk: Y}}}}\n"
+            )
+        };
+        assert!(Taxonomy::from_yaml(&yaml("b/y")).is_ok());
+        assert!(Taxonomy::from_yaml(&yaml("b")).is_ok());
+        for bad in ["b/z", "c", "a", "a/x"] {
+            assert!(
+                matches!(
+                    Taxonomy::from_yaml(&yaml(bad)),
+                    Err(TaxonomyError::InvalidInclude { .. })
+                ),
+                "{bad}"
+            );
+        }
     }
 
     #[test]

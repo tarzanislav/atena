@@ -6,9 +6,10 @@ use std::collections::BTreeMap;
 
 use atena_assess::{Kind, Problem, Reason, Rejected};
 use atena_core::legality::{SourceFacts, permission};
+use atena_core::scope::{region_of, trust_of};
 use atena_core::{Licence, Restriction, Taxonomy, Terms};
 use atena_ingest::import::Proposed;
-use atena_search::{Hit, Results, Snippet};
+use atena_search::{Hit, Results, Snippet, Tally};
 use atena_store::{ImportOutcome, ImportState, ImportedSource, SourceSummary, Via};
 use jiff::Timestamp;
 use serde::{Deserialize, Serialize};
@@ -96,6 +97,8 @@ pub struct SourceView {
     pub country: String,
     /// Authority level.
     pub authority: String,
+    /// Trust group of the authority: `official`, `expert` or `other`.
+    pub trust: String,
     /// Licence.
     pub licence: String,
     /// Terms of use.
@@ -122,6 +125,7 @@ impl From<SourceSummary> for SourceView {
             name: s.name,
             url: s.url,
             country: s.country,
+            trust: trust_of(&s.authority).into(),
             authority: s.authority,
             licence: s.licence,
             terms: s.terms,
@@ -544,6 +548,10 @@ pub struct HitView {
     pub country: String,
     /// Authority level.
     pub authority: String,
+    /// Trust group of the authority: `official`, `expert` or `other`.
+    pub trust: String,
+    /// `sk` (Slovak data) or `abroad`.
+    pub region: String,
     /// Licence.
     pub licence: String,
     /// Language.
@@ -567,6 +575,8 @@ impl From<Hit> for HitView {
             url: h.url,
             source_id: h.source_id,
             source_name: h.source_name,
+            trust: trust_of(&h.authority).into(),
+            region: region_of(&h.country, h.language.as_deref()).into(),
             country: h.country,
             authority: h.authority,
             licence: h.licence,
@@ -628,6 +638,8 @@ pub struct DocumentView {
     pub country: String,
     /// Authority level.
     pub authority: String,
+    /// Trust group of the authority: `official`, `expert` or `other`.
+    pub trust: String,
     /// Licence.
     pub licence: String,
     /// Language.
@@ -693,6 +705,70 @@ impl SearchView {
             hits: results.hits.into_iter().map(HitView::from).collect(),
             facets: results
                 .facets
+                .into_iter()
+                .map(|f| FacetView {
+                    namespace: f.namespace,
+                    value: f.value,
+                    count: f.count,
+                })
+                .collect(),
+        }
+    }
+}
+
+/// Documents of one concept: all in the scope, and the new ones.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConceptCountView {
+    /// `scheme/concept`.
+    pub key: String,
+    /// Documents in the scope.
+    pub total: u64,
+    /// Of them, new.
+    pub new: u64,
+}
+
+/// The counts of the overview within a scope.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TallyView {
+    /// Documents in the scope.
+    pub total: u64,
+    /// Of them, new.
+    pub new: u64,
+    /// "New" means first seen within this many days.
+    pub new_days: u32,
+    /// Documents per section.
+    pub sections: Vec<ConceptCountView>,
+    /// Documents per region (`sk`, `abroad`), whatever region is chosen.
+    pub regions: BTreeMap<String, u64>,
+    /// Documents per language within the region, most first.
+    pub languages: Vec<FacetView>,
+}
+
+impl TallyView {
+    /// The view of a tally of the scheme `scheme`.
+    pub fn new(tally: Tally, scheme: &str, new_days: u32) -> Self {
+        Self {
+            total: tally.total,
+            new: tally.new,
+            new_days,
+            sections: tally
+                .concepts
+                .into_iter()
+                .map(|c| ConceptCountView {
+                    key: format!("{scheme}/{}", c.concept),
+                    total: c.total,
+                    new: c.new,
+                })
+                .collect(),
+            regions: tally
+                .regions
+                .into_iter()
+                .map(|f| (f.value, f.count))
+                .collect(),
+            languages: tally
+                .languages
                 .into_iter()
                 .map(|f| FacetView {
                     namespace: f.namespace,

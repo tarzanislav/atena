@@ -9,6 +9,7 @@ const COMMANDS: &[&str] = &[
     "taxonomy",
     "search",
     "newest",
+    "tally",
     "document",
     "import_addresses",
     "proposals",

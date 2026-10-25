@@ -46,7 +46,23 @@ overview-last-check = 最近一次检查：{ $time } · 过去 24 小时内共 {
 overview-never-checked = 尚未检查过任何来源。
 overview-newest = 最新
 overview-search-all = 搜索全部
-overview-sections = 栏目
+overview-sections = 类别
+overview-in-scope = 当前范围共 { $total } 篇文档
+overview-new-in-scope = 近 { $days } 天新增 { $new } 篇
+overview-counts-legend = 类别旁的数字：近 { $days } 天新增 / 全部
+overview-counts-title = 近 { $days } 天新增 { $new } 篇，共 { $total } 篇
+overview-sources-line = 正在采集 { $sources } 个来源中的 { $crawled } 个
+
+## 斯洛伐克或国外数据，来源可信度
+
+scope-label = 显示哪些数据
+scope-sk = 斯洛伐克
+scope-abroad = 国外
+scope-languages = 国外数据的语言
+scope-all-languages = 所有语言
+trust-official = 官方来源
+trust-expert = 专业来源
+trust-other = 其他来源——请核实
 
 ## 搜索
 
@@ -69,6 +85,7 @@ search-nothing = 请尝试其他词语或取消部分筛选。
 search-previous = 上一页
 search-next = 下一页
 search-page = 第 { $page } 页，共 { $pages } 页
+search-only-official = 仅官方来源
 hit-no-text = 此来源的文本不在 ATENA 中显示——其许可不允许。请打开原文。
 
 facet-section = 栏目
@@ -79,6 +96,7 @@ facet-country = 国家
 facet-authority = 来源权威性
 facet-language = 语言
 facet-source = 来源
+facet-trust = 来源可信度
 
 ## 文档卡片
 

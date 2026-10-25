@@ -26,6 +26,8 @@ import moon from "@fluentui/svg-icons/icons/weather_moon_20_regular.svg";
 import sun from "@fluentui/svg-icons/icons/weather_sunny_20_regular.svg";
 import erase from "@fluentui/svg-icons/icons/delete_20_regular.svg";
 import people from "@fluentui/svg-icons/icons/people_team_20_regular.svg";
+import location from "@fluentui/svg-icons/icons/location_20_regular.svg";
+import globe from "@fluentui/svg-icons/icons/globe_20_regular.svg";
 
 const ICONS = {
   home,
@@ -53,6 +55,8 @@ const ICONS = {
   sun,
   erase,
   people,
+  location,
+  globe,
 };
 
 export type IconName = keyof typeof ICONS;
