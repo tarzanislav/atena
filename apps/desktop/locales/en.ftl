@@ -555,13 +555,16 @@ private-copy-right = Copy for your own use: under § 42 of the Slovak Copyright 
 facet-archive = ATENA archive
 archive-facet-removed = Removed from the web
 archive-gone = The publisher removed the document from the web ({ $date }).
-archive-gone-text = ATENA keeps it in its archive because it is a document anyone may copy and show ({ $licence }). Its source and licence stay stated.
-archive-text = ATENA's archive keeps the original file – it stays available even if the publisher removes it from the web ({ $licence }).
+archive-gone-text = ATENA keeps it in its archive because it is a document anyone may copy and show – { $licence }. Its source and licence stay stated.
+archive-text = ATENA's archive keeps the original file – it stays available even if the publisher removes it from the web. Licence: { $licence }.
 archive-file = Original file in the archive since { $date } · { $size }
 archive-open = Open the original file from the archive
 archive-open-size = Open the original file from the archive ({ $size })
 archive-gone-hit = Removed from the web
 archive-gone-hit-title = The publisher removed the document from the web; ATENA keeps it in its archive.
-overview-archive = Archive: { $files } original files ({ $size }) · removed from the web: { $gone }
+overview-archive = Archive: { $files ->
+        [one] { $files } original file
+       *[other] { $files } original files
+    } ({ $size }) · removed from the web: { $gone }
 settings-keep-originals = Keep the original files of official and openly licensed documents
 settings-keep-originals-explain = PDF and Word/OpenDocument documents that anyone may copy stay available even if the publisher removes them from the web. They are kept only after the check for dangerous content and only when their text has no personal data. They take disk space.

@@ -575,13 +575,17 @@ private-copy-right = Kopie pro vlastní potřebu: podle § 42 slovenského autor
 facet-archive = Archiv ATENY
 archive-facet-removed = Odstraněno z webu
 archive-gone = Vydavatel dokument odstranil z webu ({ $date }).
-archive-gone-text = ATENA ho uchovává ve svém archivu, protože jde o dokument, který smí každý kopírovat a zobrazovat ({ $licence }). Zdroj a licence zůstávají uvedeny.
-archive-text = Původní soubor uchovává archiv ATENY – zůstane dostupný, i když ho vydavatel z webu odstraní ({ $licence }).
+archive-gone-text = ATENA ho uchovává ve svém archivu, protože jde o dokument, který smí každý kopírovat a zobrazovat – { $licence }. Zdroj a licence zůstávají uvedeny.
+archive-text = Původní soubor uchovává archiv ATENY – zůstane dostupný, i když ho vydavatel z webu odstraní. Licence: { $licence }.
 archive-file = Původní soubor v archivu od { $date } · { $size }
 archive-open = Otevřít původní soubor z archivu
 archive-open-size = Otevřít původní soubor z archivu ({ $size })
 archive-gone-hit = Odstraněno z webu
 archive-gone-hit-title = Vydavatel dokument odstranil z webu; ATENA ho uchovává ve svém archivu.
-overview-archive = Archiv: { $files } původních souborů ({ $size }) · odstraněno z webu: { $gone }
+overview-archive = Archiv: { $files ->
+        [one] { $files } původní soubor
+        [few] { $files } původní soubory
+       *[other] { $files } původních souborů
+    } ({ $size }) · odstraněno z webu: { $gone }
 settings-keep-originals = Uchovávat původní soubory úředních a volně licencovaných dokumentů
 settings-keep-originals-explain = PDF a dokumenty Word/OpenDocument, které smí každý kopírovat, zůstanou dostupné, i když je vydavatel z webu odstraní. Ukládají se jen po kontrole nebezpečného obsahu a jen pokud jejich text neobsahuje osobní údaje. Zabírají místo na disku.
