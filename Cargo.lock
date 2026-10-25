@@ -106,7 +106,7 @@ dependencies = [
 
 [[package]]
 name = "atena-app"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "atena-assess",
  "atena-core",
@@ -128,7 +128,7 @@ dependencies = [
 
 [[package]]
 name = "atena-assess"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "atena-core",
  "atena-crawl",
@@ -144,7 +144,7 @@ dependencies = [
 
 [[package]]
 name = "atena-core"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "blake3",
  "serde",
@@ -157,7 +157,7 @@ dependencies = [
 
 [[package]]
 name = "atena-crawl"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "atena-crawl",
  "bytes",
@@ -175,7 +175,7 @@ dependencies = [
 
 [[package]]
 name = "atena-extract"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "atena-core",
  "chardetng",
@@ -196,7 +196,7 @@ dependencies = [
 
 [[package]]
 name = "atena-ingest"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "atena-assess",
  "atena-core",
@@ -219,7 +219,7 @@ dependencies = [
 
 [[package]]
 name = "atena-search"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "atena-core",
  "atena-store",
@@ -233,7 +233,7 @@ dependencies = [
 
 [[package]]
 name = "atena-store"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "atena-store",
  "blake3",
