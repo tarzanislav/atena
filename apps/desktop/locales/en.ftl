@@ -26,6 +26,7 @@ startup-failed-hint = Close ATENA and open it again. If the error comes back, th
 nav-label = Main menu
 nav-overview = Overview
 nav-search = Search
+nav-tools = Tools
 nav-sources = Sources
 nav-proposals = Proposals
 nav-crawl = Crawling
@@ -85,6 +86,7 @@ trust-other = Other source – check it
 tools-title = Tools and dictionaries
 tools-intro = Dictionaries, corpora and applications ATENA does not crawl – you search them directly. They open in your browser.
 tools-open = Open the tool
+tools-none = There are no tools for this data yet.
 
 ## Search
 

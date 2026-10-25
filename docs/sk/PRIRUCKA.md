@@ -62,8 +62,8 @@ našla za posledných 7 dní.
 ### Nástroje a slovníky
 
 Niektoré užitočné weby ATENA nezbiera, lebo ich obsah sa hľadá cez ich vlastné vyhľadávanie alebo
-aplikáciu (slovníky JÚĽŠ SAV, Slovenský národný korpus, Viki a Planéta vedomostí). V Prehľade sú
-v časti **Nástroje a slovníky** s popisom a tlačidlom **Otvoriť nástroj**. Pri hľadaní sa ukážu
+aplikáciu (slovníky JÚĽŠ SAV, Slovenský národný korpus, Viki a Planéta vedomostí). Nájdete ich
+v ľavom menu pod **Nástroje** s popisom a tlačidlom **Otvoriť nástroj**. Pri hľadaní sa ukážu
 nástroje, ktoré sa k hľadaným slovám hodia.
 
 ### Dôveryhodnosť zdroja

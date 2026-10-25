@@ -5,7 +5,7 @@ import { createContext, useContext } from "react";
 
 import type { Settings, Taxonomy } from "./api";
 
-export type Screen = "overview" | "search" | "sources" | "proposals" | "crawl" | "settings";
+export type Screen = "overview" | "search" | "tools" | "sources" | "proposals" | "crawl" | "settings";
 
 export interface SearchStart {
   text?: string;
