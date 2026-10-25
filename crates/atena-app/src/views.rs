@@ -1006,3 +1006,93 @@ mod tests {
         assert!(TaxonomyView::new(&taxonomy, "zh").draft);
     }
 }
+
+/// A document of the private library.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrivateItemView {
+    /// Identifier in the library.
+    pub id: String,
+    /// The document in the public part, while it is there.
+    pub document_id: Option<i64>,
+    /// Address of the original.
+    pub url: String,
+    /// Title.
+    pub title: String,
+    /// Source ID.
+    pub source_id: String,
+    /// Source name.
+    pub source_name: String,
+    /// Licence of the source.
+    pub licence: String,
+    /// Authority level.
+    pub authority: String,
+    /// Trust group of the authority.
+    pub trust: String,
+    /// Language.
+    pub language: Option<String>,
+    /// Taxonomy labels `scheme/concept`.
+    pub labels: Vec<String>,
+    /// `reference` (the public part keeps it) or `copy` (a copy for the user's own use).
+    pub kind: String,
+    /// Media type of the kept file.
+    pub media_type: Option<String>,
+    /// Characters of the kept text.
+    pub text_chars: u64,
+    /// Bytes of the kept file.
+    pub file_bytes: Option<u64>,
+    /// When it was saved.
+    pub saved_at: Timestamp,
+}
+
+impl From<atena_vault::Item> for PrivateItemView {
+    fn from(item: atena_vault::Item) -> Self {
+        let facts = item.facts;
+        Self {
+            id: item.id,
+            document_id: facts.document_id,
+            url: facts.url,
+            title: facts.title,
+            source_id: facts.source_id,
+            source_name: facts.source_name,
+            licence: facts.licence,
+            trust: atena_core::scope::trust_of(&facts.authority).into(),
+            authority: facts.authority,
+            language: facts.language,
+            labels: facts.labels,
+            kind: match item.kind {
+                atena_vault::Kind::Reference => "reference",
+                atena_vault::Kind::Copy => "copy",
+            }
+            .into(),
+            media_type: facts.media_type,
+            text_chars: item.text_chars,
+            file_bytes: item.file_bytes,
+            saved_at: item.saved_at,
+        }
+    }
+}
+
+/// What saving a document did.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrivateSavedView {
+    /// `saved`, `already` (it was saved before) or `refused`.
+    pub status: &'static str,
+    /// Why it was refused: `gone`, `not-allowed`, `noarchive`, `robots`, `busy`, `unavailable`,
+    /// `dangerous`, `unreadable`.
+    pub reason: Option<&'static str>,
+    /// The item, when saved now or before.
+    pub item: Option<PrivateItemView>,
+}
+
+/// A saved document to read.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrivateReadView {
+    /// The item.
+    pub item: PrivateItemView,
+    /// Its text: the kept copy, or the text of the public part for a reference (`None` when the
+    /// public part no longer has it).
+    pub text: Option<String>,
+}

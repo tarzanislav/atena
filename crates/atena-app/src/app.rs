@@ -36,6 +36,9 @@ use crate::views::{
 use atena_vault::{DataKey, Keychain, Vault};
 use jiff::Timestamp;
 
+mod library;
+pub use library::PrivateFetch;
+
 /// "New" in the overview: first seen within this many days.
 pub const NEW_DAYS: u32 = 7;
 /// Hits per page of a search.
@@ -65,6 +68,10 @@ pub struct App {
     crawl: Crawl,
     nudge: Arc<Notify>,
     indexer: Mutex<Option<(watch::Sender<bool>, JoinHandle<()>)>>,
+    /// How copies for the user's own use are fetched and read (made when first needed).
+    private_fetch: std::sync::Mutex<Option<PrivateFetch>>,
+    /// One change of the private library at a time.
+    library_lock: Mutex<()>,
 }
 
 fn internal(e: impl std::fmt::Display) -> AppError {
@@ -223,6 +230,8 @@ impl App {
             Arc::clone(&nudge),
         );
         let vault = Vault::new(folder.join("private")).with_keychain(keychain);
+        // files of the private part opened last time are not left behind
+        library::wipe_opened(folder);
         let private = remembered(&vault);
         let (stop, stop_rx) = watch::channel(false);
         let indexer = keep_fresh(
@@ -243,6 +252,8 @@ impl App {
             crawl: Crawl::default(),
             nudge,
             indexer: Mutex::new(Some((stop, indexer))),
+            private_fetch: std::sync::Mutex::new(None),
+            library_lock: Mutex::new(()),
         })
     }
 
@@ -375,9 +386,10 @@ impl App {
         self.private_status().await
     }
 
-    /// Closes the private account; its key is wiped from memory.
+    /// Closes the private account; its key is wiped from memory, opened files are deleted.
     pub async fn private_lock(&self) -> Result<PrivateStatusView, AppError> {
         self.private_session().take();
+        library::wipe_opened(&self.folder);
         self.private_status().await
     }
 
@@ -751,8 +763,9 @@ impl App {
     /// Ends everything cleanly: the crawler finishes its checks (at most [`CLOSE_WAIT`]), the
     /// index takes what they stored, the database connections close.
     pub async fn close(&self) {
-        // the private key leaves memory first
+        // the private key leaves memory first, opened private files the disk
         self.private_session().take();
+        library::wipe_opened(&self.folder);
         if tokio::time::timeout(CLOSE_WAIT, self.crawl.stop())
             .await
             .is_err()

@@ -168,6 +168,51 @@ export interface PrivateStatus {
   rememberAvailable: boolean;
 }
 
+/** A document of the private library. */
+export interface PrivateItem {
+  id: string;
+  /** The document in the public part, while it is there. */
+  documentId: number | null;
+  url: string;
+  title: string;
+  sourceId: string;
+  sourceName: string;
+  licence: string;
+  authority: string;
+  trust: Trust;
+  language: string | null;
+  labels: string[];
+  /** `reference`: the public part keeps it; `copy`: a copy for the user's own use. */
+  kind: "reference" | "copy";
+  mediaType: string | null;
+  textChars: number;
+  fileBytes: number | null;
+  savedAt: string;
+}
+
+/** Why a document was not saved. */
+export type RefusedReason =
+  | "gone"
+  | "not-allowed"
+  | "noarchive"
+  | "robots"
+  | "busy"
+  | "unavailable"
+  | "dangerous"
+  | "unreadable";
+
+export interface PrivateSaved {
+  status: "saved" | "already" | "refused";
+  reason: RefusedReason | null;
+  item: PrivateItem | null;
+}
+
+export interface PrivateRead {
+  item: PrivateItem;
+  /** The kept copy, or the text of the public part for a reference (null when it is gone). */
+  text: string | null;
+}
+
 export interface PrivateCreated {
   /** Shown once; never stored by ATENA in the clear. */
   recoveryKey: string;
@@ -344,6 +389,11 @@ export const api = {
   privateLock: () => invoke<PrivateStatus>("private_lock"),
   privateRemember: () => invoke<PrivateStatus>("private_remember"),
   privateForget: () => invoke<PrivateStatus>("private_forget"),
+  privateLibrary: () => invoke<PrivateItem[]>("private_library"),
+  privateSave: (documentId: number) => invoke<PrivateSaved>("private_save", { documentId }),
+  privateRead: (id: string) => invoke<PrivateRead>("private_read", { id }),
+  privateOpenFile: (id: string) => invoke<void>("private_open_file", { id }),
+  privateRemove: (ids: string[]) => invoke<number>("private_remove", { ids }),
   privateRecover: (recoveryKey: string, newPassword: string) =>
     invoke<PrivateStatus>("private_recover", { recoveryKey, newPassword }),
   privateChangePassword: (old: string, next: string) => invoke<void>("private_change_password", { old, new: next }),

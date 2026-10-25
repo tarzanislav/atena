@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import { api, type Hit } from "../api";
 import { useApp } from "../context";
 import { date, host, languageOf } from "../format";
@@ -8,13 +10,27 @@ import { LabelTag, Trust } from "./Badges";
 /** Labels worth showing on a hit: sections, topics, school types, content types. */
 const SHOWN = ["section/", "topic/", "school-type/", "resource-type/", "approach/", "literacy/"];
 
-/** A document found: title, where it comes from, labels and, where allowed, a snippet. */
-export function HitItem({ hit, withSnippet = true }: { hit: Hit; withSnippet?: boolean }) {
+/** A document found: title, where it comes from, labels and, where allowed, a snippet. `leading`
+ * goes before it (a check box), `actions` next to the button of the original, `note` below. */
+export function HitItem({
+  hit,
+  withSnippet = true,
+  leading,
+  actions,
+  note,
+}: {
+  hit: Hit;
+  withSnippet?: boolean;
+  leading?: ReactNode;
+  actions?: ReactNode;
+  note?: ReactNode;
+}) {
   const i18n = useI18n();
   const { conceptLabel, openDocument } = useApp();
   const labels = hit.labels.filter((l) => SHOWN.some((p) => l.startsWith(p))).slice(0, 5);
   return (
     <div className="list-item">
+      {leading}
       <span className={`bar trust-bar ${hit.trust}`} />
       <div className="item-body">
         <button className="title-button item-title" onClick={() => openDocument(hit.documentId)}>
@@ -53,8 +69,10 @@ export function HitItem({ hit, withSnippet = true }: { hit: Hit; withSnippet?: b
             ))}
           </div>
         )}
+        {note}
       </div>
-      <div>
+      <div className="hit-actions">
+        {actions}
         <button className="button" onClick={() => void api.openLink(hit.url)} title={hit.url}>
           <Icon name="open" size={16} />
           {i18n.t("action-open-original")}

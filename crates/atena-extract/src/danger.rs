@@ -11,7 +11,7 @@
 //! * Word documents with macros, ActiveX controls, embedded OLE objects or remote templates;
 //!   OpenDocument texts with macros or scripts.
 
-use pdf_extract::{Document, Object};
+use pdf_extract::{Dictionary, Document, Object};
 
 /// Leading white space tolerated before a PDF signature (some servers emit a line break first).
 const PDF_LEADING_SPACE: usize = 16;
@@ -59,38 +59,51 @@ pub(crate) fn disguised_pdf(head: &[u8]) -> bool {
         && head.iter().any(|b| *b < 0x09 || (0x0e..0x20).contains(b))
 }
 
+/// Deepest nesting of dictionaries and arrays examined; a deeper PDF is refused as suspicious.
+const PDF_MAX_NESTING: usize = 64;
+
 /// Active content in a loaded PDF, if any. Every object is examined, including those that came
-/// out of compressed object streams.
+/// out of compressed object streams, and every dictionary and array nested in them – an action
+/// may be written inline (`/OpenAction << /S /JavaScript … >>`) instead of as an object of its own.
 pub(crate) fn pdf_active_content(doc: &Document) -> Option<&'static str> {
-    for object in doc.objects.values() {
-        let dict = match object {
-            Object::Dictionary(d) => d,
-            Object::Stream(s) => &s.dict,
-            _ => continue,
-        };
-        for (key, value) in dict.iter() {
-            let found = match key.as_slice() {
-                b"JS" | b"JavaScript" => Some("JavaScript"),
-                b"Launch" => Some("a launch action"),
-                b"EmbeddedFiles" | b"EF" => Some("embedded files"),
-                b"RichMedia" | b"RichMediaContent" => Some("rich media"),
-                b"XFA" => Some("an XFA form"),
-                b"S" | b"Type" | b"Subtype" => match value {
-                    Object::Name(name) => match name.as_slice() {
-                        b"JavaScript" => Some("JavaScript"),
-                        b"Launch" => Some("a launch action"),
-                        b"ImportData" => Some("an import action"),
-                        b"EmbeddedFile" => Some("embedded files"),
-                        b"RichMedia" => Some("rich media"),
-                        _ => None,
-                    },
+    doc.objects.values().find_map(|object| active_in(object, 0))
+}
+
+fn active_in(object: &Object, depth: usize) -> Option<&'static str> {
+    if depth > PDF_MAX_NESTING {
+        return Some("objects nested too deeply");
+    }
+    match object {
+        Object::Dictionary(dict) => active_in_dictionary(dict, depth),
+        Object::Stream(stream) => active_in_dictionary(&stream.dict, depth),
+        Object::Array(items) => items.iter().find_map(|item| active_in(item, depth + 1)),
+        _ => None,
+    }
+}
+
+fn active_in_dictionary(dict: &Dictionary, depth: usize) -> Option<&'static str> {
+    for (key, value) in dict.iter() {
+        let found = match key.as_slice() {
+            b"JS" | b"JavaScript" => Some("JavaScript"),
+            b"Launch" => Some("a launch action"),
+            b"EmbeddedFiles" | b"EF" => Some("embedded files"),
+            b"RichMedia" | b"RichMediaContent" => Some("rich media"),
+            b"XFA" => Some("an XFA form"),
+            b"S" | b"Type" | b"Subtype" => match value {
+                Object::Name(name) => match name.as_slice() {
+                    b"JavaScript" => Some("JavaScript"),
+                    b"Launch" => Some("a launch action"),
+                    b"ImportData" => Some("an import action"),
+                    b"EmbeddedFile" => Some("embedded files"),
+                    b"RichMedia" => Some("rich media"),
                     _ => None,
                 },
                 _ => None,
-            };
-            if found.is_some() {
-                return found;
-            }
+            },
+            _ => None,
+        };
+        if let Some(found) = found.or_else(|| active_in(value, depth + 1)) {
+            return Some(found);
         }
     }
     None

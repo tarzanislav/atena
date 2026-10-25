@@ -4,6 +4,7 @@
 import { createContext, useContext } from "react";
 
 import type { PrivateStatus, Settings, Taxonomy } from "./api";
+import type { Library } from "./library";
 
 /** The private screens: the private overview and the sections drawn out of the overview. */
 export const PRIVATE_SECTIONS = ["changes", "practice", "curriculum", "literacies"] as const;
@@ -32,6 +33,8 @@ export interface AppContextValue {
   privateStatus: PrivateStatus;
   /** Reads the private account's state again (after creating, opening or closing it). */
   setPrivateStatus: (status: PrivateStatus) => void;
+  /** The private library of the open account (empty while it is locked). */
+  library: Library;
   /** Proposals waiting and whether the crawler runs, for the navigation. */
   refreshBadges: () => void;
   version: string;

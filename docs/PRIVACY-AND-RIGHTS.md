@@ -77,10 +77,26 @@ publishes a privacy notice (Art. 14) naming a contact for objections and erasure
   account, is kept in `private/remember.json`. Neither half alone opens anything; turning it off
   deletes both. Nothing leaves the computer.
 * The private part exists for **copies for the user's own use** – private use by a natural person
-  under copyright law (in Slovakia, the private copy exception of Act 185/2015). The copies are made
-  on the user's click, stay encrypted on the user's computer and are never shared or sent.
-  Sources whose terms forbid automated access are excluded. This assessment is not legal advice and
-  is to be confirmed by a lawyer before a public launch (checklist below).
+  under copyright law (in Slovakia § 42 of the Copyright Act 185/2015: a copy for the private use of
+  a natural person, for a purpose neither directly nor indirectly commercial; § 35(3): from a lawful
+  source – here the publisher's own website). How it works (`atena-vault::library`,
+  `atena-app/src/app/library.rs`):
+  * **only on the user's click** ("Save for me", "Save selected", "Save everything in the list"
+    with a confirmation), one document after another;
+  * documents the public part keeps and shows in full anyway (official texts, open licences) are
+    saved as a **reference** – no second copy;
+  * other documents are fetched from the publisher **as the crawler fetches** (robots.txt and the
+    pace of the server respected) and refused when the publisher asks for no stored copies
+    (`noarchive` in the register's facts, the `X-Robots-Tag` header or the page), when the source's
+    terms forbid automated access, or when the reader finds active content (the danger check of
+    the public part); the text is kept, and the file for PDF and office documents;
+  * everything – the catalogue with the titles too – is encrypted with the data key
+    (XChaCha20-Poly1305, each part bound to its item) in `private/library`; nothing is shared or
+    sent. A kept file opened for viewing is decrypted into `private-open` and deleted when the part
+    is locked or ATENA closes (or at the next start, if a viewer still held it).
+  * The texts of the interface state the right and its limits on every private screen.
+  This assessment is not legal advice and is to be confirmed by a lawyer before a public launch
+  (checklist below) – in particular whether a teacher's use for teaching is still "private use".
 
 ## 4. Operator checklist before a public launch
 * Have a lawyer confirm the private copy feature of the desktop app (section 3a).
