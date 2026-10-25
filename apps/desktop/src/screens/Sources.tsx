@@ -125,6 +125,8 @@ export function SourcesScreen() {
                         <Trust value={s.trust} authority={s.authority} /> <Authority value={s.authority} />
                         <span>{s.id}</span>
                         {!s.register && <span className="tag">{i18n.label("state", s.state)}</span>}
+                        {s.tool && <span className="tag">{i18n.t("sources-tool")}</span>}
+                        {s.siteWide && <span className="tag">{i18n.t("sources-site-wide")}</span>}
                         {s.lastCheck && <span>{i18n.t("sources-checked", { date: date(i18n, s.lastCheck) })}</span>}
                       </span>
                       {s.allowed.restrictions.length > 0 && (

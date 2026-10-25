@@ -82,6 +82,9 @@ scope-all-languages = All languages
 trust-official = Official source
 trust-expert = Expert source
 trust-other = Other source – check it
+tools-title = Tools and dictionaries
+tools-intro = Dictionaries, corpora and applications ATENA does not crawl – you search them directly. They open in your browser.
+tools-open = Open the tool
 
 ## Search
 
@@ -106,6 +109,7 @@ search-previous = Previous
 search-next = Next
 search-page = Page { $page } of { $pages }
 search-only-official = Official sources only
+search-tools = Tools for the words you searched
 hit-no-text = The text of this source is not shown in ATENA – its licence does not allow it. Open the original.
 
 facet-section = Section
@@ -165,6 +169,8 @@ sources-column-text = Text
 sources-column-show = Show
 sources-column-documents = Documents
 sources-checked = checked { $date }
+sources-tool = Tool (not crawled)
+sources-site-wide = Whole site
 sources-none = No source matches.
 
 allowed-crawl = may be crawled

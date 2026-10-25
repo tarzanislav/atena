@@ -119,6 +119,24 @@ pub enum Follow {
     Subpage,
 }
 
+/// Decides whether to follow `link` found on `page` (both normalised); with `site_wide`, any page
+/// of the same host is a page to follow, not only the pages below `page` (official sources only,
+/// see `atena_core::source::CrawlScope`).
+pub fn follow_in(page: &Url, link: &Url, site_wide: bool) -> Option<Follow> {
+    match follow(page, link) {
+        Some(found) => Some(found),
+        None if site_wide => {
+            let ordinary = matches!(link.scheme(), "http" | "https")
+                && link != page
+                && host(page) == host(link)
+                && !extension(link).is_some_and(|e| SKIPPED.contains(&e.as_str()))
+                && !is_personal_page(link);
+            ordinary.then_some(Follow::Subpage)
+        }
+        None => None,
+    }
+}
+
 /// Decides whether to follow `link` found on `page` (both normalised).
 pub fn follow(page: &Url, link: &Url) -> Option<Follow> {
     if !matches!(link.scheme(), "http" | "https") || link == page {
@@ -194,6 +212,32 @@ mod tests {
         assert!(same_site("127.0.0.1", "127.0.0.1"));
         assert!(!same_site("127.0.0.1", "127.0.0.2"));
         assert!(!same_site("localhost", "intranet"));
+    }
+
+    #[test]
+    fn site_wide_sources_follow_any_page_of_their_host() {
+        let page = u("https://www.minedu.sk/38037-sk/organizacia-skolskeho-roka/");
+        let f = |link: &str| follow_in(&page, &u(link), true);
+        assert_eq!(
+            f("https://www.minedu.sk/12345-sk/zakony/"),
+            Some(Follow::Subpage)
+        );
+        assert_eq!(f("https://www.minedu.sk/"), Some(Follow::Subpage));
+        assert_eq!(
+            f("https://static.minedu.sk/dokument.pdf"),
+            Some(Follow::Attachment)
+        );
+        // never another host, media files, pages about people or the page itself
+        assert_eq!(f("https://static.minedu.sk/12345-sk/zakony/"), None);
+        assert_eq!(f("https://www.nivam.sk/"), None);
+        assert_eq!(f("https://www.minedu.sk/obrazok.jpg"), None);
+        assert_eq!(f("https://www.minedu.sk/kontakty/zamestnanci/"), None);
+        assert_eq!(f(page.as_str()), None);
+        // without the scope, only what lies below the page
+        assert_eq!(
+            follow_in(&page, &u("https://www.minedu.sk/12345-sk/zakony/"), false),
+            None
+        );
     }
 
     #[test]

@@ -30,6 +30,8 @@ pub struct SourceRecord {
     pub terms: String,
     /// `false` for sources that must not be crawled.
     pub enabled: bool,
+    /// Links may lead anywhere on the publisher's site (official sources only).
+    pub site_wide: bool,
 }
 
 /// A source with the endpoints the register defines for it (its page, its feed…).
@@ -68,14 +70,14 @@ impl Store {
             let s = &entry.source;
             sqlx::query(
                 "INSERT INTO source (id, name, url, country, languages, authority, priority, connector, interval_s,
-                                     licence, terms, enabled)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+                                     licence, terms, enabled, site_wide)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
                  ON CONFLICT (id) DO UPDATE SET
                      name = EXCLUDED.name, url = EXCLUDED.url, country = EXCLUDED.country,
                      languages = EXCLUDED.languages, authority = EXCLUDED.authority,
                      priority = EXCLUDED.priority, connector = EXCLUDED.connector,
                      interval_s = EXCLUDED.interval_s, licence = EXCLUDED.licence, terms = EXCLUDED.terms,
-                     enabled = EXCLUDED.enabled, synced_at = now()",
+                     enabled = EXCLUDED.enabled, site_wide = EXCLUDED.site_wide, synced_at = now()",
             )
             .bind(&s.id)
             .bind(&s.name)
@@ -89,6 +91,7 @@ impl Store {
             .bind(&s.licence)
             .bind(&s.terms)
             .bind(s.enabled)
+            .bind(s.site_wide)
             .execute(&mut *tx)
             .await?;
             report.sources += 1;
@@ -100,12 +103,13 @@ impl Store {
                 // a URL found earlier as a feed item or link becomes a register endpoint;
                 // a blocked URL (erasure request) is never added or re-enabled
                 let inserted: Option<bool> = sqlx::query_scalar(&format!(
-                    "INSERT INTO endpoint (source_id, host_id, url, kind, origin, follow_links, interval_s)
-                     SELECT $1, (SELECT id FROM host WHERE name = $2), $3, $4, 'register', $5, $6
+                    "INSERT INTO endpoint (source_id, host_id, url, kind, origin, follow_links, interval_s, depth)
+                     SELECT $1, (SELECT id FROM host WHERE name = $2), $3, $4, 'register', $5, $6, $7
                      WHERE NOT {BLOCKED}
                      ON CONFLICT (url) DO UPDATE SET
                          source_id = EXCLUDED.source_id, kind = EXCLUDED.kind, origin = 'register',
-                         follow_links = EXCLUDED.follow_links, interval_s = EXCLUDED.interval_s, enabled = true
+                         follow_links = EXCLUDED.follow_links, interval_s = EXCLUDED.interval_s,
+                         depth = EXCLUDED.depth, enabled = true
                      RETURNING (xmax = 0)",
                     BLOCKED = blocked("$3")
                 ))
@@ -115,6 +119,7 @@ impl Store {
                 .bind(ep.kind.as_str())
                 .bind(ep.follow_links)
                 .bind(ep.interval_s)
+                .bind(ep.depth)
                 .fetch_optional(&mut *tx)
                 .await?;
                 report.endpoints_added += u64::from(inserted.unwrap_or(false));

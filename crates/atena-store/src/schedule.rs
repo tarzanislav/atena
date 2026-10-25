@@ -89,6 +89,8 @@ pub struct NewEndpoint {
     pub origin: Origin,
     /// Follow attachments and subpages.
     pub follow_links: bool,
+    /// Levels of links still followed from the pages found here (0: none).
+    pub depth: i16,
     /// Check interval in seconds.
     pub interval_s: i32,
 }
@@ -110,8 +112,12 @@ pub struct Endpoint {
     pub origin: Origin,
     /// Follow attachments and subpages.
     pub follow_links: bool,
+    /// Levels of links still followed from the pages found here (0: none).
+    pub depth: i16,
     /// Check interval in seconds.
     pub interval_s: i32,
+    /// Links may lead anywhere on the source's site.
+    pub source_site_wide: bool,
     /// Check interval of the source.
     pub source_interval_s: i32,
     /// Authority level of the source (`A1`…`D`).
@@ -222,7 +228,9 @@ fn endpoint_from(row: &sqlx::postgres::PgRow) -> Result<Endpoint> {
         kind: EndpointKind::parse(row.try_get("kind")?)?,
         origin: Origin::parse(row.try_get("origin")?)?,
         follow_links: row.try_get("follow_links")?,
+        depth: row.try_get("depth")?,
         interval_s: row.try_get("interval_s")?,
+        source_site_wide: row.try_get("source_site_wide")?,
         source_interval_s: row.try_get("source_interval_s")?,
         source_authority: row.try_get("source_authority")?,
         source_licence: row.try_get("source_licence")?,
@@ -235,7 +243,7 @@ fn endpoint_from(row: &sqlx::postgres::PgRow) -> Result<Endpoint> {
 }
 
 const ENDPOINT_COLUMNS: &str = "e.id, e.source_id, e.host_id, e.url, e.kind, e.origin, e.follow_links, \
-     e.interval_s, s.interval_s AS source_interval_s, s.authority AS source_authority, \
+     e.depth, e.interval_s, s.site_wide AS source_site_wide, s.interval_s AS source_interval_s, s.authority AS source_authority, \
      s.licence AS source_licence, s.country AS source_country, s.terms AS source_terms, \
      e.fail_count, e.etag, e.last_modified";
 
@@ -269,10 +277,10 @@ impl Store {
         let column =
             |f: fn(&NewEndpoint) -> String| endpoints.iter().map(f).collect::<Vec<String>>();
         let hosts: Vec<i64> = sqlx::query_scalar(&format!(
-            "INSERT INTO endpoint (source_id, host_id, url, kind, origin, follow_links, interval_s, discovered_from)
-             SELECT $1, h.id, u.url, u.kind, u.origin, u.follow, u.interval_s, $2
-             FROM unnest($3::text[], $4::text[], $5::text[], $6::text[], $7::bool[], $8::int[])
-                  AS u(url, host, kind, origin, follow, interval_s)
+            "INSERT INTO endpoint (source_id, host_id, url, kind, origin, follow_links, interval_s, depth, discovered_from)
+             SELECT $1, h.id, u.url, u.kind, u.origin, u.follow, u.interval_s, u.depth, $2
+             FROM unnest($3::text[], $4::text[], $5::text[], $6::text[], $7::bool[], $8::int[], $9::smallint[])
+                  AS u(url, host, kind, origin, follow, interval_s, depth)
              JOIN host h ON h.name = u.host
              WHERE NOT {BLOCKED}
              ON CONFLICT (url) DO NOTHING
@@ -287,6 +295,7 @@ impl Store {
         .bind(column(|e| e.origin.as_str().to_string()))
         .bind(endpoints.iter().map(|e| e.follow_links).collect::<Vec<bool>>())
         .bind(endpoints.iter().map(|e| e.interval_s).collect::<Vec<i32>>())
+        .bind(endpoints.iter().map(|e| e.depth).collect::<Vec<i16>>())
         .fetch_all(&mut *tx)
         .await?;
         let added = hosts.len() as u64;

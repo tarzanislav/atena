@@ -13,7 +13,7 @@ database is the source of truth; search indexes are derived from it. All SQL liv
 | `assessment` | rights assessments of imported sources: the automatic one (with its evidence as JSON) and the decisions of people |
 | `inbox` / `outbox` | lists of proposed addresses received from other installations / waiting to be shared |
 | `host` | one row per host name: when it is next due, who holds its lease, back-off after `429`/`503` |
-| `endpoint` | every URL that is checked: feeds, sitemaps and pages; schedule, validators (`ETag`, `Last-Modified`), failures |
+| `endpoint` | every URL that is checked: feeds, sitemaps and pages; schedule, validators (`ETag`, `Last-Modified`), failures; how many more levels of links are followed (`depth`, migration 0008) |
 | `fetch_log` | one row per check (outcome, status, size, time); pruned after 90 days |
 | `document` | one per page endpoint: current title, language, status, the publisher's rules, current version |
 | `document_version` | a new row only when the **text** changes: change kind, paragraphs added/removed, number/date changes, text, metadata |

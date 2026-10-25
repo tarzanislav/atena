@@ -63,6 +63,9 @@ scope-all-languages = 所有语言
 trust-official = 官方来源
 trust-expert = 专业来源
 trust-other = 其他来源——请核实
+tools-title = 工具与词典
+tools-intro = ATENA 不采集的词典、语料库和应用——请直接在其中检索。它们会在您的浏览器中打开。
+tools-open = 打开工具
 
 ## 搜索
 
@@ -86,6 +89,7 @@ search-previous = 上一页
 search-next = 下一页
 search-page = 第 { $page } 页，共 { $pages } 页
 search-only-official = 仅官方来源
+search-tools = 与搜索词相关的工具
 hit-no-text = 此来源的文本不在 ATENA 中显示——其许可不允许。请打开原文。
 
 facet-section = 栏目
@@ -141,6 +145,8 @@ sources-column-text = 文本
 sources-column-show = 显示
 sources-column-documents = 文档
 sources-checked = 检查于 { $date }
+sources-tool = 工具（不采集）
+sources-site-wide = 整个网站
 sources-none = 没有符合条件的来源。
 
 allowed-crawl = 可以采集

@@ -29,7 +29,10 @@ async fn the_app_opens_with_the_register_of_its_version() {
     assert!(folder.join("index").join("meta.json").exists());
 
     let sources = app.sources().await.unwrap();
-    assert_eq!(sources.len() as i64, overview.sources);
+    assert_eq!(
+        sources.iter().filter(|s| !s.tool).count() as i64,
+        overview.sources
+    );
     let youtube = sources.iter().find(|s| s.id == "N39").unwrap();
     assert!(!youtube.enabled && !youtube.allowed.crawl);
     let json = serde_json::to_value(youtube).unwrap();
@@ -37,6 +40,23 @@ async fn the_app_opens_with_the_register_of_its_version() {
     assert!(
         json.get("lastCheck").is_some(),
         "camelCase for the interface"
+    );
+
+    // tools are listed and described, never crawled; official sources may be crawled site-wide
+    let tools = app.tools("en");
+    assert_eq!(tools.len(), 9);
+    let juls = tools.iter().find(|t| t.id == "NA01").unwrap();
+    assert!(juls.description.starts_with("Dictionaries of Slovak"));
+    assert_eq!(
+        (juls.region.as_str(), juls.trust.as_str()),
+        ("sk", "expert")
+    );
+    let listed = sources.iter().find(|s| s.id == "NA01").unwrap();
+    assert!(listed.tool && !listed.enabled);
+    assert!(sources.iter().find(|s| s.id == "SK07").unwrap().site_wide);
+    assert!(
+        overview.sources < sources.len() as i64,
+        "tools are not counted as sources"
     );
 
     let taxonomy = app.taxonomy("sk");

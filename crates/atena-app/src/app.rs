@@ -31,7 +31,7 @@ use crate::settings::Settings;
 use crate::views::{
     ConfirmedView, CrawlView, DocumentView, ErasureView, HitView, ImportView, OverviewView,
     PendingView, ProposalView, ProposedView, ReceivedView, SearchQuery, SearchView, SourceView,
-    SyncView, TallyView, TaxonomyView, VersionView,
+    SyncView, TallyView, TaxonomyView, ToolView, VersionView,
 };
 use jiff::Timestamp;
 
@@ -51,6 +51,8 @@ const CLOSE_WAIT: Duration = Duration::from_secs(30);
 /// The application: the database, the search index and the crawler of one installation.
 pub struct App {
     store: Store,
+    /// The register last synced: the bundled one, or the shared one when the user fetched it.
+    register: std::sync::RwLock<Vec<atena_core::Source>>,
     index: Arc<SearchIndex>,
     taxonomy: Arc<Taxonomy>,
     folder: PathBuf,
@@ -107,13 +109,13 @@ async fn sync_bundled_register(
     store: &Store,
     taxonomy: &Taxonomy,
     folder: &Path,
-) -> Result<(), AppError> {
+) -> Result<Vec<atena_core::Source>, AppError> {
+    let sources = load_sources(BUNDLED_SOURCES, taxonomy).map_err(internal)?;
     let marker = folder.join("register.synced");
     let fingerprint = hex(&hash(BUNDLED_SOURCES.as_bytes()));
     if std::fs::read_to_string(&marker).is_ok_and(|m| m.trim() == fingerprint) {
-        return Ok(());
+        return Ok(sources);
     }
-    let sources = load_sources(BUNDLED_SOURCES, taxonomy).map_err(internal)?;
     let summary = sync(store, &sources).await?;
     tracing::info!(
         sources = summary.report.sources,
@@ -121,7 +123,8 @@ async fn sync_bundled_register(
         restricted = summary.restricted,
         "the register of this version of ATENA is synced"
     );
-    std::fs::write(&marker, fingerprint).map_err(|e| AppError::io(&marker, e))
+    std::fs::write(&marker, fingerprint).map_err(|e| AppError::io(&marker, e))?;
+    Ok(sources)
 }
 
 /// Classifies the stored documents again when the taxonomy of this version of ATENA differs from
@@ -179,7 +182,7 @@ impl App {
         // only this installation uses the database: leases of an app that crashed are void
         store.release_all_hosts().await?;
         let taxonomy = Arc::new(Taxonomy::bundled().map_err(internal)?);
-        sync_bundled_register(&store, &taxonomy, folder).await?;
+        let register = sync_bundled_register(&store, &taxonomy, folder).await?;
         let index = Arc::new(open_index(&store, &folder.join("index")).await?);
         let nudge = Arc::new(Notify::new());
         reclassify_when_changed(
@@ -197,6 +200,7 @@ impl App {
         );
         Ok(Self {
             settings: std::sync::Mutex::new(Settings::load(&folder.join("settings.json"))),
+            register: std::sync::RwLock::new(register),
             store,
             index,
             taxonomy,
@@ -272,6 +276,18 @@ impl App {
             .into_iter()
             .map(SourceView::from)
             .collect())
+    }
+
+    /// The tools of the register (dictionaries, corpora, applications – linked, never crawled),
+    /// described in `language`.
+    pub fn tools(&self, language: &str) -> Vec<ToolView> {
+        self.register
+            .read()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .iter()
+            .filter(|s| s.is_tool())
+            .map(|s| ToolView::new(s, language))
+            .collect()
     }
 
     /// The taxonomy with labels in `language`.
@@ -526,6 +542,10 @@ impl App {
     pub async fn sync_shared_register(&self) -> Result<SyncView, AppError> {
         let sources = fetch_shared(None, &self.taxonomy).await?;
         let summary = sync(&self.store, &sources).await?;
+        *self
+            .register
+            .write()
+            .unwrap_or_else(std::sync::PoisonError::into_inner) = sources;
         self.nudge.notify_one();
         Ok(summary.into())
     }

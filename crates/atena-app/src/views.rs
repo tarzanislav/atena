@@ -99,6 +99,10 @@ pub struct SourceView {
     pub authority: String,
     /// Trust group of the authority: `official`, `expert` or `other`.
     pub trust: String,
+    /// A tool: linked and described, never crawled.
+    pub tool: bool,
+    /// Crawled site-wide (official sources only).
+    pub site_wide: bool,
     /// Licence.
     pub licence: String,
     /// Terms of use.
@@ -126,6 +130,8 @@ impl From<SourceSummary> for SourceView {
             url: s.url,
             country: s.country,
             trust: trust_of(&s.authority).into(),
+            tool: s.connector == atena_core::source::TOOL,
+            site_wide: s.site_wide,
             authority: s.authority,
             licence: s.licence,
             terms: s.terms,
@@ -712,6 +718,53 @@ impl SearchView {
                     count: f.count,
                 })
                 .collect(),
+        }
+    }
+}
+
+/// A tool of the register: a dictionary, corpus or application ATENA links and describes but never
+/// crawls.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ToolView {
+    /// Source ID.
+    pub id: String,
+    /// Name.
+    pub name: String,
+    /// Address.
+    pub url: String,
+    /// What it is, in the interface language (Slovak, then English, where missing).
+    pub description: String,
+    /// Languages of the tool.
+    pub languages: Vec<String>,
+    /// `sk` or `abroad`.
+    pub region: String,
+    /// Trust group of the publisher.
+    pub trust: String,
+}
+
+impl ToolView {
+    /// The view of a tool with its description in `language`.
+    pub fn new(source: &atena_core::Source, language: &str) -> Self {
+        let description = source
+            .note
+            .get(language)
+            .or_else(|| source.note.get("sk"))
+            .or_else(|| source.note.get("en"))
+            .cloned()
+            .unwrap_or_default();
+        Self {
+            id: source.id.clone(),
+            name: source.name.clone(),
+            url: source.url.clone(),
+            description,
+            languages: source.languages.clone(),
+            region: region_of(
+                &source.country,
+                source.languages.first().map(String::as_str),
+            )
+            .into(),
+            trust: trust_of(&source.authority).into(),
         }
     }
 }

@@ -66,6 +66,29 @@ Pravidlá za tabuľkou:
 
 Ich stránky sa smú sťahovať, ak to robots.txt ATENE dovolí, ale ukladajú sa z nich len metadáta.
 
+## Slovenské zdroje doplnené 25. 10. 2026
+Zoznam slovenských webov od autora sa overil 25. 10. 2026 (32 záznamov, SK25 – SK45, CZ11, N40,
+NA01 – NA09):
+
+| | Zdroje |
+|---|---|
+| `allowed` | 13 – okrem iného Informatika 2.0, Zavretá škola, Testokazi, Naša geografia, Zlatka.in, e-testovania NIVaM, CCV PF KU, FMFI UK |
+| `official` (celý text) | 3 zákony na Slov-Lexe: 138/2019, 596/2003, 61/2015 |
+| `forbidden` – nezbiera sa | Direktor.sk (podmienky vydavateľa zakazujú zber), EDULAB akadémia (registrácia, zákaz sprístupňovania), Kozmix (použitie len na nekomerčné vyučovanie), russky.info (zákaz automatického získavania obsahu) |
+| `unknown` – len metadáta | Jazyková poradňa SME, Eduworld (podmienky sa nedali prečítať), Geografia – časopis (robots.txt odmietol náš nástroj) |
+| nástroje – odkaz, nezbierajú sa | slovníky JÚĽŠ SAV, Morfológia slovenského jazyka, Slovenský národný korpus, Estetický slovník, Slovník cizích slov, CzechEncy, Viki a Planéta vedomostí (iedu.sk – aplikácie, ktoré potrebujú JavaScript) |
+
+Nepridané: stofanak.sk (len cez nešifrované http s presmerovaním dookola, obsah sa nedal overiť),
+edu.nivam.sk (robots.txt odmieta, prihlasovacia platforma), stránka školy na EduPage (robots.txt odmieta,
+školské stránky obsahujú osobné údaje), skolahrou.sk a freedu.sk (nedostupné), rodokmen.com (rozhodnutie
+autora: rodokmene sú osobné údaje). Zoznamy portálov (sdetmi.com, novomestan.sk, freedu.sk) nie sú
+zdroje; portály, ktoré vymenúvajú, sú kandidáti na návrhy.
+
+**Zber celého webu.** Ministerstvo školstva (SK04), NIVaM (SK07) a Štátna školská inšpekcia (SK10) sa
+zbierajú v celom webe: každá stránka ich servera najviac tri odkazy od vstupnej stránky, nie len stránky
+pod ňou (ich adresy sú ploché, napr. `/38037-sk/…`). Taký rozsah smú mať len úradné zdroje, ktorých
+podmienky to dovoľujú (`atena_core::source::CrawlScope`).
+
 Odkazy na videá ATENA berie z vlastných stránok inštitúcií a na YouTube nechodí. Rozhodol o tom autor
 projektu 24. 10. 2026.
 - Odkazy aj vložené prehrávače YouTube a Vimeo sa zapíšu ako jedna stála adresa na každé video

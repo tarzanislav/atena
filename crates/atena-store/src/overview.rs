@@ -54,6 +54,10 @@ pub struct SourceSummary {
     pub state: ImportState,
     /// Crawled.
     pub enabled: bool,
+    /// Connector kind (`tool`: linked and described, never crawled).
+    pub connector: String,
+    /// Links may lead anywhere on the publisher's site.
+    pub site_wide: bool,
     /// Documents that are still published.
     pub documents: i64,
     /// The latest check of one of its addresses.
@@ -71,7 +75,7 @@ impl Store {
     pub async fn overview(&self) -> Result<Overview> {
         let row = sqlx::query(
             "SELECT
-                (SELECT count(*) FROM source WHERE state = 'confirmed') AS sources,
+                (SELECT count(*) FROM source WHERE state = 'confirmed' AND connector <> 'tool') AS sources,
                 (SELECT count(*) FROM source WHERE state = 'confirmed' AND enabled) AS sources_crawled,
                 (SELECT count(*) FROM source WHERE state = 'proposed') AS proposals,
                 (SELECT count(*) FROM document WHERE status = 'active') AS documents,
@@ -104,7 +108,7 @@ impl Store {
     pub async fn source_summaries(&self) -> Result<Vec<SourceSummary>> {
         let rows = sqlx::query(
             "SELECT s.id, s.name, s.url, s.country, s.authority, s.licence, s.terms, s.origin,
-                    s.state, s.enabled,
+                    s.state, s.enabled, s.connector, s.site_wide,
                     (SELECT count(*) FROM document d
                       WHERE d.source_id = s.id AND d.status = 'active') AS documents,
                     (SELECT max(e.last_fetch_at) FROM endpoint e
@@ -127,6 +131,8 @@ impl Store {
                     terms: row.try_get("terms")?,
                     register: row.try_get::<String, _>("origin")? == "register",
                     state: ImportState::parse(row.try_get("state")?),
+                    connector: row.try_get("connector")?,
+                    site_wide: row.try_get("site_wide")?,
                     enabled: row.try_get("enabled")?,
                     documents: row.try_get("documents")?,
                     last_check: timestamp(row, "last_check")?,
@@ -159,6 +165,7 @@ mod tests {
                 licence: "copyrighted".into(),
                 terms: "unknown".into(),
                 enabled,
+                site_wide: false,
             },
             endpoints: vec![NewEndpoint {
                 url: format!("https://{}.example.sk/", id.to_lowercase()),
@@ -166,6 +173,7 @@ mod tests {
                 kind: EndpointKind::Page,
                 origin: Origin::Register,
                 follow_links: true,
+                depth: 0,
                 interval_s: 86_400,
             }],
         }

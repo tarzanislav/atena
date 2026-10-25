@@ -68,6 +68,10 @@ export interface Source {
   country: string;
   authority: string;
   trust: Trust;
+  /** A tool: linked and described, never crawled. */
+  tool: boolean;
+  /** Crawled site-wide (official sources only). */
+  siteWide: boolean;
   licence: string;
   terms: string;
   register: boolean;
@@ -140,6 +144,17 @@ export interface SearchQuery {
   language: string | null;
   filters: string[];
   page: number;
+}
+
+/** A dictionary, corpus or application of the register: linked and described, never crawled. */
+export interface Tool {
+  id: string;
+  name: string;
+  url: string;
+  description: string;
+  languages: string[];
+  region: Region;
+  trust: Trust;
 }
 
 export interface ConceptCount {
@@ -305,6 +320,7 @@ export const api = {
   search: (query: SearchQuery) => invoke<SearchResult>("search", { query }),
   newest: (filters: string[], limit: number) => invoke<Hit[]>("newest", { filters, limit }),
   tally: (filters: string[]) => invoke<Tally>("tally", { filters }),
+  tools: (language: string) => invoke<Tool[]>("tools", { language }),
   document: (id: number) => invoke<DocumentCard | null>("document", { id }),
   importAddresses: (text: string, country: string | null) =>
     invoke<ImportResult>("import_addresses", { text, country }),

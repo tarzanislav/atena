@@ -13,7 +13,7 @@ prepočítať. Všetky príkazy SQL sú v module `atena-store`.
 | `assessment` | právne vyhodnotenia importovaných zdrojov: automatické (s dokladmi ako JSON) a rozhodnutia ľudí. Importovaný zdroj (`origin = 'import'`) je `proposed` a vypnutý, kým ho človek nepotvrdí |
 | `inbox` / `outbox` | zoznamy navrhnutých adries prijaté z iných inštalácií / čakajúce na odoslanie |
 | `host` | jeden riadok na server: kedy je na rade, kto ho práve spracúva, prestávka po `429`/`503` |
-| `endpoint` | každá sledovaná adresa: kanály, sitemapy, stránky; plán kontrol, `ETag`, `Last-Modified`, chyby |
+| `endpoint` | každá sledovaná adresa: kanály, sitemapy, stránky; plán kontrol, `ETag`, `Last-Modified`, chyby; koľko úrovní odkazov sa ešte sleduje (`depth`, migrácia 0008) |
 | `fetch_log` | záznam o každej kontrole; po 90 dňoch sa maže |
 | `document` | dokument zo stránky alebo súboru: aktuálny názov, jazyk, stav, pravidlá vydavateľa |
 | `document_version` | nový riadok len vtedy, keď sa zmení **text**: druh zmeny, pridané a odobraté odseky, zmena čísel a dátumov |

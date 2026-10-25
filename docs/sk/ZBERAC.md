@@ -49,6 +49,13 @@ Webové stránky, dokumenty PDF a kancelárske súbory, kanály RSS/Atom a sitem
 Z jedného zdroja najviac 50 MiB po rozbalení a len typy obsahu, ktoré vie spracovať. Neposiela cookies,
 `Referer` ani prihlasovacie údaje a nespúšťa JavaScript.
 
+## Kam až zberač ide
+Zo vstupnej stránky zdroja ide ATENA len po odkazoch na webe vydavateľa: na prílohy (PDF, kancelárske
+súbory) a na stránky pod vstupnou stránkou, o jednu úroveň. Úradné zdroje (ministerstvá, štátne
+inštitúcie) sa smú zbierať v celom webe: každá stránka toho istého servera najviac tri odkazy od
+vstupnej stránky. Na iné weby, do galérií, zoznamov zamestnancov ani na kontakty ATENA nikdy nejde
+a žiadny zdroj nemá viac ako 100 000 adries.
+
 ## Čo zaručuje prevádzkovateľovi
 * **Len verejný internet.** Každá adresa – aj každé presmerovanie a každý odkaz z kanála či sitemapy – sa
   pred spojením overí: len `http`/`https`, žiadne meno ani heslo v adrese, len povolené porty

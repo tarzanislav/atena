@@ -59,6 +59,13 @@ Prepínač navrchu Prehľadu aj Hľadania určuje, ktoré údaje vidíte:
 Voľba sa pamätá. Čísla pri kategóriách znamenajú **nové / všetky** – nové sú dokumenty, ktoré ATENA
 našla za posledných 7 dní.
 
+### Nástroje a slovníky
+
+Niektoré užitočné weby ATENA nezbiera, lebo ich obsah sa hľadá cez ich vlastné vyhľadávanie alebo
+aplikáciu (slovníky JÚĽŠ SAV, Slovenský národný korpus, Viki a Planéta vedomostí). V Prehľade sú
+v časti **Nástroje a slovníky** s popisom a tlačidlom **Otvoriť nástroj**. Pri hľadaní sa ukážu
+nástroje, ktoré sa k hľadaným slovám hodia.
+
 ### Dôveryhodnosť zdroja
 
 Každý výsledok má štítok a farebný pruh vľavo:

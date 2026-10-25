@@ -27,6 +27,7 @@ fn register(licence: &str, terms: &str) -> Vec<RegisterSource> {
             licence: licence.into(),
             terms: terms.into(),
             enabled: true,
+            site_wide: false,
         },
         endpoints: vec![NewEndpoint {
             url: PAGE.into(),
@@ -34,6 +35,7 @@ fn register(licence: &str, terms: &str) -> Vec<RegisterSource> {
             kind: EndpointKind::Page,
             origin: Origin::Register,
             follow_links: false,
+            depth: 0,
             interval_s: 3600,
         }],
     }]
