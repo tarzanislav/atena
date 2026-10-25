@@ -62,8 +62,14 @@ export function OverviewScreen() {
   const sections = taxonomy.schemes.find((s) => s.id === "section");
   const tiles = SECTION_TILES.map((id) => {
     const concept = sections?.concepts.find((c) => c.id === id);
-    const children = (sections?.concepts ?? []).filter((c) => c.broader === id && !HIDDEN_SUBSECTIONS.has(c.id));
-    // a subsection's own subsections are counted in it; they get no line of their own here
+    const all = sections?.concepts ?? [];
+    // subsections, each followed by its own subsections (indented)
+    const children = all
+      .filter((c) => c.broader === id && !HIDDEN_SUBSECTIONS.has(c.id))
+      .flatMap((c) => [
+        { concept: c, nested: false },
+        ...all.filter((n) => n.broader === c.id).map((n) => ({ concept: n, nested: true })),
+      ]);
     return { id, label: concept?.label ?? id, children };
   });
   const open = (key: string) => navigate("search", { filters: [key] });
@@ -128,7 +134,7 @@ export function OverviewScreen() {
           {taxonomy.draft && <span className="draft" style={{ marginLeft: 8 }}>{i18n.t("translation-draft")}</span>}
         </span>
       </div>
-      <div className="grid sections">
+      <div className="sections">
         {tiles.map((tile) => {
           const key = `section/${tile.id}`;
           const own = counts.get(key);
@@ -145,14 +151,12 @@ export function OverviewScreen() {
               </button>
               {tile.children.length > 0 && (
                 <ul className="subsections">
-                  {tile.children.map((c) => {
+                  {tile.children.map(({ concept: c, nested }) => {
                     const count = counts.get(c.key);
+                    const classes = ["subsection", count?.total ? "" : "dim", nested ? "nested" : ""].filter(Boolean);
                     return (
                       <li key={c.key}>
-                        <button
-                          className={count?.total ? "subsection" : "subsection dim"}
-                          onClick={() => open(c.key)}
-                        >
+                        <button className={classes.join(" ")} onClick={() => open(c.key)}>
                           <span>{c.label}</span>
                           <Counts count={count} days={days} />
                         </button>

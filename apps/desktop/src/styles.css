@@ -301,9 +301,15 @@ textarea {
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
 }
 
-.grid.sections {
-  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-  align-items: start;
+/* categories flow in columns, so a long one leaves no gaps beside it */
+.sections {
+  columns: 3 280px;
+  column-gap: 18px;
+}
+
+.sections > .section-tile {
+  break-inside: avoid;
+  margin-bottom: 18px;
 }
 
 .grid.two {
@@ -655,6 +661,11 @@ textarea {
 
 .subsection.dim {
   color: var(--muted);
+}
+
+.subsection.nested {
+  padding-left: 22px;
+  font-size: 13.5px;
 }
 
 .draft {
