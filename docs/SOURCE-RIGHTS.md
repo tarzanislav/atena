@@ -55,6 +55,30 @@ Nemzeti Köznevelési Portál (HU01–HU03), edu.gov.ru (RU01, RU02), waldorf.sk
 (AL09), CKE (N07), Eduthek (N13), NCCA (N20), HundrED (N21), e-Koolikott (N30), DOAJ (N32). Their
 pages may still be fetched where robots.txt lets ATENA in; only metadata is kept.
 
+## Slovak sources added (25 Oct 2026)
+The author's list of Slovak education sites was reviewed on 25 Oct 2026 (32 entries, IDs SK25–SK45,
+CZ11, N40, NA01–NA09):
+
+| | Sources |
+|---|---|
+| `allowed` | 13 – among them Informatika 2.0, Zavretá škola, Testokazi, Naša geografia, Zlatka.in, NIVaM e-testing, CCV PF KU, FMFI UK |
+| `official` (full text) | 3 Slovak acts on Slov-Lex: 138/2019, 596/2003, 61/2015 |
+| `forbidden` – not crawled | Direktor.sk (publisher's terms forbid crawling), EDULAB akadémia (registration, no making available), Kozmix (use only for non-commercial teaching), russky.info (no automatic extraction) |
+| `unknown` – metadata only | Jazyková poradňa SME, Eduworld (terms could not be read), Geografia – časopis (robots.txt refused the reviewing tool) |
+| tools – linked, never crawled | JÚĽŠ SAV dictionaries, Morfológia slovenského jazyka, Slovak National Corpus, Estetický slovník, Slovník cizích slov, CzechEncy, Viki and Planéta vedomostí (iedu.sk, applications that need JavaScript) |
+
+Not added: stofanak.sk (reachable only over plain http with a redirect loop, content not
+verifiable), edu.nivam.sk (robots.txt refuses; login platform), an EduPage school page (robots.txt
+refuses; school pages hold personal data), skolahrou.sk and freedu.sk (not reachable), the
+genealogy site rodokmen.com (author's decision: family trees are personal data). Lists of portals
+(sdetmi.com, novomestan.sk, freedu.sk) are not sources; the portals they name are candidates for
+proposals.
+
+**Site-wide crawling.** The Ministry of Education (SK04), NIVaM (SK07) and the State School Inspectorate
+(SK10) are crawled site-wide: any page of their host up to three links from the entry page, not only
+the pages below it (their addresses are flat, e.g. `/38037-sk/…`). Only official sources whose terms
+allow it may have this scope (`atena_core::source::CrawlScope`).
+
 Video links are taken from institutions' own pages; ATENA never visits YouTube (decision of the
 project author, 24 Oct 2026). Links and embedded players of YouTube and Vimeo are recorded with one
 canonical address per video (`document_link.kind = 'video'`) where the page's text may be kept –

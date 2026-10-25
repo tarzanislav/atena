@@ -22,6 +22,7 @@ fn import(id: &str, url: &str) -> NewImport {
             kind: EndpointKind::Page,
             origin: Origin::Register,
             follow_links: true,
+            depth: 0,
             interval_s: 86_400,
         }],
     }
@@ -134,6 +135,7 @@ async fn the_register_comes_first_and_takes_imports_over() {
             licence: "copyrighted".into(),
             terms: "allowed".into(),
             enabled: true,
+            site_wide: false,
         },
         endpoints: vec![NewEndpoint {
             url: url.into(),
@@ -141,6 +143,7 @@ async fn the_register_comes_first_and_takes_imports_over() {
             kind: EndpointKind::Page,
             origin: Origin::Register,
             follow_links: true,
+            depth: 0,
             interval_s: 3600,
         }],
     };

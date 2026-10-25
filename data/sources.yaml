@@ -4,7 +4,11 @@
 #          allowed (read; neither forbidden nor reserved) | forbidden (no automated access: not crawled)
 #          | reserved (mining reserved: metadata only) | unknown (default: not verified, metadata only)
 # rights:  the review behind licence and terms – checked (date), page (what was read), finding.
-#          Required whenever licence or terms differ from the defaults. Rights review: 24 Oct 2026.
+#          Required whenever licence or terms differ from the defaults. Rights review: 24 Oct 2026;
+#          Slovak sources added 25 Oct 2026.
+# scope:   section (default: the entry page, its attachments and the pages below it) | site (any
+#          page of the host up to three links from the entry page – official sources A1/A2 only).
+# connector tool: a dictionary, corpus or application that is linked and described (note), never crawled.
 version: 2
 sources:
 - id: SK01
@@ -77,6 +81,7 @@ sources:
   authority: A2
   priority: P0
   connector: html
+  scope: site
   interval_s: 604800
   review: keep
   terms: allowed
@@ -136,6 +141,7 @@ sources:
   authority: A2
   priority: P0
   connector: wp
+  scope: site
   interval_s: 3600
   review: adjusted
   feed: https://nivam.sk/feed/
@@ -196,6 +202,7 @@ sources:
   authority: A2
   priority: P0
   connector: wp
+  scope: site
   interval_s: 3600
   review: keep
   feed: https://www.ssi.sk/feed/
@@ -3551,3 +3558,622 @@ sources:
   note:
     sk: Na YouTube ATENA nechodí, lebo jeho podmienky zakazujú automatizovaný prístup. Odkazy na videá inštitúcií berie
       z ich vlastných stránok (odkazy aj vložené prehrávače) – rozhodnutie autora 24. 10. 2026.
+- id: SK25
+  name: Direktor.sk (Wolters Kluwer SR)
+  url: https://www.direktor.sk/
+  country: SK
+  languages:
+  - sk
+  authority: E
+  priority: P2
+  connector: html
+  interval_s: 604800
+  review: new
+  terms: forbidden
+  rights:
+    checked: 2026-10-25
+    page: https://www.wolterskluwer.com/sk-sk/terms-of-use
+    finding: >-
+      Content mostly for subscribers (paid packages, demo licence). The publisher's terms forbid
+      crawling, extraction and collection of site content ("prehľadávanie, extrakcia alebo zber obsahu
+      lokality je zakázané"); the e-shop terms of the Slovak branch could not be read.
+  note:
+    sk: Odborný portál pre riaditeľov škôl (platený). Nezbiera sa – podmienky vydavateľa zakazujú zber obsahu.
+- id: SK26
+  name: Jazyková poradňa SME (garant JÚĽŠ SAV)
+  url: https://jazykovaporadna.sme.sk/
+  country: SK
+  languages:
+  - sk
+  authority: E
+  priority: P2
+  connector: html
+  interval_s: 604800
+  review: new
+  terms: unknown
+  rights:
+    checked: 2026-10-25
+    page: https://jazykovaporadna.sme.sk/
+    finding: >-
+      A news publisher's language Q&A (about 7,100 answers, guaranteed by JÚĽŠ SAV). The page shows
+      no terms, licence or reservation and the publisher's terms could not be read: metadata only
+      until they are verified.
+  note:
+    sk: Otázky a odpovede o slovenčine. Len metadáta, kým sa neoveria podmienky vydavateľa.
+- id: SK27
+  name: EDULAB akadémia
+  url: https://akademia.edulab.sk/
+  country: SK
+  languages:
+  - sk
+  authority: C1
+  priority: P2
+  connector: html
+  interval_s: 604800
+  review: new
+  terms: forbidden
+  rights:
+    checked: 2026-10-25
+    page: https://akademia.edulab.sk/terms
+    finding: >-
+      Registration required before use; materials only for non-commercial educational use;
+      "Kopírovanie, distribuovanie a akékoľvek iné šírenie či sprístupňovanie materiálov je zakázané."
+  note:
+    sk: Kurzy pre vedenia škôl. Nezbiera sa – prístup len po registrácii a zákaz sprístupňovania materiálov.
+- id: SK28
+  name: Programujeme v Pythone
+  url: https://www.programujemevpythone.sk/
+  country: SK
+  languages:
+  - sk
+  authority: D
+  priority: P2
+  connector: html
+  interval_s: 2592000
+  review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-25
+    page: https://www.programujemevpythone.sk/podmienky.html
+    finding: >-
+      The terms page is the licence of purchased e-books only; the site's own pages carry
+      "© 2016, Mgr. Peter Kučera" and no restriction on automated access or mining.
+- id: SK29
+  name: Informatika 2.0
+  url: https://informatika20.sk/
+  country: SK
+  languages:
+  - sk
+  authority: C1
+  priority: P1
+  connector: html
+  interval_s: 604800
+  review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-25
+    page: https://informatika20.sk/
+    finding: >-
+      Civic association Informatika 2.0 (lesson plans of informatics, digital skills test). No terms of
+      use, licence or reservation on the site; only a privacy page.
+- id: SK30
+  name: NIVaM – elektronické testovania
+  url: https://nivam.sk/merania/e-testovania/
+  country: SK
+  languages:
+  - sk
+  authority: A2
+  priority: P0
+  connector: html
+  interval_s: 86400
+  review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-25
+    page: https://nivam.sk/
+    finding: >-
+      Same site as SK07: no terms of use or licence; footer "© 2026 Národný inštitút vzdelávania a
+      mládeže". The testing platform itself needs a school login and is not crawled.
+  note:
+    sk: E-Test, eMaturita, Mladý digitálny Európan, testovanie v PET (bývalý NÚCEM, dnes NIVaM).
+- id: SK31
+  name: CCV PF KU v Ružomberku
+  url: https://www.ccvpfku.sk/
+  country: SK
+  languages:
+  - sk
+  authority: B2
+  priority: P2
+  connector: html
+  interval_s: 604800
+  review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-25
+    page: https://www.ccvpfku.sk/
+    finding: >-
+      Centre for lifelong learning of the Faculty of Education, Catholic University in Ružomberok:
+      training, attestations. No terms of use, licence or reservation; only a cookie notice.
+- id: SK32
+  name: Zavretá škola
+  url: https://www.zavretaskola.sk/
+  country: SK
+  languages:
+  - sk
+  authority: D
+  priority: P1
+  connector: html
+  interval_s: 604800
+  review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-25
+    page: https://www.zavretaskola.sk/
+    finding: >-
+      Catalogue of about 980 teaching ideas (apps, videos, games, worksheets) by named authors,
+      supported by Nadácia pre deti Slovenska. Only "© 2026 Zavretá škola"; no terms or reservation.
+- id: SK33
+  name: Petra Křivánková – blog o Canve
+  url: https://www.petrakrivankova.sk/blog/
+  country: SK
+  languages:
+  - sk
+  authority: D
+  priority: P2
+  connector: html
+  interval_s: 2592000
+  review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-25
+    page: https://www.petrakrivankova.sk/blog/
+    finding: >-
+      Blog of a Canva trainer; the linked terms are sales terms of courses. Footer "© 2024 Petra
+      Křivánková"; no statement on copying or automated access.
+- id: SK34
+  name: FMFI UK – edukačný softvér (didaktika informatiky)
+  url: https://fmph.uniba.sk/microsites/kdmfi/kdmfi/oddelenie-didaktiky-informatiky/edukacny-softver/
+  country: SK
+  languages:
+  - sk
+  authority: B2
+  priority: P2
+  connector: html
+  interval_s: 2592000
+  review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-25
+    page: https://fmph.uniba.sk/microsites/kdmfi/kdmfi/oddelenie-didaktiky-informatiky/edukacny-softver/
+    finding: >-
+      Comenius University, Division of Informatics Didactics: list of educational software (Robot Emil,
+      Imagine Logo…). Only "Copyright © UK 2026"; no terms of use or reservation for the page.
+- id: SK35
+  name: Geografia – časopis, projekty
+  url: https://www.casopisgeografia.sk/projekty/index.php
+  country: SK
+  languages:
+  - sk
+  authority: C1
+  priority: P2
+  connector: html
+  interval_s: 2592000
+  review: new
+  terms: unknown
+  rights:
+    checked: 2026-10-25
+    page: https://www.casopisgeografia.sk/projekty/index.php
+    finding: >-
+      The site's robots.txt refused the reviewing tool, so its terms could not be read: metadata only;
+      ATENA's crawler obeys robots.txt on its own.
+- id: SK36
+  name: Zlatka.in – finančná gramotnosť
+  url: https://www.zlatka.in/sk/
+  country: SK
+  languages:
+  - sk
+  authority: C1
+  priority: P1
+  connector: html
+  interval_s: 604800
+  review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-25
+    page: https://www.zlatka.in/sk/
+    finding: >-
+      Financial-literacy tasks for pupils aged 7–19 by the civic association O Matika.in.
+      "© 2017 - 2026 www.zlatka.in"; no terms of use, licence or reservation.
+- id: SK37
+  name: Naša geografia
+  url: https://www.nasageografia.sk/
+  country: SK
+  languages:
+  - sk
+  authority: D
+  priority: P1
+  connector: html
+  interval_s: 604800
+  review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-25
+    page: https://www.nasageografia.sk/
+    finding: >-
+      Geography portal for teachers and pupils; free, the tests section is password-protected (not
+      crawled). No terms of use, copyright notice or reservation.
+- id: SK38
+  name: Testokazi
+  url: https://testokazi.sk/
+  country: SK
+  languages:
+  - sk
+  authority: D
+  priority: P1
+  connector: html
+  interval_s: 604800
+  review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-25
+    page: https://testokazi.sk/
+    finding: >-
+      Solved problems, online tests and lesson preparations in mathematics and physics (author
+      Mgr. Vladimír Kázik). No terms of use, copyright notice or reservation.
+- id: SK39
+  name: EduPortal
+  url: https://www.eduportal.sk/
+  country: SK
+  languages:
+  - sk
+  authority: D
+  priority: P2
+  connector: html
+  interval_s: 604800
+  review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-25
+    page: https://www.eduportal.sk/stranka/podmienky
+    finding: >-
+      "Reprodukcia alebo redistribúcia obsahu bez súhlasu prevádzkovateľa nie je povolená" – a plain
+      copyright notice; nothing on automated access or mining; content is not limited to registered users.
+- id: SK40
+  name: Eduworld – magazín pre učiteľov
+  url: https://eduworld.sk/
+  country: SK
+  languages:
+  - sk
+  authority: E
+  priority: P2
+  connector: html
+  interval_s: 86400
+  review: new
+  terms: unknown
+  rights:
+    checked: 2026-10-25
+    page: https://eduworld.sk/
+    finding: >-
+      Commercial education portal (Eduworld s.r.o.); footer reserves all rights and the news licence
+      ("Spravodajská licencia vyhradená"); its general terms could not be read: metadata only until
+      they are verified.
+- id: SK41
+  name: Kozmix
+  url: https://www.kozmix.sk/
+  country: SK
+  languages:
+  - sk
+  authority: D
+  priority: P2
+  connector: html
+  interval_s: 604800
+  review: new
+  terms: forbidden
+  rights:
+    checked: 2026-10-25
+    page: https://www.kozmix.sk/podmienky-pouzivania/
+    finding: >-
+      Learning portal (AGEMSOFT) mostly for registered users; "materiál použiť výlučne na nekomerčné a
+      pedagogické účely" and no copying without written consent – use limited to non-commercial
+      teaching, which ATENA cannot promise.
+- id: SK42
+  name: TUKE – Kvalita v systéme modernej výučby (M. Blaško)
+  url: https://osv-ip.tuke.sk/wp-content/uploads/2017/09/vuc15-systMQtvorivoHvyuc.pdf
+  country: SK
+  languages:
+  - sk
+  authority: B2
+  priority: P2
+  connector: html
+  interval_s: 2592000
+  review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-25
+    page: https://osv-ip.tuke.sk/wp-content/uploads/2017/09/vuc15-systMQtvorivoHvyuc.pdf
+    finding: >-
+      A chapter for teachers on quality management of creative-humanistic teaching, published on a
+      Technical University of Košice site; no licence, terms or reservation in the document.
+- id: SK43
+  name: Slov-Lex – zákon o pedagogických zamestnancoch (138/2019)
+  url: https://www.slov-lex.sk/ezbierky/pravne-predpisy/SK/ZZ/2019/138/
+  country: SK
+  languages:
+  - sk
+  authority: A1
+  priority: P0
+  connector: slovlex
+  interval_s: 86400
+  review: new
+  licence: official
+  terms: allowed
+  rights:
+    checked: 2026-10-25
+    page: https://www.slov-lex.sk/ezbierky/pravne-predpisy/SK/ZZ/2015/185/
+    finding: >-
+      Legal acts are not subject of copyright (§ 5 of Act 185/2015, Slovak Copyright Act); Slov-Lex
+      robots.txt allows all (as SK03).
+- id: SK44
+  name: Slov-Lex – zákon o štátnej správe v školstve (596/2003)
+  url: https://www.slov-lex.sk/ezbierky/pravne-predpisy/SK/ZZ/2003/596/
+  country: SK
+  languages:
+  - sk
+  authority: A1
+  priority: P0
+  connector: slovlex
+  interval_s: 86400
+  review: new
+  licence: official
+  terms: allowed
+  rights:
+    checked: 2026-10-25
+    page: https://www.slov-lex.sk/ezbierky/pravne-predpisy/SK/ZZ/2015/185/
+    finding: >-
+      Legal acts are not subject of copyright (§ 5 of Act 185/2015, Slovak Copyright Act); Slov-Lex
+      robots.txt allows all (as SK03).
+- id: SK45
+  name: Slov-Lex – zákon o odbornom vzdelávaní (61/2015)
+  url: https://www.slov-lex.sk/ezbierky/pravne-predpisy/SK/ZZ/2015/61/
+  country: SK
+  languages:
+  - sk
+  authority: A1
+  priority: P0
+  connector: slovlex
+  interval_s: 86400
+  review: new
+  licence: official
+  terms: allowed
+  rights:
+    checked: 2026-10-25
+    page: https://www.slov-lex.sk/ezbierky/pravne-predpisy/SK/ZZ/2015/185/
+    finding: >-
+      Legal acts are not subject of copyright (§ 5 of Act 185/2015, Slovak Copyright Act); Slov-Lex
+      robots.txt allows all (as SK03).
+- id: CZ11
+  name: Pražský hrad archeologický (ARÚ AV ČR)
+  url: https://prazskyhradarcheologicky.cz/
+  country: CZ
+  languages:
+  - cs
+  authority: B2
+  priority: P2
+  connector: html
+  interval_s: 2592000
+  review: new
+  terms: allowed
+  rights:
+    checked: 2026-10-25
+    page: https://prazskyhradarcheologicky.cz/
+    finding: >-
+      Institute of Archaeology of the Czech Academy of Sciences: a free mobile app on the archaeology
+      of Prague Castle. Only "© 2026"; no terms of use, licence or reservation.
+- id: N40
+  name: russky.info
+  url: https://russky.info/?hl=sk
+  country: DE
+  languages:
+  - ru
+  - sk
+  authority: D
+  priority: P2
+  connector: html
+  interval_s: 604800
+  review: new
+  terms: forbidden
+  rights:
+    checked: 2026-10-25
+    page: https://russky.info/terms
+    finding: >-
+      Terms forbid extracting content automatically unless needed for using the service and grant a
+      personal, non-transferable right of use; content under CC BY-NC-ND 4.0; German law applies.
+- id: NA01
+  name: Slovníkový portál JÚĽŠ SAV
+  url: https://slovnik.juls.savba.sk/
+  country: SK
+  languages:
+  - sk
+  authority: B2
+  priority: P1
+  connector: tool
+  interval_s: 2592000
+  review: new
+  terms: unknown
+  rights:
+    checked: 2026-10-25
+    page: https://slovnik.juls.savba.sk/
+    finding: >-
+      A tool: linked and described in ATENA, never crawled (its content is reached through a search
+      form or an application).
+  note:
+    sk: Výkladové, pravopisné a ďalšie slovníky slovenčiny Jazykovedného ústavu Ľ. Štúra SAV na jednom mieste.
+    en: Dictionaries of Slovak (explanatory, spelling and more) of the Ľ. Štúr Institute of Linguistics, Slovak Academy of Sciences.
+- id: NA02
+  name: Morfológia slovenského jazyka (1966)
+  url: https://www.juls.savba.sk/ediela/msj/
+  country: SK
+  languages:
+  - sk
+  authority: B2
+  priority: P1
+  connector: tool
+  interval_s: 2592000
+  review: new
+  terms: unknown
+  rights:
+    checked: 2026-10-25
+    page: https://www.juls.savba.sk/ediela/msj/
+    finding: >-
+      A tool: linked and described in ATENA, never crawled (its content is reached through a search
+      form or an application).
+  note:
+    sk: Elektronická verzia monografie Morfológia slovenského jazyka (Dvonč, Horák, Miko, Mistrík, Oravec, Ružička, Urbančok; Vydavateľstvo SAV 1966).
+    en: Electronic edition of the monograph Morphology of the Slovak Language (Publishing House of the Slovak Academy of Sciences, 1966).
+- id: NA03
+  name: Slovenský národný korpus
+  url: https://korpus.juls.savba.sk/
+  country: SK
+  languages:
+  - sk
+  authority: B2
+  priority: P1
+  connector: tool
+  interval_s: 2592000
+  review: new
+  terms: unknown
+  rights:
+    checked: 2026-10-25
+    page: https://korpus.juls.savba.sk/
+    finding: >-
+      A tool: linked and described in ATENA, never crawled (its content is reached through a search
+      form or an application).
+  note:
+    sk: Korpus textov slovenčiny Jazykovedného ústavu Ľ. Štúra SAV na skúmanie skutočného používania slov (vyžaduje registráciu a súhlas s licenciou).
+    en: The Slovak National Corpus of the Ľ. Štúr Institute of Linguistics (requires registration and a licence agreement).
+- id: NA04
+  name: Estetický slovník (Erich Mistrík)
+  url: https://www.estetickyslovnik.sk/
+  country: SK
+  languages:
+  - sk
+  authority: D
+  priority: P1
+  connector: tool
+  interval_s: 2592000
+  review: new
+  terms: unknown
+  rights:
+    checked: 2026-10-25
+    page: https://www.estetickyslovnik.sk/
+    finding: >-
+      A tool: linked and described in ATENA, never crawled (its content is reached through a search
+      form or an application).
+  note:
+    sk: Pojmy a osobnosti z estetiky; texty sa smú voľne používať na vzdelávacie a iné nekomerčné účely s uvedením zdroja.
+    en: Concepts and figures of aesthetics; texts may be used freely for educational and other non-commercial purposes with attribution.
+- id: NA05
+  name: Slovník cizích slov (ABZ.cz)
+  url: https://slovnik-cizich-slov.abz.cz/
+  country: CZ
+  languages:
+  - cs
+  authority: D
+  priority: P1
+  connector: tool
+  interval_s: 2592000
+  review: new
+  terms: unknown
+  rights:
+    checked: 2026-10-25
+    page: https://slovnik-cizich-slov.abz.cz/
+    finding: >-
+      A tool: linked and described in ATENA, never crawled (its content is reached through a search
+      form or an application).
+  note:
+    sk: Český slovník cudzích slov s výkladom významu.
+    en: Czech dictionary of foreign words with their meanings.
+- id: NA06
+  name: CzechEncy – Nový encyklopedický slovník češtiny
+  url: https://www.czechency.org/slovnik
+  country: CZ
+  languages:
+  - cs
+  authority: B2
+  priority: P1
+  connector: tool
+  interval_s: 2592000
+  review: new
+  terms: unknown
+  rights:
+    checked: 2026-10-25
+    page: https://www.czechency.org/slovnik
+    finding: >-
+      A tool: linked and described in ATENA, never crawled (its content is reached through a search
+      form or an application).
+  note:
+    sk: Encyklopedický slovník českého jazyka a jazykovedy (online vydanie Nového encyklopedického slovníka češtiny).
+    en: Encyclopaedic dictionary of the Czech language and linguistics (online edition).
+- id: NA07
+  name: Viki – digitálny vzdelávací obsah ministerstva
+  url: https://viki.iedu.sk/landing
+  country: SK
+  languages:
+  - sk
+  authority: A2
+  priority: P1
+  connector: tool
+  interval_s: 2592000
+  review: new
+  terms: unknown
+  rights:
+    checked: 2026-10-25
+    page: https://viki.iedu.sk/landing
+    finding: >-
+      A tool: linked and described in ATENA, never crawled (its content is reached through a search
+      form or an application).
+  note:
+    sk: Platforma, ktorá sprístupňuje digitálny vzdelávací obsah ministerstva školstva pre učiteľov a žiakov.
+    en: Platform giving teachers and pupils the digital educational content of the Slovak Ministry of Education.
+- id: NA08
+  name: Planéta vedomostí – predmety
+  url: https://predmety.iedu.sk/
+  country: SK
+  languages:
+  - sk
+  authority: A2
+  priority: P1
+  connector: tool
+  interval_s: 2592000
+  review: new
+  terms: unknown
+  rights:
+    checked: 2026-10-25
+    page: https://predmety.iedu.sk/
+    finding: >-
+      A tool: linked and described in ATENA, never crawled (its content is reached through a search
+      form or an application).
+  note:
+    sk: Viac než 14 000 učebných materiálov, videí, cvičení a hier pre základné a stredné školy (iedu.sk).
+    en: More than 14,000 learning materials, videos, exercises and games for primary and secondary schools (iedu.sk).
+- id: NA09
+  name: Planéta vedomostí – výchovy
+  url: https://vychovy.iedu.sk/
+  country: SK
+  languages:
+  - sk
+  authority: A2
+  priority: P1
+  connector: tool
+  interval_s: 2592000
+  review: new
+  terms: unknown
+  rights:
+    checked: 2026-10-25
+    page: https://vychovy.iedu.sk/
+    finding: >-
+      A tool: linked and described in ATENA, never crawled (its content is reached through a search
+      form or an application).
+  note:
+    sk: Náučné videá a interaktívne cvičenia z mediálnej, etickej, dopravnej a zdravotnej výchovy pre MŠ, ZŠ a SŠ.
+    en: Educational videos and interactive exercises on media, ethics, traffic and health education.

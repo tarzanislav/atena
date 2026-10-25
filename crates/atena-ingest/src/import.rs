@@ -54,6 +54,7 @@ pub fn to_import(a: &Assessment, via: Via) -> Option<(NewImport, AssessmentRecor
         kind,
         origin: Origin::Register,
         follow_links: a.kind == Some(Kind::Page),
+        depth: 0,
         interval_s,
     });
     let source = NewImport {

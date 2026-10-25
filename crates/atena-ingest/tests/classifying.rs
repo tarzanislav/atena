@@ -26,6 +26,7 @@ fn register() -> RegisterSource {
             licence: "copyrighted".into(),
             terms: "allowed".into(),
             enabled: true,
+            site_wide: false,
         },
         endpoints: vec![NewEndpoint {
             url: "https://sk01.example.sk/".into(),
@@ -33,6 +34,7 @@ fn register() -> RegisterSource {
             kind: EndpointKind::Page,
             origin: Origin::Register,
             follow_links: false,
+            depth: 0,
             interval_s: 3600,
         }],
     }

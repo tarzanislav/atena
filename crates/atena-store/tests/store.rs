@@ -24,6 +24,7 @@ fn source(id: &str, enabled: bool) -> SourceRecord {
         licence: "copyrighted".into(),
         terms: "unknown".into(),
         enabled,
+        site_wide: false,
     }
 }
 
@@ -39,6 +40,7 @@ fn endpoint(url: &str, kind: EndpointKind, origin: Origin) -> NewEndpoint {
         kind,
         origin,
         follow_links: kind == EndpointKind::Page && origin == Origin::Register,
+        depth: 0,
         interval_s: 3600,
     }
 }

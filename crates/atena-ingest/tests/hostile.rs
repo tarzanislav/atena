@@ -63,6 +63,7 @@ async fn register(store: &Store, server: &Server) {
         kind,
         origin: Origin::Register,
         follow_links: true,
+        depth: 0,
         interval_s: 86_400,
     };
     store
@@ -80,6 +81,7 @@ async fn register(store: &Store, server: &Server) {
                 licence: "copyrighted".into(),
                 terms: "allowed".into(),
                 enabled: true,
+                site_wide: false,
             },
             endpoints: vec![
                 endpoint("/skola/", EndpointKind::Page),

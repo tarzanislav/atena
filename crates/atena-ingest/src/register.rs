@@ -3,7 +3,7 @@
 
 use atena_core::Taxonomy;
 use atena_core::legality::{SourceFacts, permission};
-use atena_core::source::{Review, Source, load_sources};
+use atena_core::source::{CrawlScope, Review, SITE_DEPTH, Source, load_sources};
 use atena_crawl::{Config, ServiceClient};
 use atena_store::{
     EndpointKind, NewEndpoint, Origin, RegisterSource, SourceRecord, Store, StoreError, SyncReport,
@@ -113,6 +113,7 @@ fn register_endpoint(
     url: &str,
     kind: EndpointKind,
     follow_links: bool,
+    depth: i16,
     interval_s: i32,
 ) -> Option<NewEndpoint> {
     let url = normalize(&Url::parse(url).ok()?);
@@ -122,12 +123,15 @@ fn register_endpoint(
         kind,
         origin: Origin::Register,
         follow_links,
+        depth,
         interval_s,
     })
 }
 
 /// The register entries for [`atena_store::Store::sync_register`]: every source is watched
-/// through its entry page (links followed unless it is an API) and its feed, if it has one.
+/// through its entry page (links followed unless it is an API; site-wide sources further down)
+/// and its feed, if it has one. A tool is listed, never watched: it has no endpoints and is not
+/// crawled.
 pub fn register_entries(sources: &[Source]) -> Vec<RegisterSource> {
     sources
         .iter()
@@ -137,15 +141,22 @@ pub fn register_entries(sources: &[Source]) -> Vec<RegisterSource> {
                 interval_s = interval_s.max(ARCHIVE_INTERVAL_S);
             }
             let follow = !API_CONNECTORS.contains(&s.connector.as_str());
-            let endpoints = [
-                register_endpoint(&s.url, EndpointKind::Page, follow, interval_s),
-                s.feed
-                    .as_deref()
-                    .and_then(|f| register_endpoint(f, EndpointKind::Feed, false, interval_s)),
-            ]
-            .into_iter()
-            .flatten()
-            .collect();
+            let site_wide = s.scope == CrawlScope::Site;
+            // the pages found on the entry page follow links further, level by level
+            let depth = if site_wide { SITE_DEPTH - 1 } else { 0 };
+            let endpoints = if s.is_tool() {
+                Vec::new()
+            } else {
+                [
+                    register_endpoint(&s.url, EndpointKind::Page, follow, depth, interval_s),
+                    s.feed.as_deref().and_then(|f| {
+                        register_endpoint(f, EndpointKind::Feed, false, 0, interval_s)
+                    }),
+                ]
+                .into_iter()
+                .flatten()
+                .collect()
+            };
             RegisterSource {
                 source: SourceRecord {
                     id: s.id.clone(),
@@ -159,8 +170,10 @@ pub fn register_entries(sources: &[Source]) -> Vec<RegisterSource> {
                     interval_s,
                     licence: s.licence.as_str().to_string(),
                     terms: s.terms.as_str().to_string(),
-                    // the legality principle decides whether the source is crawled at all
-                    enabled: permission(SourceFacts::from(s), false).crawl,
+                    // the legality principle decides whether the source is crawled at all;
+                    // a tool never is
+                    enabled: permission(SourceFacts::from(s), false).crawl && !s.is_tool(),
+                    site_wide,
                 },
                 endpoints,
             }
@@ -185,11 +198,22 @@ mod tests {
         assert_eq!(kinds, [EndpointKind::Page, EndpointKind::Feed]);
         assert!(sk01.endpoints[0].follow_links);
         assert_eq!(sk01.endpoints[0].host, "www.minedu.sk");
-        assert!(
-            entries
-                .iter()
-                .all(|e| !e.endpoints.is_empty() && e.source.interval_s >= 60)
-        );
+        assert!(entries.iter().all(|e| e.source.interval_s >= 60));
+        for (source, entry) in sources.iter().zip(&entries) {
+            // tools are listed, never crawled; everything else has its entry page
+            assert_eq!(
+                entry.endpoints.is_empty(),
+                source.is_tool(),
+                "{}",
+                source.id
+            );
+            assert!(!source.is_tool() || !entry.source.enabled, "{}", source.id);
+            let site = source.scope == CrawlScope::Site;
+            assert_eq!(entry.source.site_wide, site, "{}", source.id);
+            if let Some(page) = entry.endpoints.first() {
+                assert_eq!(page.depth, if site { SITE_DEPTH - 1 } else { 0 });
+            }
+        }
         for e in entries
             .iter()
             .filter(|e| API_CONNECTORS.contains(&e.source.connector.as_str()))

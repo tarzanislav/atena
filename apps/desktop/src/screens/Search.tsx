@@ -5,6 +5,7 @@ import { LabelTag } from "../components/Badges";
 import { ErrorNotice } from "../components/ErrorNotice";
 import { HitItem } from "../components/HitItem";
 import { ScopeSwitch, scopeFilters } from "../components/Scope";
+import { ToolList, inScope, matching, useTools } from "../components/Tools";
 import { useApp, type SearchStart } from "../context";
 import { languageOf, number } from "../format";
 import { useI18n } from "../i18n";
@@ -34,6 +35,7 @@ export function SearchScreen({ start }: { start: SearchStart }) {
   const [error, setError] = useState<unknown>(null);
   const [busy, setBusy] = useState(false);
   const [sourceNames, setSourceNames] = useState<Map<string, string>>(new Map());
+  const tools = inScope(useTools(), settings);
   // the chosen data (Slovak or foreign) narrow every search
   const scopeKey = scopeFilters(settings).join(" ");
 
@@ -188,6 +190,7 @@ export function SearchScreen({ start }: { start: SearchStart }) {
             })}
           </aside>
           <div className="item-body" style={{ gap: 12 }}>
+            <ToolList tools={matching(tools, asked?.text ?? "")} title={i18n.t("search-tools")} />
             <p>
               <strong>{i18n.t("search-found", { count: result.total })}</strong>
               {!result.allWords && <span className="muted"> {i18n.t("search-some-words")}</span>}

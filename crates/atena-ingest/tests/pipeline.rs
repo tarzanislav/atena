@@ -116,6 +116,7 @@ async fn register_to_versions_and_classification() {
         kind,
         origin: Origin::Register,
         follow_links,
+        depth: 0,
         interval_s: 86_400,
     };
     store
@@ -135,6 +136,7 @@ async fn register_to_versions_and_classification() {
                     // verified terms in an EU country: texts may be kept for change detection
                     terms: "allowed".into(),
                     enabled: true,
+                    site_wide: false,
                 },
                 endpoints: vec![
                     endpoint("/skola/", EndpointKind::Page, true),
@@ -156,6 +158,7 @@ async fn register_to_versions_and_classification() {
                     // terms not verified yet: the legality principle allows metadata only
                     terms: "unknown".into(),
                     enabled: true,
+                    site_wide: false,
                 },
                 endpoints: vec![endpoint("/cudzi/", EndpointKind::Page, false)],
             },
@@ -327,5 +330,96 @@ async fn register_to_versions_and_classification() {
     )
     .await;
     assert_eq!(fails, 2);
+    db.drop().await;
+}
+
+#[tokio::test]
+async fn official_sources_crawled_site_wide_follow_links_level_by_level() {
+    let Some(db) = TestDb::new().await else {
+        return;
+    };
+    let store = &db.store;
+    // a ministry-like site: flat addresses, so nothing lies "below" the entry page
+    let page = |title: &str, next: &str| {
+        format!(
+            "<html><body><article><h1>{title}</h1><p>{title}: usmernenie ministerstva pre školy \
+             o organizácii vyučovania a hodnotení žiakov v školskom roku.</p>\
+             <a href=\"{next}\">ďalej</a> <a href=\"/kontakty/zamestnanci/\">zamestnanci</a></article></body></html>"
+        )
+    };
+    let server = Server::start(move |req| match req.path.as_str() {
+        "/1-sk/vstup/" => reply(200, page("Vstup", "/2-sk/prva/")),
+        "/2-sk/prva/" => reply(200, page("Prvá", "/3-sk/druha/")),
+        "/3-sk/druha/" => reply(200, page("Druhá", "/4-sk/tretia/")),
+        "/4-sk/tretia/" => reply(200, page("Tretia", "/5-sk/stvrta/")),
+        "/5-sk/stvrta/" => reply(200, page("Štvrtá", "/1-sk/vstup/")),
+        _ => reply(404, "not found"),
+    })
+    .await;
+    let depth = atena_core::source::SITE_DEPTH - 1;
+    store
+        .sync_register(&[RegisterSource {
+            source: SourceRecord {
+                id: "T03".into(),
+                name: "Ministerstvo".into(),
+                url: server.url("/1-sk/vstup/").to_string(),
+                country: "SK".into(),
+                languages: vec!["sk".into()],
+                authority: "A2".into(),
+                priority: "P0".into(),
+                connector: "html".into(),
+                interval_s: 86_400,
+                licence: "copyrighted".into(),
+                terms: "allowed".into(),
+                enabled: true,
+                site_wide: true,
+            },
+            endpoints: vec![NewEndpoint {
+                url: server.url("/1-sk/vstup/").to_string(),
+                host: "127.0.0.1".into(),
+                kind: EndpointKind::Page,
+                origin: Origin::Register,
+                follow_links: true,
+                depth,
+                interval_s: 86_400,
+            }],
+        }])
+        .await
+        .unwrap();
+    let stats = run_once(store, &server).await;
+    assert_eq!(stats.store_errors, 0, "{stats:?}");
+    // the entry page and three levels of links below it – never the fourth, never people's pages
+    let mut found: Vec<String> = sqlx::query_scalar("SELECT url FROM document ORDER BY url")
+        .fetch_all(store.pool())
+        .await
+        .unwrap();
+    found.iter_mut().for_each(|u| {
+        *u = url::Url::parse(u).unwrap().path().to_string();
+    });
+    assert_eq!(
+        found,
+        [
+            "/1-sk/vstup/",
+            "/2-sk/prva/",
+            "/3-sk/druha/",
+            "/4-sk/tretia/"
+        ]
+    );
+    let depths: Vec<(String, bool, i16)> =
+        sqlx::query_as("SELECT url, follow_links, depth FROM endpoint ORDER BY url")
+            .fetch_all(store.pool())
+            .await
+            .unwrap();
+    let of = |path: &str| {
+        depths
+            .iter()
+            .find(|(u, _, _)| u.ends_with(path))
+            .map(|(_, f, d)| (*f, *d))
+    };
+    assert_eq!(of("/2-sk/prva/"), Some((true, 1)));
+    assert_eq!(of("/3-sk/druha/"), Some((true, 0)));
+    assert_eq!(of("/4-sk/tretia/"), Some((false, 0)));
+    assert_eq!(of("/5-sk/stvrta/"), None);
+    assert_eq!(of("/kontakty/zamestnanci/"), None);
     db.drop().await;
 }

@@ -20,7 +20,9 @@ use atena_store::{
 use url::Url;
 
 use crate::privacy;
-use crate::urls::{MAX_LINKS_PER_PAGE, follow, host, is_personal_page, normalize, on_site};
+use crate::urls::{
+    Follow, MAX_LINKS_PER_PAGE, follow_in, host, is_personal_page, normalize, on_site,
+};
 
 /// Settings of the pipeline.
 #[derive(Debug, Clone)]
@@ -200,6 +202,7 @@ impl Pipeline {
             kind,
             origin,
             follow_links: false,
+            depth: 0,
             interval_s: self.discovered_interval(ep),
         })
     }
@@ -611,8 +614,18 @@ impl Pipeline {
                 .filter(|l| !l.nofollow)
                 // never a video service, even if it were on the publisher's own host
                 .filter(|l| video_url(&l.url).is_none())
-                .filter(|l| follow(&page_url, &normalize(&l.url)).is_some())
-                .filter_map(|l| self.new_endpoint(ep, &l.url, EndpointKind::Page, Origin::Link))
+                .filter_map(|l| {
+                    let how = follow_in(&page_url, &normalize(&l.url), ep.source_site_wide)?;
+                    let mut found =
+                        self.new_endpoint(ep, &l.url, EndpointKind::Page, Origin::Link)?;
+                    // a page found here follows links further while levels remain; an
+                    // attachment is a document, never a page to follow
+                    if how == Follow::Subpage && ep.depth > 0 {
+                        found.follow_links = true;
+                        found.depth = ep.depth - 1;
+                    }
+                    Some(found)
+                })
                 .take(MAX_LINKS_PER_PAGE)
                 .collect();
             // feeds the page announces on the publisher's own site

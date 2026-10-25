@@ -48,6 +48,13 @@ Web pages, PDF and office documents, RSS/Atom feeds and sitemaps (XML, text, gzi
 resource (after decompression), only the content types it can process. It sends no cookies, no
 `Referer` and no credentials, and does not run JavaScript.
 
+## How far it goes
+From a source's entry page ATENA follows links only on the publisher's own site: to attachments (PDF,
+office files) and to the pages below the entry page, one level deep. Official sources (ministries,
+state institutions) may be crawled site-wide: any page of the same host up to three links from the
+entry page. ATENA never follows links to other sites, galleries, staff lists or contact pages, and no
+source holds more than 100,000 addresses.
+
 ## Guarantees for operators
 * **Public Internet only.** Every URL – including every redirect hop and every link found in a feed or
   sitemap – is checked before a connection is made: only `http`/`https`, no user names or passwords in

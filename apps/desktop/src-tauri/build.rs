@@ -10,6 +10,7 @@ const COMMANDS: &[&str] = &[
     "search",
     "newest",
     "tally",
+    "tools",
     "document",
     "import_addresses",
     "proposals",

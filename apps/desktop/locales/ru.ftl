@@ -87,6 +87,9 @@ scope-all-languages = Все языки
 trust-official = Официальный источник
 trust-expert = Экспертный источник
 trust-other = Другой источник – проверьте
+tools-title = Инструменты и словари
+tools-intro = Словари, корпусы и приложения, которые ATENA не собирает, – поиск в них ведётся напрямую. Они открываются в вашем браузере.
+tools-open = Открыть инструмент
 
 ## Поиск
 
@@ -112,6 +115,7 @@ search-previous = Назад
 search-next = Далее
 search-page = Страница { $page } из { $pages }
 search-only-official = Только официальные источники
+search-tools = Инструменты по искомым словам
 hit-no-text = Текст этого источника в ATENA не показывается – лицензия этого не разрешает. Откройте оригинал.
 
 facet-section = Раздел
@@ -172,6 +176,8 @@ sources-column-text = Текст
 sources-column-show = Показ
 sources-column-documents = Документы
 sources-checked = проверка { $date }
+sources-tool = Инструмент (не собирается)
+sources-site-wide = Весь сайт
 sources-none = Ни один источник не соответствует выбору.
 
 allowed-crawl = можно собирать

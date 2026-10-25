@@ -1,6 +1,6 @@
 //! The source register (`data/sources.yaml`): who publishes, where and how often ATENA looks.
 
-use std::collections::HashSet;
+use std::collections::{BTreeMap, HashSet};
 
 use serde::{Deserialize, Serialize};
 
@@ -24,6 +24,25 @@ pub enum Review {
     /// Added in the review.
     New,
 }
+
+/// How far the crawler goes from a source's entry page.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum CrawlScope {
+    /// The entry page, its attachments and the pages below it (one level).
+    #[default]
+    Section,
+    /// Any page of the publisher's site up to [`SITE_DEPTH`] links from the entry page – only for
+    /// official sources (A1, A2) whose terms allow it.
+    Site,
+}
+
+/// Links followed from the entry page of a source crawled site-wide.
+pub const SITE_DEPTH: i16 = 3;
+
+/// The connector of a tool: a dictionary, corpus or application that is linked and described,
+/// never crawled (its content is behind a search form or an application).
+pub const TOOL: &str = "tool";
 
 /// Open licences accepted in the register (SPDX identifiers and their IGO variants). Each allows
 /// copying, adaptation and commercial use with attribution at most.
@@ -182,6 +201,19 @@ pub struct Source {
     /// The rights review behind `licence` and `terms`; required unless both are the defaults.
     #[serde(default)]
     pub rights: Option<Rights>,
+    /// How far the crawler goes from the entry page.
+    #[serde(default)]
+    pub scope: CrawlScope,
+    /// What the source is, by language (shown with tools; written by ATENA, CC0).
+    #[serde(default)]
+    pub note: BTreeMap<String, String>,
+}
+
+impl Source {
+    /// A tool is linked and described, never crawled.
+    pub fn is_tool(&self) -> bool {
+        self.connector == TOOL
+    }
 }
 
 #[derive(Deserialize)]
@@ -214,6 +246,14 @@ pub enum RegisterError {
     /// The entry conflicts with the legality principle (see `legality`).
     #[error("{0}")]
     Legality(String),
+    /// Only official sources whose terms allow it are crawled site-wide.
+    #[error(
+        "source {0}: only official sources (A1, A2) with terms `allowed` may be crawled site-wide"
+    )]
+    Scope(String),
+    /// A tool needs a Slovak description and cannot be crawled site-wide.
+    #[error("source {0}: a tool needs a description (note.sk) and is never crawled")]
+    Tool(String),
 }
 
 /// Loads the register and checks it against the taxonomy.
@@ -238,6 +278,14 @@ pub fn load_sources(yaml: &str, taxonomy: &Taxonomy) -> Result<Vec<Source>, Regi
             return Err(RegisterError::Address(s.id.clone()));
         }
         crate::legality::check_source(s).map_err(RegisterError::Legality)?;
+        let official = matches!(s.authority.as_str(), "A1" | "A2");
+        if s.scope == CrawlScope::Site && (!official || s.terms != Terms::Allowed || s.is_tool()) {
+            return Err(RegisterError::Scope(s.id.clone()));
+        }
+        if s.is_tool() && (s.note.get("sk").is_none_or(|n| n.trim().is_empty()) || s.feed.is_some())
+        {
+            return Err(RegisterError::Tool(s.id.clone()));
+        }
     }
     Ok(raw.sources)
 }
@@ -250,7 +298,7 @@ mod tests {
     fn bundled_register_is_consistent() {
         let t = Taxonomy::bundled().unwrap();
         let sources = load_sources(BUNDLED_SOURCES, &t).expect("valid register");
-        assert_eq!(sources.len(), 186);
+        assert_eq!(sources.len(), 218);
         let nivam = sources.iter().find(|s| s.id == "SK07").unwrap();
         assert_eq!(nivam.feed.as_deref(), Some("https://nivam.sk/feed/"));
         assert_eq!(nivam.interval_s, 3600);
@@ -263,6 +311,46 @@ mod tests {
         assert_eq!(youtube.terms, Terms::Forbidden);
         // every source went through the rights review
         assert!(sources.iter().all(|s| s.rights.is_some()));
+        // official sources crawled site-wide; tools are described, never crawled
+        let site: Vec<&str> = sources
+            .iter()
+            .filter(|s| s.scope == CrawlScope::Site)
+            .map(|s| s.id.as_str())
+            .collect();
+        assert_eq!(site, ["SK04", "SK07", "SK10"]);
+        let tools: Vec<&Source> = sources.iter().filter(|s| s.is_tool()).collect();
+        assert_eq!(tools.len(), 9);
+        assert!(
+            tools
+                .iter()
+                .all(|t| t.note.contains_key("sk") && t.note.contains_key("en"))
+        );
+    }
+
+    #[test]
+    fn site_wide_scope_and_tools_are_checked() {
+        let t = Taxonomy::bundled().unwrap();
+        let entry = |authority: &str, connector: &str, terms: &str, extra: &str| {
+            format!(
+                "sources:\n- id: X1\n  name: X\n  url: https://x.example/\n  country: SK\n  languages: [sk]\n  \
+                 authority: {authority}\n  priority: P0\n  connector: {connector}\n  interval_s: 3600\n  review: new\n  \
+                 terms: {terms}\n{extra}  rights:\n    checked: 2026-10-25\n    page: https://x.example/\n    finding: Read.\n"
+            )
+        };
+        let site = "  scope: site\n";
+        assert!(load_sources(&entry("A2", "html", "allowed", site), &t).is_ok());
+        for (authority, terms) in [("C1", "allowed"), ("A2", "unknown"), ("A1", "reserved")] {
+            assert!(matches!(
+                load_sources(&entry(authority, "html", terms, site), &t),
+                Err(RegisterError::Scope(_))
+            ));
+        }
+        let described = "  note:\n    sk: Slovník.\n";
+        assert!(load_sources(&entry("B2", "tool", "unknown", described), &t).unwrap()[0].is_tool());
+        assert!(matches!(
+            load_sources(&entry("B2", "tool", "unknown", ""), &t),
+            Err(RegisterError::Tool(_))
+        ));
     }
 
     #[test]

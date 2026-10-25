@@ -96,6 +96,9 @@ scope-all-languages = Všetky jazyky
 trust-official = Úradný zdroj
 trust-expert = Odborný zdroj
 trust-other = Iný zdroj – overte
+tools-title = Nástroje a slovníky
+tools-intro = Slovníky, korpusy a aplikácie, ktoré ATENA nezbiera – obsah sa v nich hľadá priamo. Otvoria sa vo vašom prehliadači.
+tools-open = Otvoriť nástroj
 
 ## Hľadanie
 
@@ -121,6 +124,7 @@ search-previous = Predchádzajúca
 search-next = Ďalšia
 search-page = Strana { $page } z { $pages }
 search-only-official = Len úradné zdroje
+search-tools = Nástroje k hľadaným slovám
 hit-no-text = Text tohto zdroja sa v ATENE nezobrazuje – licencia to nedovoľuje. Otvorte originál.
 
 facet-section = Sekcia
@@ -181,6 +185,8 @@ sources-column-text = Text
 sources-column-show = Zobraziť
 sources-column-documents = Dokumenty
 sources-checked = kontrola { $date }
+sources-tool = Nástroj (nezbiera sa)
+sources-site-wide = Celý web
 sources-none = Žiadny zdroj nezodpovedá výberu.
 
 allowed-crawl = smie sa zbierať
