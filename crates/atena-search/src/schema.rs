@@ -19,6 +19,10 @@ pub(crate) const SOURCE: &str = "source";
 pub(crate) const COUNTRY: &str = "country";
 /// The authority of the source (also a taxonomy scheme).
 pub(crate) const AUTHORITY: &str = "authority";
+/// Slovak or foreign data (`atena_core::scope`).
+pub(crate) const REGION: &str = atena_core::scope::REGION;
+/// The trust group of the source (`atena_core::scope`).
+pub(crate) const TRUST: &str = atena_core::scope::TRUST;
 
 /// Handles of all fields.
 #[derive(Debug, Clone)]
@@ -37,6 +41,8 @@ pub(crate) struct Fields {
     pub published: Field,
     /// Date used for freshness in ranking.
     pub dated: Field,
+    /// When ATENA first saw the document ("new" in the overview).
+    pub added: Field,
     /// Authority weight used in ranking.
     pub weight: Field,
     /// The whole text may be shown in ATENA.
@@ -80,6 +86,7 @@ pub(crate) fn schema() -> (Schema, Fields) {
     let licence = b.add_text_field("licence", stored.clone());
     let published = b.add_date_field("published", DateOptions::default().set_stored());
     let dated = b.add_date_field("dated", DateOptions::default().set_fast());
+    let added = b.add_date_field("added", DateOptions::default().set_fast());
     let weight = b.add_f64_field("weight", NumericOptions::default().set_fast());
     let full_text = b.add_bool_field("full_text", STORED);
     let shown = b.add_text_field("shown", stored);
@@ -105,6 +112,7 @@ pub(crate) fn schema() -> (Schema, Fields) {
             licence,
             published,
             dated,
+            added,
             weight,
             full_text,
             shown,

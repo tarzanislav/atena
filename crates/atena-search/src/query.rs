@@ -8,8 +8,10 @@
 //!   (`atena_core::classify`). Documents labelled with a recognised concept – or a narrower one –
 //!   are found in any language, so `čitateľská gramotnosť` finds English documents on reading
 //!   literacy.
-//! * **Filters** `scheme/concept` (narrower concepts included), `language/xx`, `source/ID`: values of
-//!   one scheme are alternatives, different schemes must all hold.
+//! * **Filters** `scheme/concept` (narrower concepts and what the concept includes, see
+//!   `Taxonomy::members`), `language/xx`, `source/ID`, `region/sk|abroad`,
+//!   `trust/official|expert|other`: values of one namespace are alternatives, different
+//!   namespaces must all hold.
 //! * **Ranking** is the relevance multiplied by the authority of the source (A1 1.5 … E 0.8) and
 //!   by freshness (up to a quarter more for the newest, halving every year).
 //! * **What a hit shows**: title, address, source and labels always; a snippet of the text only
@@ -18,6 +20,8 @@
 use std::collections::{BTreeMap, HashMap};
 use std::ops::Range;
 
+use atena_core::scope::{REGIONS, TRUST_GROUPS};
+use atena_core::taxonomy::Include;
 use atena_core::{Taxonomy, suggest};
 use jiff::Timestamp;
 use serde::Serialize;
@@ -30,8 +34,8 @@ use tantivy::snippet::SnippetGenerator;
 use tantivy::{DateTime, DocId, Order, Score, Searcher, SegmentReader, TantivyDocument, Term};
 
 use crate::analysis::group_of;
-use crate::index::{SearchIndex, facet};
-use crate::schema::{LANGUAGE, SOURCE};
+use crate::index::SearchIndex;
+use crate::schema::{LANGUAGE, REGION, SOURCE, TRUST};
 use crate::{Result, SearchError};
 
 /// Weight of the title fields.
@@ -66,7 +70,7 @@ pub struct SearchRequest {
     pub text: String,
     /// Language of the words, for recognising concepts; `None`: every language.
     pub language: Option<String>,
-    /// Filters: `scheme/concept`, `language/xx`, `source/ID`.
+    /// Filters: `scheme/concept`, `language/xx`, `source/ID`, `region/…`, `trust/…`.
     pub filters: Vec<String>,
     /// Hits per page (1 to [`MAX_LIMIT`]).
     pub limit: usize,
@@ -132,7 +136,7 @@ pub struct Hit {
 /// How many hits have a value of a facet.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct FacetCount {
-    /// Namespace: a scheme, `language` or `source`.
+    /// Namespace: a scheme, `language`, `source`, `region` or `trust`.
     pub namespace: String,
     /// Value: a concept, a language code or a source ID.
     pub value: String,
@@ -195,11 +199,16 @@ impl SearchIndex {
         has_terms.then_some(query)
     }
 
-    fn facet_terms(&self, namespace: &str, values: &[String]) -> Box<dyn Query> {
-        let clauses = values
+    /// Documents with any of the facets (a namespace alone: any value of it).
+    pub(crate) fn facet_terms(&self, terms: &[Include]) -> Box<dyn Query> {
+        let clauses = terms
             .iter()
-            .map(|v| {
-                let term = Term::from_facet(self.fields.labels, &facet(namespace, v));
+            .map(|t| {
+                let facet = match &t.concept {
+                    Some(value) => Facet::from_path([t.scheme.as_str(), value.as_str()]),
+                    None => Facet::from_path([t.scheme.as_str()]),
+                };
+                let term = Term::from_facet(self.fields.labels, &facet);
                 let q: Box<dyn Query> = Box::new(TermQuery::new(term, IndexRecordOption::Basic));
                 (Occur::Should, q)
             })
@@ -207,26 +216,38 @@ impl SearchIndex {
         Box::new(BooleanQuery::new(clauses))
     }
 
-    /// Filters grouped by namespace, each with its narrower concepts.
-    fn filters(&self, taxonomy: &Taxonomy, filters: &[String]) -> Result<Vec<Box<dyn Query>>> {
-        let mut groups: BTreeMap<String, Vec<String>> = BTreeMap::new();
+    /// Filters grouped by namespace; a concept stands for all its members.
+    pub(crate) fn filters(
+        &self,
+        taxonomy: &Taxonomy,
+        filters: &[String],
+    ) -> Result<Vec<Box<dyn Query>>> {
+        if filters.len() > MAX_FILTERS {
+            return Err(SearchError::TooManyFilters(MAX_FILTERS));
+        }
+        let mut groups: BTreeMap<String, Vec<Include>> = BTreeMap::new();
         for filter in filters {
             let bad = || SearchError::Filter(filter.clone());
             let (namespace, value) = filter.trim().split_once('/').ok_or_else(bad)?;
-            let values = groups.entry(namespace.to_string()).or_default();
+            let one = |value: String| Include {
+                scheme: namespace.to_string(),
+                concept: Some(value),
+            };
+            let terms = groups.entry(namespace.to_string()).or_default();
             match namespace {
-                LANGUAGE => values.push(value.to_ascii_lowercase()),
-                SOURCE => values.push(value.to_string()),
+                LANGUAGE => terms.push(one(value.to_ascii_lowercase())),
+                SOURCE => terms.push(one(value.to_string())),
+                REGION if REGIONS.contains(&value) => terms.push(one(value.to_string())),
+                TRUST if TRUST_GROUPS.contains(&value) => terms.push(one(value.to_string())),
                 scheme if taxonomy.get(scheme, value).is_some() => {
-                    values.push(value.to_string());
-                    values.extend(taxonomy.descendants(scheme, value));
+                    terms.extend(taxonomy.members(scheme, value));
                 }
                 _ => return Err(bad()),
             }
         }
         Ok(groups
-            .iter()
-            .map(|(namespace, values)| self.facet_terms(namespace, values))
+            .values()
+            .map(|terms| self.facet_terms(terms))
             .collect())
     }
 
@@ -257,17 +278,15 @@ impl SearchIndex {
     }
 
     fn concept_query(&self, taxonomy: &Taxonomy, c: &RecognisedConcept) -> Box<dyn Query> {
-        let mut values = vec![c.concept.clone()];
-        values.extend(taxonomy.descendants(&c.scheme, &c.concept));
         let score = CONCEPT_SCORE * c.score as Score;
         Box::new(ConstScoreQuery::new(
-            self.facet_terms(&c.scheme, &values),
+            self.facet_terms(&taxonomy.members(&c.scheme, &c.concept)),
             score,
         ))
     }
 
     /// The query with the filters as conditions that do not change the score.
-    fn filtered(main: Box<dyn Query>, filters: &[Box<dyn Query>]) -> Box<dyn Query> {
+    pub(crate) fn filtered(main: Box<dyn Query>, filters: &[Box<dyn Query>]) -> Box<dyn Query> {
         if filters.is_empty() {
             return main;
         }
@@ -282,9 +301,6 @@ impl SearchIndex {
     /// Searches. Taxonomy: for recognising concepts and expanding filters to narrower concepts.
     pub fn search(&self, taxonomy: &Taxonomy, request: &SearchRequest) -> Result<Results> {
         let searcher = self.reader.searcher();
-        if request.filters.len() > MAX_FILTERS {
-            return Err(SearchError::TooManyFilters(MAX_FILTERS));
-        }
         let filters = self.filters(taxonomy, &request.filters)?;
         let text: String = request.text.chars().take(MAX_TEXT_CHARS).collect();
         let mut all_words = true;
@@ -312,7 +328,7 @@ impl SearchIndex {
         let query = Self::filtered(main, &filters);
 
         let mut namespaces: Vec<&str> = taxonomy.schemes.keys().map(String::as_str).collect();
-        namespaces.extend([LANGUAGE, SOURCE]);
+        namespaces.extend([LANGUAGE, SOURCE, REGION, TRUST]);
         let mut facets = FacetCollector::for_field("labels");
         for namespace in &namespaces {
             facets.add_facet(Facet::from_path([*namespace]));
@@ -335,9 +351,51 @@ impl SearchIndex {
             total,
             hits,
             concepts,
-            facets: facet_counts(&counts, &namespaces),
+            facets: self.gathered_counts(
+                &searcher,
+                taxonomy,
+                &*query,
+                facet_counts(&counts, &namespaces),
+            )?,
             all_words,
         })
+    }
+
+    /// Counts of the schemes whose concepts gather others (the sections): a document belongs to a
+    /// section through any of its members, so the plain facet counts would miss most of them.
+    fn gathered_counts(
+        &self,
+        searcher: &Searcher,
+        taxonomy: &Taxonomy,
+        query: &dyn Query,
+        mut facets: Vec<FacetCount>,
+    ) -> Result<Vec<FacetCount>> {
+        for scheme in taxonomy.schemes.keys() {
+            if !taxonomy.concepts_of(scheme).any(|c| !c.includes.is_empty()) {
+                continue;
+            }
+            let mut values = Vec::new();
+            for concept in taxonomy.concepts_of(scheme) {
+                let members = self.facet_terms(&taxonomy.members(scheme, &concept.id));
+                let both: Box<dyn Query> = Box::new(BooleanQuery::new(vec![
+                    (Occur::Must, query.box_clone()),
+                    (Occur::Must, members),
+                ]));
+                let count = searcher.search(&*both, &Count)? as u64;
+                if count > 0 {
+                    values.push(FacetCount {
+                        namespace: scheme.clone(),
+                        value: concept.id.clone(),
+                        count,
+                    });
+                }
+            }
+            values.sort_by(|a, b| b.count.cmp(&a.count).then_with(|| a.value.cmp(&b.value)));
+            values.truncate(FACET_VALUES);
+            facets.retain(|f| f.namespace != *scheme);
+            facets.extend(values);
+        }
+        Ok(facets)
     }
 
     /// The newest documents – by publication date, otherwise by the last change of their text –
@@ -348,9 +406,6 @@ impl SearchIndex {
         filters: &[String],
         limit: usize,
     ) -> Result<Vec<Hit>> {
-        if filters.len() > MAX_FILTERS {
-            return Err(SearchError::TooManyFilters(MAX_FILTERS));
-        }
         let filters = self.filters(taxonomy, filters)?;
         let query = Self::filtered(Box::new(AllQuery), &filters);
         let searcher = self.reader.searcher();
@@ -410,7 +465,7 @@ impl SearchIndex {
             .filter_map(|v| v.as_facet())
             .filter_map(|encoded| Facet::from_encoded(encoded.as_bytes().to_vec()).ok())
             .filter_map(|facet| match facet.to_path().as_slice() {
-                [namespace, value] if *namespace != LANGUAGE && *namespace != SOURCE => {
+                [namespace, value] if ![LANGUAGE, SOURCE, REGION, TRUST].contains(namespace) => {
                     Some(format!("{namespace}/{value}"))
                 }
                 _ => None,

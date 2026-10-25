@@ -58,6 +58,8 @@ pub struct IndexRow {
     pub modified_at: Option<Timestamp>,
     /// Last change of the text.
     pub last_changed_at: Timestamp,
+    /// When ATENA first saw the document.
+    pub first_seen_at: Timestamp,
     /// The publisher reserved text and data mining.
     pub tdm_reserved: bool,
     /// Not to be shown in search results.
@@ -128,7 +130,7 @@ impl Store {
         let rows = sqlx::query(
             "SELECT d.id, d.source_id, s.name AS source_name, s.enabled, s.country, s.authority, s.licence,
                     s.terms, d.url, d.format, d.status, d.title, v.description, v.body, d.language,
-                    d.published_at, d.modified_at, d.last_changed_at, d.tdm_reserved, d.noindex,
+                    d.published_at, d.modified_at, d.last_changed_at, d.first_seen_at, d.tdm_reserved, d.noindex,
                     d.noarchive, d.nosnippet,
                     COALESCE((SELECT array_agg(l.scheme || '/' || l.concept ORDER BY l.scheme, l.concept)
                               FROM document_label l
@@ -169,6 +171,9 @@ impl Store {
                         .map(|t| t.to_jiff()),
                     last_changed_at: r
                         .try_get::<jiff_sqlx::Timestamp, _>("last_changed_at")?
+                        .to_jiff(),
+                    first_seen_at: r
+                        .try_get::<jiff_sqlx::Timestamp, _>("first_seen_at")?
                         .to_jiff(),
                     tdm_reserved: r.try_get("tdm_reserved")?,
                     noindex: r.try_get("noindex")?,

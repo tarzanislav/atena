@@ -5,7 +5,7 @@ import { useApp } from "../context";
 import { date, dateTime, languageOf } from "../format";
 import { useI18n } from "../i18n";
 import { Icon } from "../icons";
-import { Authority, LabelTag } from "./Badges";
+import { Authority, LabelTag, Trust } from "./Badges";
 import { Dialog } from "./Dialog";
 import { ErrorNotice } from "./ErrorNotice";
 
@@ -27,6 +27,7 @@ export function DocumentDialog({ id, onClose }: { id: number; onClose: () => voi
       {card && (
         <>
           <div className="meta">
+            <Trust value={card.trust} authority={card.authority} />
             <Authority value={card.authority} />
             <span>{card.sourceName}</span>
             <span aria-hidden="true">·</span>

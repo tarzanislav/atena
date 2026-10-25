@@ -22,11 +22,11 @@ use std::sync::Arc;
 
 use atena_store::Store;
 
-pub use app::{App, MAX_INPUT_BYTES, MAX_REASON_CHARS, PER_PAGE};
+pub use app::{App, MAX_INPUT_BYTES, MAX_REASON_CHARS, NEW_DAYS, PER_PAGE};
 pub use atena_ingest::import::Choice;
 pub use error::{AppError, CODES};
 pub use postgres::EmbeddedPostgres;
-pub use settings::{LANGUAGES, MAX_CONCURRENCY, MAX_EDITOR_CHARS, Settings, Theme};
+pub use settings::{LANGUAGES, MAX_CONCURRENCY, MAX_EDITOR_CHARS, Region, Settings, Theme};
 
 /// `true` for an address the interface may open in the user's own browser: `http` or `https`
 /// with a host, without credentials, white space or hidden characters, of limited length.

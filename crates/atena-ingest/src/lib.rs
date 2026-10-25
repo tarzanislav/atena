@@ -10,6 +10,7 @@
 //!
 //! The `atena-ingest` program and the desktop app (`atena-app`) wrap these.
 
+pub mod classifying;
 pub mod import;
 pub mod indexing;
 pub mod pipeline;

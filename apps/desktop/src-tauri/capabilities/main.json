@@ -12,6 +12,7 @@
     "allow-taxonomy",
     "allow-search",
     "allow-newest",
+    "allow-tally",
     "allow-document",
     "allow-import-addresses",
     "allow-proposals",

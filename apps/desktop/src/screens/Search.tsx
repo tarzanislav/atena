@@ -4,25 +4,38 @@ import { api, type Facet, type SearchResult } from "../api";
 import { LabelTag } from "../components/Badges";
 import { ErrorNotice } from "../components/ErrorNotice";
 import { HitItem } from "../components/HitItem";
+import { ScopeSwitch, scopeFilters } from "../components/Scope";
 import { useApp, type SearchStart } from "../context";
 import { languageOf, number } from "../format";
 import { useI18n } from "../i18n";
 import { Icon } from "../icons";
 
 /** Facet namespaces offered for narrowing, in this order. */
-const FACETS = ["section", "school-type", "resource-type", "topic", "country", "authority", "language", "source"];
+const FACETS = ["section", "trust", "school-type", "resource-type", "topic", "country", "authority", "language", "source"];
+
+/** The filter of official sources, offered as a switch next to the search box. */
+const OFFICIAL = "trust/official";
+
+interface Query {
+  text: string;
+  filters: string[];
+  page: number;
+}
 
 export function SearchScreen({ start }: { start: SearchStart }) {
   const i18n = useI18n();
-  const { conceptLabel } = useApp();
+  const { conceptLabel, settings } = useApp();
   const [text, setText] = useState(start.text ?? "");
   const [filters, setFilters] = useState<string[]>(start.filters ?? []);
   const [page, setPage] = useState(1);
-  const [asked, setAsked] = useState<{ text: string; filters: string[]; page: number } | null>(null);
+  const [browse, setBrowse] = useState(Boolean(start.browse));
+  const [asked, setAsked] = useState<Query | null>(null);
   const [result, setResult] = useState<SearchResult | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [busy, setBusy] = useState(false);
   const [sourceNames, setSourceNames] = useState<Map<string, string>>(new Map());
+  // the chosen data (Slovak or foreign) narrow every search
+  const scopeKey = scopeFilters(settings).join(" ");
 
   useEffect(() => {
     api.sources().then(
@@ -32,8 +45,8 @@ export function SearchScreen({ start }: { start: SearchStart }) {
   }, []);
 
   const run = useCallback(
-    async (query: { text: string; filters: string[]; page: number }) => {
-      if (!query.text.trim() && query.filters.length === 0) {
+    async (query: Query, listAll: boolean) => {
+      if (!query.text.trim() && query.filters.length === 0 && !listAll) {
         setResult(null);
         setAsked(null);
         return;
@@ -42,7 +55,9 @@ export function SearchScreen({ start }: { start: SearchStart }) {
       setError(null);
       try {
         // the words may be in any language: concepts are recognised in all of them
-        setResult(await api.search({ ...query, language: null }));
+        setResult(
+          await api.search({ ...query, filters: [...scopeKey.split(" "), ...query.filters], language: null }),
+        );
         setAsked(query);
       } catch (e) {
         setError(e);
@@ -50,42 +65,49 @@ export function SearchScreen({ start }: { start: SearchStart }) {
         setBusy(false);
       }
     },
-    [],
+    [scopeKey],
   );
 
-  // a search started elsewhere (a section tile) runs at once
+  // a search started elsewhere (a category of the overview) runs at once, and runs again in the
+  // other data when the switch changes
   useEffect(() => {
-    if (start.text || start.filters?.length) void run({ text: start.text ?? "", filters: start.filters ?? [], page: 1 });
+    if (asked) {
+      void run(asked, browse);
+    } else if (start.text || start.filters?.length || start.browse) {
+      void run({ text: start.text ?? "", filters: start.filters ?? [], page: 1 }, Boolean(start.browse));
+    }
+    // `asked` is left out on purpose: only a new start or other data repeat the search
   }, [start, run]);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
     setPage(1);
-    void run({ text, filters, page: 1 });
+    setBrowse(false);
+    void run({ text, filters, page: 1 }, false);
   };
 
   const toggle = (filter: string) => {
     const next = filters.includes(filter) ? filters.filter((f) => f !== filter) : [...filters, filter];
     setFilters(next);
     setPage(1);
-    void run({ text, filters: next, page: 1 });
+    void run({ text, filters: next, page: 1 }, browse);
   };
 
   const go = (to: number) => {
     setPage(to);
-    void run({ text: asked?.text ?? text, filters, page: to });
+    void run({ text: asked?.text ?? text, filters, page: to }, browse);
   };
 
-  const facetText = (f: Facet) => {
-    if (f.namespace === "language") return languageOf(i18n, f.value);
-    if (f.namespace === "source") return sourceNames.get(f.value) ?? f.value;
-    return conceptLabel(`${f.namespace}/${f.value}`);
-  };
-  const filterText = (filter: string) => {
-    const [namespace, value] = filter.split("/", 2);
+  const valueText = (namespace: string, value: string) => {
     if (namespace === "language") return languageOf(i18n, value);
     if (namespace === "source") return sourceNames.get(value) ?? value;
-    return conceptLabel(filter);
+    if (namespace === "trust") return i18n.t(`trust-${value}`);
+    return conceptLabel(`${namespace}/${value}`);
+  };
+  const facetText = (f: Facet) => valueText(f.namespace, f.value);
+  const filterText = (filter: string) => {
+    const [namespace, value] = filter.split("/", 2);
+    return valueText(namespace, value);
   };
 
   return (
@@ -93,6 +115,7 @@ export function SearchScreen({ start }: { start: SearchStart }) {
       <div className="page-head">
         <h1>{i18n.t("search-title")}</h1>
       </div>
+      <ScopeSwitch />
       <form className="row" onSubmit={submit} role="search">
         <label className="searchbox">
           <Icon name="search" />
@@ -108,6 +131,10 @@ export function SearchScreen({ start }: { start: SearchStart }) {
         </label>
         <button className="button primary" type="submit" disabled={busy}>
           {i18n.t("search-action")}
+        </button>
+        <button type="button" className="chip" aria-pressed={filters.includes(OFFICIAL)} onClick={() => toggle(OFFICIAL)}>
+          <Icon name="shield" size={16} />
+          {i18n.t("search-only-official")}
         </button>
         {busy && <div className="spinner" />}
       </form>

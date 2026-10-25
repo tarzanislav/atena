@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { api, type Source, type SyncResult } from "../api";
-import { Authority, YesNo } from "../components/Badges";
+import { Authority, Trust, YesNo } from "../components/Badges";
 import { Dialog } from "../components/Dialog";
 import { ErrorNotice } from "../components/ErrorNotice";
 import { useApp } from "../context";
@@ -122,7 +122,7 @@ export function SourcesScreen() {
                         <strong>{s.name}</strong>
                       </button>
                       <span className="meta">
-                        <Authority value={s.authority} />
+                        <Trust value={s.trust} authority={s.authority} /> <Authority value={s.authority} />
                         <span>{s.id}</span>
                         {!s.register && <span className="tag">{i18n.label("state", s.state)}</span>}
                         {s.lastCheck && <span>{i18n.t("sources-checked", { date: date(i18n, s.lastCheck) })}</span>}

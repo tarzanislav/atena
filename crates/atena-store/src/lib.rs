@@ -22,8 +22,8 @@ use std::time::Duration;
 use sqlx::postgres::{PgConnectOptions, PgPool, PgPoolOptions};
 
 pub use documents::{
-    Capture, CurrentDocument, DocumentLink, Label, LabelDecision, LabelSuggestion, LinkKind,
-    NewVersion, Rights, SavedVersion, VersionSummary,
+    Capture, Classifiable, CurrentDocument, DocumentLink, Label, LabelDecision, LabelSuggestion,
+    LinkKind, NewVersion, Rights, SavedVersion, VersionSummary,
 };
 pub use erasure::ErasureReport;
 /// The fingerprint of a byte string.

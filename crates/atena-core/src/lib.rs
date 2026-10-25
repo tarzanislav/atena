@@ -9,6 +9,7 @@ pub mod classify;
 pub mod legality;
 pub mod pages;
 pub mod safety;
+pub mod scope;
 pub mod source;
 pub mod taxonomy;
 pub mod text;

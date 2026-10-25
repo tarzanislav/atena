@@ -9,8 +9,11 @@ use atena_assess::{Assessor, parse_input};
 use atena_core::legality::{SourceFacts, permission, profile};
 use atena_core::safety::clean_text;
 use atena_core::source::{BUNDLED_SOURCES, load_sources};
+use atena_core::taxonomy::BUNDLED_TAXONOMY;
 use atena_core::{Licence, Taxonomy, Terms};
 use atena_crawl::{Config, Fetcher};
+use atena_ingest::PipelineConfig;
+use atena_ingest::classifying::reclassify;
 use atena_ingest::import::{Choice, Proposed, confirm, propose};
 use atena_ingest::indexing::keep_fresh;
 use atena_ingest::register::{fetch_shared, sync};
@@ -28,9 +31,12 @@ use crate::settings::Settings;
 use crate::views::{
     ConfirmedView, CrawlView, DocumentView, ErasureView, HitView, ImportView, OverviewView,
     PendingView, ProposalView, ProposedView, ReceivedView, SearchQuery, SearchView, SourceView,
-    SyncView, TaxonomyView, VersionView,
+    SyncView, TallyView, TaxonomyView, VersionView,
 };
+use jiff::Timestamp;
 
+/// "New" in the overview: first seen within this many days.
+pub const NEW_DAYS: u32 = 7;
 /// Hits per page of a search.
 pub const PER_PAGE: usize = 20;
 /// Largest text the user may paste for an import or a list.
@@ -118,6 +124,39 @@ async fn sync_bundled_register(
     std::fs::write(&marker, fingerprint).map_err(|e| AppError::io(&marker, e))
 }
 
+/// Classifies the stored documents again when the taxonomy of this version of ATENA differs from
+/// the one they were classified with – in the background, so the window opens at once. The marker
+/// is written only after a complete run, so an interrupted one is repeated at the next start.
+fn reclassify_when_changed(
+    store: Store,
+    taxonomy: Arc<Taxonomy>,
+    folder: &Path,
+    nudge: Arc<Notify>,
+) {
+    let marker = folder.join("taxonomy.classified");
+    let fingerprint = hex(&hash(BUNDLED_TAXONOMY.as_bytes()));
+    if std::fs::read_to_string(&marker).is_ok_and(|m| m.trim() == fingerprint) {
+        return;
+    }
+    tokio::spawn(async move {
+        let threshold = PipelineConfig::default().classify_threshold;
+        match reclassify(&store, &taxonomy, threshold).await {
+            Ok(report) => {
+                tracing::info!(
+                    documents = report.documents,
+                    changed = report.changed,
+                    "documents classified with the taxonomy of this version of ATENA"
+                );
+                nudge.notify_one();
+                if let Err(e) = std::fs::write(&marker, fingerprint) {
+                    tracing::warn!("{}: {e}", marker.display());
+                }
+            }
+            Err(e) => tracing::warn!(error = %e, "classifying the documents again failed"),
+        }
+    });
+}
+
 /// The search index in `path`; built anew when it was made by another version of ATENA.
 async fn open_index(store: &Store, path: &Path) -> Result<SearchIndex, AppError> {
     match SearchIndex::open(path) {
@@ -143,6 +182,12 @@ impl App {
         sync_bundled_register(&store, &taxonomy, folder).await?;
         let index = Arc::new(open_index(&store, &folder.join("index")).await?);
         let nudge = Arc::new(Notify::new());
+        reclassify_when_changed(
+            store.clone(),
+            Arc::clone(&taxonomy),
+            folder,
+            Arc::clone(&nudge),
+        );
         let (stop, stop_rx) = watch::channel(false);
         let indexer = keep_fresh(
             store.clone(),
@@ -256,6 +301,21 @@ impl App {
         Ok(SearchView::new(results, page, PER_PAGE))
     }
 
+    /// The overview's counts within the scope `filters` (`region/sk`, or `region/abroad` with
+    /// `language/xx`): documents per section, all and those first seen in the last
+    /// [`NEW_DAYS`] days, and the sizes of the regions and languages.
+    pub async fn tally(&self, filters: Vec<String>) -> Result<TallyView, AppError> {
+        let since = Timestamp::now()
+            .checked_sub(jiff::SignedDuration::from_hours(24 * i64::from(NEW_DAYS)))
+            .map_err(internal)?;
+        let (index, taxonomy) = (Arc::clone(&self.index), Arc::clone(&self.taxonomy));
+        let tally =
+            tokio::task::spawn_blocking(move || index.tally(&taxonomy, "section", &filters, since))
+                .await
+                .map_err(internal)??;
+        Ok(TallyView::new(tally, "section", NEW_DAYS))
+    }
+
     /// The newest documents that match `filters` (`section/changes`, `country/SK` …; all without
     /// filters), at most `limit` (up to two pages).
     pub async fn newest(
@@ -307,6 +367,7 @@ impl App {
             source_id: row.source_id,
             source_name: row.source_name,
             country: row.country,
+            trust: atena_core::scope::trust_of(&row.authority).into(),
             authority: row.authority,
             licence: row.licence,
             language: row.language,

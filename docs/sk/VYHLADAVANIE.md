@@ -49,10 +49,26 @@ nájde anglické aj čínske dokumenty o čitateľskej gramotnosti. Výsledok vy
 Zaradenie, ktoré redaktor zamietol, sa nepočíta.
 
 ## Filtre
-`os/pojem` (vrátane užších pojmov), `country/SK`, `authority/A1`, `language/sk`, `source/SK01`.
+`os/pojem`, `country/SK`, `authority/A1`, `language/sk`, `source/SK01`, `region/sk|abroad`,
+`trust/official|expert|other`.
 - Hodnoty tej istej osi sú alternatívy.
 - Rôzne osi musia platiť všetky.
 - Výsledok spočíta hodnoty každej osi medzi nájdenými dokumentmi (fazety).
+- Pojem zahŕňa seba, užšie pojmy a to, čo má v taxonómii uvedené v `includes` (pojmy iných osí
+  s ich užšími pojmami alebo celú os). Kategória je tak pohľad na fazety, z ktorých sa skladá:
+  `section/practice` nájde dokumenty zaradené k `method/jigsaw` aj `resource-type/worksheet`.
+- **Slovenské údaje** (`region/sk`) sú dokumenty slovenských zdrojov a dokumenty v slovenčine,
+  nech sú odkiaľkoľvek; ostatné sú **zahraničné** (`region/abroad`).
+- **Dôveryhodnosť zdroja** (`trust`): úradné (A1, A2), odborné (B1, B2, C1), ostatné (C2, D, E).
+
+## Počty v Prehľade
+Pri každej kategórii sa ukazuje **nové / všetky**: nové sú dokumenty, ktoré ATENA prvýkrát videla za
+posledných 7 dní. Počty platia pre zvolené údaje (Slovensko, alebo Zahraničie a jazyk).
+
+## Nové zaradenie po zmene taxonómie
+Keď nová verzia ATENY prinesie zmenenú taxonómiu (nové kategórie, kľúčové slová), aplikácia na pozadí
+znova zaradí už uložené dokumenty. Vidí pritom presne to, čo videl zberač a smel uchovať (názov
+a uchovaný text). Mení len automatické návrhy, rozhodnutia človeka zostávajú.
 
 ## Poradie výsledkov
 Zhoda × autorita zdroja × aktuálnosť.

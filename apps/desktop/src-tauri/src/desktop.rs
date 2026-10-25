@@ -106,6 +106,7 @@ pub fn run() -> tauri::Result<()> {
             commands::taxonomy,
             commands::search,
             commands::newest,
+            commands::tally,
             commands::document,
             commands::import_addresses,
             commands::proposals,

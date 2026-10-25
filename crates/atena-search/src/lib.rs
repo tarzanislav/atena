@@ -14,6 +14,7 @@ mod index;
 mod query;
 mod schema;
 mod stem;
+mod tally;
 #[cfg(test)]
 mod tests;
 mod update;
@@ -27,6 +28,7 @@ pub use query::{
     FacetCount, Hit, MAX_LIMIT, MAX_OFFSET, RecognisedConcept, Results, SearchRequest, Snippet,
 };
 pub use stem::Slavic;
+pub use tally::{ConceptCount, Tally};
 pub use update::{DEFAULT_BATCH, UpdateReport, rebuild, update};
 
 /// Errors of the search.
@@ -55,8 +57,10 @@ pub enum SearchError {
     /// Neither words nor filters.
     #[error("nothing to search for: give words or at least one filter")]
     EmptyQuery,
-    /// A filter that is not `scheme/concept`, `language/xx` or `source/ID`.
-    #[error("unknown filter {0} (scheme/concept, language/xx or source/ID)")]
+    /// A filter that is not `scheme/concept`, `language/xx`, `source/ID`, `region/…` or `trust/…`.
+    #[error(
+        "unknown filter {0} (scheme/concept, language/xx, source/ID, region/sk|abroad or trust/official|expert|other)"
+    )]
     Filter(String),
     /// More filters than one search may have.
     #[error("too many filters (at most {0})")]

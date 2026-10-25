@@ -10,6 +10,8 @@ export type Screen = "overview" | "search" | "sources" | "proposals" | "crawl" |
 export interface SearchStart {
   text?: string;
   filters?: string[];
+  /** List everything in the chosen data (Slovak or foreign), without words or filters. */
+  browse?: boolean;
 }
 
 export interface AppContextValue {

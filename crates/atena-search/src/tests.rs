@@ -320,3 +320,164 @@ fn an_index_on_disk_is_only_ever_an_atena_index() {
     assert!(foreign.join("thesis.txt").exists());
     std::fs::remove_dir_all(&root).unwrap();
 }
+
+#[test]
+fn sections_find_the_concepts_they_gather() {
+    let mut worksheet = doc(1, "sk", "Pracovný list", "Úlohy pre žiakov");
+    worksheet.labels = vec![("resource-type".into(), "worksheet".into())];
+    let mut jigsaw = doc(2, "en", "Jigsaw", "Groups of experts");
+    jigsaw.labels = vec![("method".into(), "jigsaw".into())];
+    let mut items = doc(3, "sk", "Testové úlohy", "Úlohy s výberom odpovede");
+    items.labels = vec![("resource-type".into(), "test-items".into())];
+    let unrelated = doc(4, "sk", "Zákon", "Paragraf");
+    let i = index(&[worksheet, jigsaw, items, unrelated]);
+    let mut practice = ids(&search(&i, "", &["section/practice"]));
+    practice.sort();
+    assert_eq!(practice, [1, 2]);
+    assert_eq!(ids(&search(&i, "", &["section/question-types"])), [3]);
+    assert_eq!(ids(&search(&i, "", &["section/digital"])), [3]);
+    // the section facet counts documents through the members too
+    let r = search(&i, "", &["language/sk"]);
+    let section = |id: &str| {
+        r.facets
+            .iter()
+            .find(|f| f.namespace == "section" && f.value == id)
+            .map_or(0, |f| f.count)
+    };
+    assert_eq!(
+        (
+            section("practice"),
+            section("worksheets-materials"),
+            section("digital")
+        ),
+        (1, 1, 1)
+    );
+    assert_eq!(section("changes"), 0);
+}
+
+#[test]
+fn slovak_and_foreign_data_and_trust_groups() {
+    let slovak = doc(1, "sk", "Škola", "Škola");
+    let czech_in_slovak = IndexRow {
+        country: "CZ".into(),
+        authority: "D".into(),
+        ..doc(2, "sk", "Škola", "Škola")
+    };
+    let english = IndexRow {
+        country: "IE".into(),
+        authority: "B2".into(),
+        ..doc(3, "en", "School", "School")
+    };
+    let czech = IndexRow {
+        country: "CZ".into(),
+        authority: "A2".into(),
+        ..doc(4, "cs", "Škola", "Škola")
+    };
+    let i = index(&[slovak, czech_in_slovak, english, czech]);
+    let sorted = |r: Results| {
+        let mut v = ids(&r);
+        v.sort();
+        v
+    };
+    assert_eq!(sorted(search(&i, "", &["region/sk"])), [1, 2]);
+    assert_eq!(sorted(search(&i, "", &["region/abroad"])), [3, 4]);
+    assert_eq!(
+        sorted(search(&i, "", &["region/abroad", "language/cs"])),
+        [4]
+    );
+    assert_eq!(sorted(search(&i, "", &["trust/official"])), [1, 4]);
+    assert_eq!(sorted(search(&i, "", &["trust/expert"])), [3]);
+    assert_eq!(sorted(search(&i, "", &["trust/other", "region/sk"])), [2]);
+    let r = search(&i, "", &["region/sk"]);
+    assert!(
+        r.facets
+            .iter()
+            .any(|f| f.namespace == "trust" && f.value == "official" && f.count == 1)
+    );
+    // region and trust are facets, not labels shown on a hit
+    assert!(r.hits.iter().all(|h| {
+        h.labels
+            .iter()
+            .all(|l| !l.starts_with("region/") && !l.starts_with("trust/"))
+    }));
+    for bad in ["region/mars", "trust/blind"] {
+        assert!(matches!(
+            i.search(
+                &taxonomy(),
+                &SearchRequest {
+                    filters: vec![bad.into()],
+                    limit: 10,
+                    ..SearchRequest::default()
+                }
+            ),
+            Err(SearchError::Filter(_))
+        ));
+    }
+}
+
+#[test]
+fn the_overview_counts_new_and_all_documents_per_section() {
+    let day = |d: i64| jiff::Timestamp::from_second(d * 86_400).unwrap();
+    let mut old = doc(1, "sk", "Pracovný list", "Úlohy");
+    old.labels = vec![("resource-type".into(), "worksheet".into())];
+    old.first_seen_at = day(100);
+    let mut fresh = doc(2, "sk", "Scenár hodiny", "Úvod");
+    fresh.labels = vec![("resource-type".into(), "lesson-plan".into())];
+    fresh.first_seen_at = day(200);
+    let mut foreign = IndexRow {
+        country: "IE".into(),
+        ..doc(3, "en", "Lesson plan", "Intro")
+    };
+    foreign.labels = vec![("resource-type".into(), "lesson-plan".into())];
+    foreign.first_seen_at = day(200);
+    let i = index(&[old, fresh, foreign]);
+    let t = taxonomy();
+
+    let sk = i
+        .tally(&t, "section", &["region/sk".into()], day(150))
+        .unwrap();
+    assert_eq!((sk.total, sk.new), (2, 1));
+    let of = |id: &str| {
+        sk.concepts
+            .iter()
+            .find(|c| c.concept == id)
+            .unwrap()
+            .clone()
+    };
+    assert_eq!((of("practice").total, of("practice").new), (2, 1));
+    assert_eq!((of("lesson-plans").total, of("lesson-plans").new), (1, 1));
+    assert_eq!(
+        (
+            of("worksheets-materials").total,
+            of("worksheets-materials").new
+        ),
+        (1, 0)
+    );
+    assert_eq!(of("changes").total, 0);
+    assert_eq!(sk.concepts.len(), t.concepts_of("section").count());
+    // the switch shows both regions, the language row the languages of the region
+    let count = |list: &[crate::FacetCount], value: &str| {
+        list.iter()
+            .find(|f| f.value == value)
+            .map_or(0, |f| f.count)
+    };
+    assert_eq!(
+        (count(&sk.regions, "sk"), count(&sk.regions, "abroad")),
+        (2, 1)
+    );
+    assert_eq!(count(&sk.languages, "sk"), 2);
+    assert_eq!(count(&sk.languages, "en"), 0);
+
+    let abroad = i
+        .tally(
+            &t,
+            "section",
+            &["region/abroad".into(), "language/de".into()],
+            day(150),
+        )
+        .unwrap();
+    assert_eq!(abroad.total, 0);
+    assert_eq!(count(&abroad.regions, "abroad"), 1);
+    assert_eq!(count(&abroad.languages, "en"), 1);
+    assert!(i.tally(&t, "nonsense", &[], day(0)).is_err());
+}

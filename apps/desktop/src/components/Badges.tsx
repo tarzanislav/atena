@@ -1,3 +1,4 @@
+import type { Trust as TrustGroup } from "../api";
 import { useApp } from "../context";
 import { useI18n } from "../i18n";
 import { SECTION_COLOURS } from "../sections";
@@ -10,6 +11,20 @@ export function Authority({ value }: { value: string }) {
   return (
     <span className={high ? "authority high" : "authority"} title={conceptLabel(`authority/${value}`)}>
       {value}
+    </span>
+  );
+}
+
+/**
+ * How much a source is to be trusted, in words (colour alone never carries the meaning); the
+ * authority level it comes from is the tooltip.
+ */
+export function Trust({ value, authority }: { value: TrustGroup; authority: string }) {
+  const i18n = useI18n();
+  const { conceptLabel } = useApp();
+  return (
+    <span className={`trust ${value}`} title={authority ? conceptLabel(`authority/${authority}`) : undefined}>
+      {i18n.t(`trust-${value}`)}
     </span>
   );
 }

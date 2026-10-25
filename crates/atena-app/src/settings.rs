@@ -27,6 +27,17 @@ pub enum Theme {
     Dark,
 }
 
+/// Which data the overview and search show: Slovak or foreign.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum Region {
+    /// Slovak sources and texts in Slovak.
+    #[default]
+    Sk,
+    /// Everything else.
+    Abroad,
+}
+
 /// The settings.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
@@ -42,6 +53,10 @@ pub struct Settings {
     pub share_proposals: bool,
     /// Hosts crawled at the same time (1 to [`MAX_CONCURRENCY`]).
     pub concurrency: usize,
+    /// Slovak or foreign data.
+    pub region: Region,
+    /// The language chosen among foreign data (an ISO 639 code); `None`: every language.
+    pub abroad_language: Option<String>,
 }
 
 impl Default for Settings {
@@ -52,6 +67,8 @@ impl Default for Settings {
             editor: String::new(),
             share_proposals: true,
             concurrency: 4,
+            region: Region::Sk,
+            abroad_language: None,
         }
     }
 }
@@ -68,6 +85,11 @@ impl Settings {
             .take(MAX_EDITOR_CHARS)
             .collect();
         self.concurrency = self.concurrency.clamp(1, MAX_CONCURRENCY);
+        // a language code is two or three letters; anything else means every language
+        self.abroad_language = self
+            .abroad_language
+            .map(|l| l.trim().to_ascii_lowercase())
+            .filter(|l| (2..=3).contains(&l.len()) && l.bytes().all(|b| b.is_ascii_lowercase()));
         self
     }
 
@@ -123,6 +145,19 @@ mod tests {
             .concurrency,
             MAX_CONCURRENCY
         );
+        let language = |l: &str| {
+            Settings {
+                abroad_language: Some(l.into()),
+                ..Settings::default()
+            }
+            .checked()
+            .abroad_language
+        };
+        assert_eq!(language(" DE "), Some("de".into()));
+        assert_eq!(language("fil"), Some("fil".into()));
+        for bad in ["", "x", "deutsch", "d3", "région/x"] {
+            assert_eq!(language(bad), None, "{bad}");
+        }
     }
 
     #[test]
@@ -137,6 +172,8 @@ mod tests {
             editor: "Ján".into(),
             share_proposals: false,
             concurrency: 2,
+            region: Region::Abroad,
+            abroad_language: Some("en".into()),
         };
         mine.save(&path).unwrap();
         assert_eq!(Settings::load(&path), mine);

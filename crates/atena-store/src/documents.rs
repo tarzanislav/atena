@@ -264,7 +264,109 @@ async fn forget_content(tx: &mut Transaction<'_, Postgres>, document_id: i64) ->
     Ok(())
 }
 
+/// New suggestions replace the old ones; confirmed and rejected labels stay as decided.
+async fn write_suggestions(
+    tx: &mut Transaction<'_, Postgres>,
+    document_id: i64,
+    version_id: Option<i64>,
+    suggestions: &[LabelSuggestion],
+) -> Result<()> {
+    sqlx::query("DELETE FROM document_label WHERE document_id = $1 AND origin = 'auto' AND status = 'suggested'")
+        .bind(document_id)
+        .execute(&mut **tx)
+        .await?;
+    let evidence: Vec<String> = suggestions
+        .iter()
+        .map(|s| s.evidence.join("\u{1f}"))
+        .collect();
+    sqlx::query(
+        "INSERT INTO document_label (document_id, scheme, concept, score, evidence, origin, status, version_id)
+         SELECT $1, u.scheme, u.concept, u.score, string_to_array(u.evidence, E'\\x1f'), 'auto', 'suggested', $2
+         FROM unnest($3::text[], $4::text[], $5::real[], $6::text[]) AS u(scheme, concept, score, evidence)
+         ON CONFLICT (document_id, scheme, concept) DO NOTHING",
+    )
+    .bind(document_id)
+    .bind(version_id)
+    .bind(suggestions.iter().map(|s| s.scheme.as_str()).collect::<Vec<_>>())
+    .bind(suggestions.iter().map(|s| s.concept.as_str()).collect::<Vec<_>>())
+    .bind(suggestions.iter().map(|s| s.score.clamp(0.0, 1.0)).collect::<Vec<f32>>())
+    .bind(&evidence)
+    .execute(&mut **tx)
+    .await?;
+    Ok(())
+}
+
+/// What classification looks at in a stored document: the same title and kept text the crawler
+/// classified, and the automatic suggestions it made.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Classifiable {
+    /// Document ID.
+    pub document_id: i64,
+    /// Its current version.
+    pub version_id: Option<i64>,
+    /// Title (may be empty).
+    pub title: String,
+    /// The kept text; `None` where only metadata may be kept.
+    pub body: Option<String>,
+    /// Language code.
+    pub language: Option<String>,
+    /// The automatic suggestions now: `(scheme, concept)` in order.
+    pub suggested: Vec<(String, String)>,
+}
+
 impl Store {
+    /// Documents after ID `after` in ID order, at most `limit`, with what classification needs.
+    pub async fn classifiable(&self, after: i64, limit: i64) -> Result<Vec<Classifiable>> {
+        let rows = sqlx::query(
+            "SELECT d.id, d.current_version_id, COALESCE(v.title, d.title, '') AS title, v.body, d.language,
+                    COALESCE((SELECT array_agg(l.scheme || '/' || l.concept ORDER BY l.scheme, l.concept)
+                              FROM document_label l
+                              WHERE l.document_id = d.id AND l.origin = 'auto' AND l.status = 'suggested'),
+                             '{}') AS suggested
+             FROM document d
+             LEFT JOIN document_version v ON v.id = d.current_version_id
+             WHERE d.id > $1
+             ORDER BY d.id
+             LIMIT $2",
+        )
+        .bind(after)
+        .bind(limit)
+        .fetch_all(&self.pool)
+        .await?;
+        rows.iter()
+            .map(|r| {
+                let suggested: Vec<String> = r.try_get("suggested")?;
+                Ok(Classifiable {
+                    document_id: r.try_get("id")?,
+                    version_id: r.try_get("current_version_id")?,
+                    title: r.try_get("title")?,
+                    body: r.try_get("body")?,
+                    language: r.try_get("language")?,
+                    suggested: suggested
+                        .into_iter()
+                        .filter_map(|l| {
+                            l.split_once('/')
+                                .map(|(s, c)| (s.to_string(), c.to_string()))
+                        })
+                        .collect(),
+                })
+            })
+            .collect()
+    }
+
+    /// Replaces the automatic suggestions of a document (decided labels stay).
+    pub async fn replace_suggestions(
+        &self,
+        document_id: i64,
+        version_id: Option<i64>,
+        suggestions: &[LabelSuggestion],
+    ) -> Result<()> {
+        let mut tx = self.pool.begin().await?;
+        write_suggestions(&mut tx, document_id, version_id, suggestions).await?;
+        tx.commit().await?;
+        Ok(())
+    }
+
     /// The links of a document (videos first), as last saved.
     pub async fn links(&self, document_id: i64) -> Result<Vec<DocumentLink>> {
         let rows = sqlx::query(
@@ -466,29 +568,7 @@ impl Store {
             .await?;
         }
 
-        // new suggestions replace the old ones; confirmed and rejected labels stay as decided
-        sqlx::query("DELETE FROM document_label WHERE document_id = $1 AND origin = 'auto' AND status = 'suggested'")
-            .bind(document_id)
-            .execute(&mut *tx)
-            .await?;
-        let evidence: Vec<String> = suggestions
-            .iter()
-            .map(|s| s.evidence.join("\u{1f}"))
-            .collect();
-        sqlx::query(
-            "INSERT INTO document_label (document_id, scheme, concept, score, evidence, origin, status, version_id)
-             SELECT $1, u.scheme, u.concept, u.score, string_to_array(u.evidence, E'\\x1f'), 'auto', 'suggested', $2
-             FROM unnest($3::text[], $4::text[], $5::real[], $6::text[]) AS u(scheme, concept, score, evidence)
-             ON CONFLICT (document_id, scheme, concept) DO NOTHING",
-        )
-        .bind(document_id)
-        .bind(version_id)
-        .bind(suggestions.iter().map(|s| s.scheme.as_str()).collect::<Vec<_>>())
-        .bind(suggestions.iter().map(|s| s.concept.as_str()).collect::<Vec<_>>())
-        .bind(suggestions.iter().map(|s| s.score.clamp(0.0, 1.0)).collect::<Vec<f32>>())
-        .bind(&evidence)
-        .execute(&mut *tx)
-        .await?;
+        write_suggestions(&mut tx, document_id, Some(version_id), suggestions).await?;
 
         tx.commit().await?;
         Ok(SavedVersion {

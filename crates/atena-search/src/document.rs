@@ -12,12 +12,13 @@
 use std::collections::BTreeSet;
 
 use atena_core::legality::{SourceFacts, permission};
+use atena_core::scope::{region_of, trust_of};
 use atena_core::{Licence, Terms};
 use atena_store::IndexRow;
 use jiff::Timestamp;
 
 use crate::analysis::group_of;
-use crate::schema::{AUTHORITY, COUNTRY, LANGUAGE, SOURCE};
+use crate::schema::{AUTHORITY, COUNTRY, LANGUAGE, REGION, SOURCE, TRUST};
 
 /// A document as the index takes it.
 #[derive(Debug, Clone, PartialEq)]
@@ -44,6 +45,8 @@ pub struct SearchDocument {
     pub published: Option<Timestamp>,
     /// The date freshness is computed from: modification, publication or the last change seen.
     pub dated: Timestamp,
+    /// When ATENA first saw the document.
+    pub added: Timestamp,
     /// Description and text, when ATENA may keep them.
     pub text: Option<String>,
     /// The text may be shown as snippets.
@@ -106,6 +109,11 @@ pub fn searchable(row: &IndexRow) -> Option<SearchDocument> {
     facets.insert((COUNTRY.into(), row.country.clone()));
     facets.insert((AUTHORITY.into(), row.authority.clone()));
     facets.insert((SOURCE.into(), row.source_id.clone()));
+    facets.insert((
+        REGION.into(),
+        region_of(&row.country, row.language.as_deref()).into(),
+    ));
+    facets.insert((TRUST.into(), trust_of(&row.authority).into()));
     if let Some(language) = &row.language {
         facets.insert((LANGUAGE.into(), language.clone()));
     }
@@ -124,6 +132,7 @@ pub fn searchable(row: &IndexRow) -> Option<SearchDocument> {
             .modified_at
             .or(row.published_at)
             .unwrap_or(row.last_changed_at),
+        added: row.first_seen_at,
         snippets: has_text && allowed.show_full_text && !row.nosnippet,
         full_text: has_text && allowed.show_full_text && !row.noarchive,
         text,
@@ -156,6 +165,7 @@ pub(crate) mod tests {
             published_at: None,
             modified_at: None,
             last_changed_at: Timestamp::UNIX_EPOCH,
+            first_seen_at: Timestamp::UNIX_EPOCH,
             tdm_reserved: false,
             noindex: false,
             noarchive: false,
@@ -175,6 +185,8 @@ pub(crate) mod tests {
         assert!(d.facets.contains(&("topic".into(), "legislation".into())));
         assert!(d.facets.contains(&("country".into(), "SK".into())));
         assert!(d.facets.contains(&("language".into(), "sk".into())));
+        assert!(d.facets.contains(&("region".into(), "sk".into())));
+        assert!(d.facets.contains(&("trust".into(), "official".into())));
     }
 
     #[test]

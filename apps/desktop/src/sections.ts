@@ -14,20 +14,12 @@ export const SECTION_COLOURS: Record<string, string> = {
   world: "#9cc06a",
 };
 
-/** The sections shown as tiles: the top-level sections that hold documents. */
-export const SECTION_TILES = Object.keys(SECTION_COLOURS);
+/**
+ * The sections shown as tiles of the overview: the top-level sections that gather documents.
+ * "World and inspiration" is not among them – the switch between Slovak and foreign data does
+ * its work.
+ */
+export const SECTION_TILES = Object.keys(SECTION_COLOURS).filter((id) => id !== "world");
 
-export const NEUTRAL = "#b4b4b4";
-
-/** The colour of a document by the first section among its labels (or the section above it). */
-export function colourOf(labels: string[], broaderOf: (key: string) => string | null): string {
-  for (const label of labels) {
-    let key: string | null = label.startsWith("section/") ? label : null;
-    while (key) {
-      const colour = SECTION_COLOURS[key.slice("section/".length)];
-      if (colour) return colour;
-      key = broaderOf(key);
-    }
-  }
-  return NEUTRAL;
-}
+/** Subsections the region switch makes needless (every foreign document would be in them). */
+export const HIDDEN_SUBSECTIONS = new Set(["foreign-regulations", "foreign-curricula"]);
