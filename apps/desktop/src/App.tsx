@@ -12,6 +12,7 @@ import { ProposalsScreen } from "./screens/Proposals";
 import { SearchScreen } from "./screens/Search";
 import { SettingsScreen } from "./screens/Settings";
 import { SourcesScreen } from "./screens/Sources";
+import { ToolsScreen } from "./screens/Tools";
 
 /** Light, dark or as the system is set – applied at once (`null`: someone else decides). */
 function useTheme(theme: Settings["theme"] | null) {
@@ -97,6 +98,7 @@ function Splash({ startup }: { startup: Startup | null }) {
 const NAVIGATION: { screen: Screen; icon: IconName }[] = [
   { screen: "overview", icon: "home" },
   { screen: "search", icon: "search" },
+  { screen: "tools", icon: "toolbox" },
   { screen: "sources", icon: "database" },
   { screen: "proposals", icon: "lightbulb" },
   { screen: "crawl", icon: "globeSearch" },
@@ -214,6 +216,7 @@ function Workspace({
         <main className="main">
           {screen === "overview" && <OverviewScreen />}
           {screen === "search" && <SearchScreen key={JSON.stringify(searchStart)} start={searchStart} />}
+          {screen === "tools" && <ToolsScreen />}
           {screen === "sources" && <SourcesScreen />}
           {screen === "proposals" && <ProposalsScreen />}
           {screen === "crawl" && <CrawlScreen />}

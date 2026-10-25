@@ -26,6 +26,7 @@ startup-failed-hint = 请关闭 ATENA 后重新打开。如果错误再次出现
 nav-label = 主菜单
 nav-overview = 概览
 nav-search = 搜索
+nav-tools = 工具
 nav-sources = 来源
 nav-proposals = 建议
 nav-crawl = 采集
@@ -66,6 +67,7 @@ trust-other = 其他来源——请核实
 tools-title = 工具与词典
 tools-intro = ATENA 不采集的词典、语料库和应用——请直接在其中检索。它们会在您的浏览器中打开。
 tools-open = 打开工具
+tools-none = 这些数据暂时没有工具。
 
 ## 搜索
 

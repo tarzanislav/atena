@@ -25,6 +25,7 @@ startup-failed-hint = ATENU zatvorte a otvorte znova. Ak sa chyba zopakuje, podr
 nav-label = Hlavná ponuka
 nav-overview = Prehľad
 nav-search = Hľadať
+nav-tools = Nástroje
 nav-sources = Zdroje
 nav-proposals = Návrhy
 nav-crawl = Zber
@@ -99,6 +100,7 @@ trust-other = Iný zdroj – overte
 tools-title = Nástroje a slovníky
 tools-intro = Slovníky, korpusy a aplikácie, ktoré ATENA nezbiera – obsah sa v nich hľadá priamo. Otvoria sa vo vašom prehliadači.
 tools-open = Otvoriť nástroj
+tools-none = Pre tieto údaje tu zatiaľ nie sú žiadne nástroje.
 
 ## Hľadanie
 

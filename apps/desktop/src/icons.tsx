@@ -28,6 +28,7 @@ import erase from "@fluentui/svg-icons/icons/delete_20_regular.svg";
 import people from "@fluentui/svg-icons/icons/people_team_20_regular.svg";
 import location from "@fluentui/svg-icons/icons/location_20_regular.svg";
 import globe from "@fluentui/svg-icons/icons/globe_20_regular.svg";
+import toolbox from "@fluentui/svg-icons/icons/toolbox_20_regular.svg";
 
 const ICONS = {
   home,
@@ -57,6 +58,7 @@ const ICONS = {
   people,
   location,
   globe,
+  toolbox,
 };
 
 export type IconName = keyof typeof ICONS;

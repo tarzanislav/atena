@@ -4,7 +4,6 @@ import { api, type ConceptCount, type Hit, type Overview, type Tally } from "../
 import { ErrorNotice } from "../components/ErrorNotice";
 import { HitItem } from "../components/HitItem";
 import { ScopeSwitch, scopeFilters } from "../components/Scope";
-import { ToolList, inScope, useTools } from "../components/Tools";
 import { useApp } from "../context";
 import { dateTime, number, today } from "../format";
 import { useI18n } from "../i18n";
@@ -35,7 +34,6 @@ export function OverviewScreen() {
   const [tally, setTally] = useState<Tally | null>(null);
   const [newest, setNewest] = useState<Hit[]>([]);
   const [error, setError] = useState<unknown>(null);
-  const tools = inScope(useTools(), settings);
   const scope = scopeFilters(settings);
   const scopeKey = scope.join(" ");
 
@@ -171,8 +169,6 @@ export function OverviewScreen() {
           );
         })}
       </div>
-
-      <ToolList tools={tools} title={i18n.t("tools-title")} />
 
       {newest.length > 0 && (
         <section className="card tight" aria-label={i18n.t("overview-newest")}>
