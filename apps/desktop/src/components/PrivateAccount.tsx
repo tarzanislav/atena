@@ -253,7 +253,7 @@ export function PrivateAccountCard() {
           </div>
           {privateStatus.remembered && (
             <div className="remember-box">
-              <p className="row small" style={{ gap: 8 }}>
+              <p className="row small" style={{ gap: 8, flexWrap: "nowrap", alignItems: "flex-start" }}>
                 <Icon name="lockOpen" size={16} />
                 <strong>{i18n.t("private-remember-on")}</strong>
               </p>

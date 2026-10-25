@@ -318,6 +318,13 @@ textarea {
   margin-bottom: 18px;
 }
 
+/* the private overview: a few short tiles, aligned in rows */
+.private-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 18px;
+}
+
 .grid.two {
   grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
 }

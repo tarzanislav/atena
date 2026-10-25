@@ -53,7 +53,7 @@ export function PrivateOverviewScreen() {
       </div>
       <PrivateNote />
       <ErrorNotice error={error} />
-      <div className="sections">
+      <div className="private-tiles">
         {PRIVATE_SECTIONS.map((id) => {
           const c = count(id);
           return (
