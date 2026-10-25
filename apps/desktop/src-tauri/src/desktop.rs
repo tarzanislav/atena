@@ -114,6 +114,8 @@ pub fn run() -> tauri::Result<()> {
             commands::private_lock,
             commands::private_recover,
             commands::private_change_password,
+            commands::private_remember,
+            commands::private_forget,
             commands::document,
             commands::import_addresses,
             commands::proposals,

@@ -17,6 +17,8 @@ const COMMANDS: &[&str] = &[
     "private_lock",
     "private_recover",
     "private_change_password",
+    "private_remember",
+    "private_forget",
     "document",
     "import_addresses",
     "proposals",

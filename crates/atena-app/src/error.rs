@@ -41,11 +41,13 @@ pub const CODES: &[&str] = &[
     "not-ready",
     "private-damaged",
     "private-exists",
+    "private-keychain",
     "private-locked",
     "private-login",
     "private-name",
     "private-none",
     "private-recovery",
+    "private-remember-none",
     "private-weak",
     "reason-missing",
     "search",
@@ -140,6 +142,8 @@ impl From<VaultError> for AppError {
             VaultError::Damaged(_) => "private-damaged",
             VaultError::Io { .. } => "io",
             VaultError::Random(_) => "internal",
+            VaultError::NoKeychain => "private-remember-none",
+            VaultError::Keychain(_) => "private-keychain",
         };
         Self::new(code, e.to_string())
     }

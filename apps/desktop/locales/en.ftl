@@ -456,6 +456,8 @@ error-private-name = The name needs 1 to 40 characters.
 error-private-none = There is no private account yet.
 error-private-recovery = This is not the recovery key of this account.
 error-private-weak = The password needs at least 10 characters and must differ from the name.
+error-private-keychain = The Windows Credential Manager is not available now. Try again.
+error-private-remember-none = The persistent sign-in is available on Windows only (Credential Manager).
 
 ## Súkromné / Private
 
@@ -477,6 +479,13 @@ private-remember-title = Stay signed in?
 private-remember-text = If you choose yes, the private part stays open until you close ATENA. If not, it locks as soon as you leave it.
 private-remember-yes = Yes, until ATENA closes
 private-remember-no = No, lock when I leave
+private-remember-forever-title = Stay signed in on this computer
+private-remember-forever-text = The private part then opens without the password every time ATENA starts. The key is kept by the Windows Credential Manager, protected by your Windows sign-in; nothing leaves this computer. You can turn it off at any time in the Settings.
+private-remember-risk = I understand: anyone who signs in to my Windows account opens my private part without the password. I turn the persistent sign-in on at my own risk.
+private-remember-forever = Stay signed in permanently
+private-remember-on = The persistent sign-in is on – the private part opens on this computer without the password.
+private-remember-off = Turn off the persistent sign-in
+private-remember-enable = Turn on the persistent sign-in
 private-account-title = Private account
 private-account-intro = The account exists on this computer only – ATENA sends nothing to any server. The password is never stored; a key derived from it encrypts your private part. One account per computer.
 private-password-again = Password again

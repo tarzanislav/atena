@@ -70,6 +70,12 @@ publishes a privacy notice (Art. 14) naming a contact for objections and erasure
   data key is also wrapped by a random 160-bit recovery key shown once (`ATENA-XXXX-…`).
 * A wrong name and a wrong password give the same answer; the key is wiped from memory when the
   part is locked or ATENA closes.
+* **Persistent sign-in** (Windows only), off by default: turned on only after the user ticks that
+  they do it at their own risk, because anyone signed in to their Windows account then opens the
+  private part. A random remember key is kept in the Windows Credential Manager (persistence
+  "local machine", never in a roaming profile); the data key, encrypted with it and bound to the
+  account, is kept in `private/remember.json`. Neither half alone opens anything; turning it off
+  deletes both. Nothing leaves the computer.
 * The private part exists for **copies for the user's own use** – private use by a natural person
   under copyright law (in Slovakia, the private copy exception of Act 185/2015). The copies are made
   on the user's click, stay encrypted on the user's computer and are never shared or sent.

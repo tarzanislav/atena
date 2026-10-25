@@ -475,6 +475,8 @@ error-private-name = Meno musí mať 1 až 40 znakov.
 error-private-none = Súkromné konto ešte nie je vytvorené.
 error-private-recovery = Toto nie je záchranný kľúč tohto konta.
 error-private-weak = Heslo musí mať aspoň 10 znakov a nesmie sa zhodovať s menom.
+error-private-keychain = Správca poverení Windows teraz nie je dostupný. Skúste to znova.
+error-private-remember-none = Trvalé prihlásenie je dostupné len vo Windows (Správca poverení).
 
 ## Súkromné / Private
 
@@ -496,6 +498,13 @@ private-remember-title = Zapamätať prihlásenie?
 private-remember-text = Ak zvolíte áno, súkromná časť zostane otvorená, kým ATENU nezatvoríte. Ak nie, zamkne sa hneď, ako ju opustíte.
 private-remember-yes = Áno, do zatvorenia ATENY
 private-remember-no = Nie, zamknúť po odchode
+private-remember-forever-title = Trvalé prihlásenie na tomto počítači
+private-remember-forever-text = Súkromná časť sa potom otvorí pri každom spustení ATENY bez hesla. Kľúč uloží Správca poverení Windows, chránený vaším prihlásením do Windows; nič neodchádza z tohto počítača. Zrušiť ho môžete kedykoľvek v Nastaveniach.
+private-remember-risk = Rozumiem: ktokoľvek sa prihlási do môjho účtu vo Windows, otvorí moju súkromnú časť bez hesla. Trvalé prihlásenie zapínam na vlastnú zodpovednosť.
+private-remember-forever = Prihlasovať trvalo
+private-remember-on = Trvalé prihlásenie je zapnuté – súkromná časť sa na tomto počítači otvára bez hesla.
+private-remember-off = Zrušiť trvalé prihlásenie
+private-remember-enable = Zapnúť trvalé prihlásenie
 private-account-title = Súkromné konto
 private-account-intro = Konto je len na tomto počítači – ATENA nič neposiela na žiadny server. Heslo sa nikde neukladá; odvodí sa z neho kľúč, ktorý šifruje vašu súkromnú časť. Na jednom počítači je jedno konto.
 private-password-again = Heslo znova

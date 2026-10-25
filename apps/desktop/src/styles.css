@@ -1087,6 +1087,22 @@ details > summary {
   border-color: var(--private-line);
 }
 
+/* the persistent sign-in: a choice taken at the user's own risk, set apart */
+.remember-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+  padding: 12px 14px;
+  border: 1px solid var(--private-line);
+  border-radius: 10px;
+  background: var(--private-bg);
+}
+
+.remember-box p {
+  margin: 0;
+}
+
 .recovery-key {
   font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
   font-size: 18px;

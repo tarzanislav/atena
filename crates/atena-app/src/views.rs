@@ -779,6 +779,10 @@ pub struct PrivateStatusView {
     pub name: Option<String>,
     /// It is open now.
     pub unlocked: bool,
+    /// The persistent sign-in is on: it opens at start without the password.
+    pub remembered: bool,
+    /// A persistent sign-in can be turned on here (Windows Credential Manager).
+    pub remember_available: bool,
 }
 
 /// A new private account: the recovery key is shown once and never again.

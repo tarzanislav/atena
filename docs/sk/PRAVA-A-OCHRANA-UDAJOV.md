@@ -75,6 +75,12 @@ Prevádzkovateľ zverejní informácie o spracúvaní (čl. 14) s kontaktom na n
   zabalený aj náhodným 160-bitovým záchranným kľúčom, ktorý sa ukáže len raz (`ATENA-XXXX-…`).
 * Zlé meno aj zlé heslo dostanú rovnakú odpoveď; kľúč sa z pamäte zmaže pri zamknutí alebo
   zatvorení ATENY.
+* **Trvalé prihlásenie** (len Windows) je predvolene vypnuté: zapne sa, až keď používateľ zaškrtne,
+  že to robí na vlastnú zodpovednosť – súkromnú časť potom otvorí každý, kto je prihlásený do jeho
+  účtu vo Windows. Náhodný kľúč na zapamätanie je v Správcovi poverení Windows (len na tomto
+  počítači, nikdy v cestovnom profile); dátový kľúč, zašifrovaný ním a viazaný na konto, je
+  v `private/remember.json`. Žiadna z polovíc sama nič neotvorí; vypnutie zmaže obe. Nič
+  neodchádza z počítača.
 * Súkromná časť slúži na **kópie pre vlastnú potrebu** – súkromné použitie fyzickej osoby podľa
   autorského zákona (výnimka na súkromnú rozmnoženinu v zákone č. 185/2015 Z. z.). Kópie vznikajú
   na kliknutie používateľa, zostávajú zašifrované v jeho počítači a nikdy sa nezdieľajú ani

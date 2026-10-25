@@ -33,7 +33,7 @@ use crate::views::{
     PendingView, PrivateCreatedView, PrivateStatusView, ProposalView, ProposedView, ReceivedView,
     SearchQuery, SearchView, SourceView, SyncView, TallyView, TaxonomyView, ToolView, VersionView,
 };
-use atena_vault::{DataKey, Vault};
+use atena_vault::{DataKey, Keychain, Vault};
 use jiff::Timestamp;
 
 /// "New" in the overview: first seen within this many days.
@@ -178,10 +178,36 @@ async fn open_index(store: &Store, path: &Path) -> Result<SearchIndex, AppError>
     }
 }
 
+/// The account opened by a persistent sign-in, if it is on and still fits.
+fn remembered(vault: &Vault) -> Option<(String, DataKey)> {
+    match vault.remembered() {
+        Ok(Some(key)) => {
+            let name = vault.account().ok().flatten()?.name;
+            tracing::info!("the private part was opened by the persistent sign-in");
+            Some((name, key))
+        }
+        Ok(None) => None,
+        Err(e) => {
+            tracing::warn!(error = %e, "the persistent sign-in could not open the private part");
+            None
+        }
+    }
+}
+
 impl App {
     /// Opens the application on `store` with its files in `folder`: brings the database up to
-    /// date, syncs the bundled register when it changed and keeps the search index fresh.
+    /// date, syncs the bundled register when it changed and keeps the search index fresh. A
+    /// persistent sign-in (Windows Credential Manager) opens the private part at once.
     pub async fn open(store: Store, folder: &Path) -> Result<Self, AppError> {
+        Self::open_with_keychain(store, folder, Keychain::system()).await
+    }
+
+    /// [`App::open`] with another credential store for the persistent sign-in (`None`: none).
+    pub async fn open_with_keychain(
+        store: Store,
+        folder: &Path,
+        keychain: Option<Keychain>,
+    ) -> Result<Self, AppError> {
         std::fs::create_dir_all(folder).map_err(|e| AppError::io(folder, e))?;
         store.migrate().await?;
         // only this installation uses the database: leases of an app that crashed are void
@@ -196,6 +222,8 @@ impl App {
             folder,
             Arc::clone(&nudge),
         );
+        let vault = Vault::new(folder.join("private")).with_keychain(keychain);
+        let private = remembered(&vault);
         let (stop, stop_rx) = watch::channel(false);
         let indexer = keep_fresh(
             store.clone(),
@@ -206,8 +234,8 @@ impl App {
         Ok(Self {
             settings: std::sync::Mutex::new(Settings::load(&folder.join("settings.json"))),
             register: std::sync::RwLock::new(register),
-            vault: Vault::new(folder.join("private")),
-            private: std::sync::Mutex::new(None),
+            vault,
+            private: std::sync::Mutex::new(private),
             store,
             index,
             taxonomy,
@@ -310,6 +338,8 @@ impl App {
             exists: account.is_some(),
             name: account.map(|a| a.name),
             unlocked,
+            remembered: self.vault.is_remembered(),
+            remember_available: self.vault.can_remember(),
         })
     }
 
@@ -362,6 +392,25 @@ impl App {
             .await?;
         let name = self.vault.account()?.map(|a| a.name).unwrap_or_default();
         self.open_private(name, key);
+        self.private_status().await
+    }
+
+    /// Turns the persistent sign-in on for the open account: the user ticked that they do it at
+    /// their own risk (whoever signs in to their Windows account opens the private part).
+    pub async fn private_remember(&self) -> Result<PrivateStatusView, AppError> {
+        {
+            let session = self.private_session();
+            let (_, key) = session.as_ref().ok_or_else(|| {
+                AppError::new("private-locked", "the private account is not open")
+            })?;
+            self.vault.remember(key)?;
+        }
+        self.private_status().await
+    }
+
+    /// Turns the persistent sign-in off; the account stays as it is (open or locked).
+    pub async fn private_forget(&self) -> Result<PrivateStatusView, AppError> {
+        self.vault.forget()?;
         self.private_status().await
     }
 

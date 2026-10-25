@@ -24,6 +24,7 @@ use atena_store::Store;
 
 pub use app::{App, MAX_INPUT_BYTES, MAX_REASON_CHARS, NEW_DAYS, PER_PAGE};
 pub use atena_ingest::import::Choice;
+pub use atena_vault::Keychain;
 pub use error::{AppError, CODES};
 pub use postgres::EmbeddedPostgres;
 pub use settings::{LANGUAGES, MAX_CONCURRENCY, MAX_EDITOR_CHARS, Region, Settings, Theme};

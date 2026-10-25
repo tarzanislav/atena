@@ -84,6 +84,9 @@ export function UnlockDialog({
             {i18n.t("private-remember-yes")}
           </button>
         </div>
+        {opened.rememberAvailable && !opened.remembered && (
+          <PersistentSignIn onDone={(status) => onUnlocked(status, true)} />
+        )}
       </Dialog>
     );
   }
@@ -118,7 +121,45 @@ export function UnlockDialog({
   );
 }
 
-/** The private account in the settings: make it, change its password, or set a new one with the recovery key. */
+/** Turns the persistent sign-in on – only after the user ticked that they do it at their own risk. */
+function PersistentSignIn({ onDone }: { onDone: (status: PrivateStatus) => void }) {
+  const i18n = useI18n();
+  const [accepted, setAccepted] = useState(false);
+  const [error, setError] = useState<unknown>(null);
+  const [busy, setBusy] = useState(false);
+  const enable = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      onDone(await api.privateRemember());
+    } catch (e) {
+      setError(e);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="remember-box">
+      <strong>{i18n.t("private-remember-forever-title")}</strong>
+      <p className="small">{i18n.t("private-remember-forever-text")}</p>
+      <label className="check">
+        <input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} />
+        <span>{i18n.t("private-remember-risk")}</span>
+      </label>
+      <ErrorNotice error={error} />
+      <div className="row" style={{ justifyContent: "flex-end" }}>
+        {busy && <div className="spinner" />}
+        <button className="button" disabled={!accepted || busy} onClick={() => void enable()}>
+          <Icon name="lockOpen" size={16} />
+          {i18n.t("private-remember-forever")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** The private account in the settings: make it, change its password, set a new one with the
+ * recovery key, or turn the persistent sign-in on and off. */
 export function PrivateAccountCard() {
   const i18n = useI18n();
   const { privateStatus, setPrivateStatus } = useApp();
@@ -127,7 +168,7 @@ export function PrivateAccountCard() {
   const [again, setAgain] = useState("");
   const [recovery, setRecovery] = useState("");
   const [shownKey, setShownKey] = useState<string | null>(null);
-  const [mode, setMode] = useState<"none" | "password" | "recover">("none");
+  const [mode, setMode] = useState<"none" | "password" | "recover" | "remember">("none");
   const [error, setError] = useState<unknown>(null);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
@@ -210,6 +251,34 @@ export function PrivateAccountCard() {
               </button>
             )}
           </div>
+          {privateStatus.remembered && (
+            <div className="remember-box">
+              <p className="row small" style={{ gap: 8 }}>
+                <Icon name="lockOpen" size={16} />
+                <strong>{i18n.t("private-remember-on")}</strong>
+              </p>
+              <div>
+                <button className="button" disabled={busy} onClick={() => void run(async () => setPrivateStatus(await api.privateForget()))}>
+                  {i18n.t("private-remember-off")}
+                </button>
+              </div>
+            </div>
+          )}
+          {!privateStatus.remembered && privateStatus.rememberAvailable && privateStatus.unlocked && (
+            <div>
+              <button className="button link" onClick={() => setMode(mode === "remember" ? "none" : "remember")}>
+                {i18n.t("private-remember-enable")}
+              </button>
+            </div>
+          )}
+          {mode === "remember" && !privateStatus.remembered && privateStatus.unlocked && (
+            <PersistentSignIn
+              onDone={(status) => {
+                setPrivateStatus(status);
+                setMode("none");
+              }}
+            />
+          )}
           {mode === "password" && (
             <form
               className="item-body"

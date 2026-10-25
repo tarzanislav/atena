@@ -415,6 +415,8 @@ error-private-name = 名称需为 1 到 40 个字符。
 error-private-none = 尚未创建私人账户。
 error-private-recovery = 这不是此账户的恢复密钥。
 error-private-weak = 密码至少 10 个字符，且不能与名称相同。
+error-private-keychain = Windows 凭据管理器暂时不可用。请重试。
+error-private-remember-none = 永久登录仅在 Windows 上可用（凭据管理器）。
 
 ## Súkromné / Private
 
@@ -436,6 +438,13 @@ private-remember-title = 保持登录？
 private-remember-text = 选择“是”，私人部分将保持打开直至您关闭 ATENA；选择“否”，离开后立即锁定。
 private-remember-yes = 是，直至关闭 ATENA
 private-remember-no = 否，离开后锁定
+private-remember-forever-title = 在此电脑上永久登录
+private-remember-forever-text = 此后每次启动 ATENA，私人部分都会无需密码直接打开。密钥由 Windows 凭据管理器保存，受您的 Windows 登录保护；任何内容都不会离开此电脑。您可以随时在设置中关闭。
+private-remember-risk = 我明白：任何登录我的 Windows 账户的人都能无需密码打开我的私人部分。开启永久登录的风险由我自行承担。
+private-remember-forever = 永久保持登录
+private-remember-on = 永久登录已开启——私人部分在此电脑上无需密码即可打开。
+private-remember-off = 关闭永久登录
+private-remember-enable = 开启永久登录
 private-account-title = 私人账户
 private-account-intro = 账户只存在于这台电脑上——ATENA 不向任何服务器发送任何内容。密码不会被保存；由它派生的密钥加密您的私人部分。每台电脑一个账户。
 private-password-again = 再次输入密码

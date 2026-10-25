@@ -9,6 +9,8 @@
 //!     account is made (`ATENA-XXXX-…`), which sets a new password when the old one is forgotten.
 //! * A wrong name or password gives one and the same error; the key derivation makes guessing slow.
 //! * Keys are wiped from memory when dropped (`zeroize`).
+//! * On request – at the user's own risk – a persistent sign-in opens the account on this
+//!   computer without the password (see [`remember`]).
 
 use std::fmt;
 use std::fs;
@@ -20,6 +22,9 @@ use chacha20poly1305::{XChaCha20Poly1305, XNonce};
 use jiff::Timestamp;
 use serde::{Deserialize, Serialize};
 use zeroize::{Zeroize, Zeroizing};
+
+pub mod remember;
+pub use remember::{Keychain, REMEMBER_FILE};
 
 /// Name of the account file in the private folder.
 pub const ACCOUNT_FILE: &str = "account.json";
@@ -77,6 +82,12 @@ pub enum VaultError {
     /// The system has no random numbers.
     #[error("no random numbers: {0}")]
     Random(String),
+    /// The system has no credential store for a persistent sign-in.
+    #[error("this system has no credential store for a persistent sign-in")]
+    NoKeychain,
+    /// The credential store failed (e.g. it is locked).
+    #[error("the credential store failed: {0}")]
+    Keychain(String),
 }
 
 type Result<T> = std::result::Result<T, VaultError>;
@@ -181,6 +192,8 @@ struct AccountFile {
 pub struct Vault {
     folder: PathBuf,
     cost: Cost,
+    /// Where a persistent sign-in keeps its remember key; `None`: no persistent sign-in.
+    keychain: Option<Keychain>,
 }
 
 fn io(path: &Path) -> impl FnOnce(std::io::Error) -> VaultError + '_ {
@@ -336,6 +349,7 @@ impl Vault {
         Self {
             folder: folder.into(),
             cost: Cost::DEFAULT,
+            keychain: None,
         }
     }
 
@@ -368,11 +382,15 @@ impl Vault {
 
     /// Writes through a temporary file, so a crash leaves the old account intact.
     fn write(&self, file: &AccountFile) -> Result<()> {
-        fs::create_dir_all(&self.folder).map_err(io(&self.folder))?;
-        let path = self.path();
-        let temporary = path.with_extension("json.new");
         let text =
             serde_json::to_string_pretty(file).map_err(|e| VaultError::Damaged(e.to_string()))?;
+        self.write_private(&self.path(), &text)
+    }
+
+    /// Writes a file of the folder through a temporary file, readable by the user only.
+    fn write_private(&self, path: &Path, text: &str) -> Result<()> {
+        fs::create_dir_all(&self.folder).map_err(io(&self.folder))?;
+        let temporary = path.with_extension("json.new");
         fs::write(&temporary, text).map_err(io(&temporary))?;
         #[cfg(unix)]
         {
@@ -380,7 +398,7 @@ impl Vault {
             fs::set_permissions(&temporary, fs::Permissions::from_mode(0o600))
                 .map_err(io(&temporary))?;
         }
-        fs::rename(&temporary, &path).map_err(io(&path))
+        fs::rename(&temporary, path).map_err(io(path))
     }
 
     fn wrap_password(&self, key: &[u8; 32], password: &str) -> Result<Wrapped> {
@@ -419,6 +437,8 @@ impl Vault {
         }
         let name = check_name(name)?;
         check_password(password, &name)?;
+        // a persistent sign-in left from an earlier account never opens this one
+        self.forget()?;
         let key: Zeroizing<[u8; 32]> = random()?;
         let recovery: Zeroizing<[u8; RECOVERY_BYTES]> = random()?;
         let recovery_salt: Zeroizing<[u8; 16]> = random()?;

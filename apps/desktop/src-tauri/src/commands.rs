@@ -6,8 +6,8 @@ use std::sync::Arc;
 
 use atena_app::views::{
     ChoiceInput, ConfirmedView, CrawlView, DecisionOptions, DocumentView, ErasureView, HitView,
-    ImportView, OverviewView, PendingView, ProposalView, ReceivedView, SearchQuery, SearchView,
-    PrivateCreatedView, PrivateStatusView, SourceView, SyncView, TallyView, TaxonomyView, ToolView,
+    ImportView, OverviewView, PendingView, PrivateCreatedView, PrivateStatusView, ProposalView,
+    ReceivedView, SearchQuery, SearchView, SourceView, SyncView, TallyView, TaxonomyView, ToolView,
 };
 use atena_app::{App, AppError, Settings};
 use serde::Serialize;
@@ -114,6 +114,18 @@ pub async fn private_unlock(
 #[tauri::command]
 pub async fn private_lock(shared: State<'_, Shared>) -> Answer<PrivateStatusView> {
     app(&shared).await?.private_lock().await
+}
+
+/// Turns the persistent sign-in on (the user ticked that they do it at their own risk).
+#[tauri::command]
+pub async fn private_remember(shared: State<'_, Shared>) -> Answer<PrivateStatusView> {
+    app(&shared).await?.private_remember().await
+}
+
+/// Turns the persistent sign-in off.
+#[tauri::command]
+pub async fn private_forget(shared: State<'_, Shared>) -> Answer<PrivateStatusView> {
+    app(&shared).await?.private_forget().await
 }
 
 /// Sets a new password with the recovery key.

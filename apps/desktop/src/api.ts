@@ -162,6 +162,10 @@ export interface PrivateStatus {
   exists: boolean;
   name: string | null;
   unlocked: boolean;
+  /** The persistent sign-in is on: the private part opens at start without the password. */
+  remembered: boolean;
+  /** A persistent sign-in can be turned on here (Windows Credential Manager). */
+  rememberAvailable: boolean;
 }
 
 export interface PrivateCreated {
@@ -338,6 +342,8 @@ export const api = {
   privateCreate: (name: string, password: string) => invoke<PrivateCreated>("private_create", { name, password }),
   privateUnlock: (name: string, password: string) => invoke<PrivateStatus>("private_unlock", { name, password }),
   privateLock: () => invoke<PrivateStatus>("private_lock"),
+  privateRemember: () => invoke<PrivateStatus>("private_remember"),
+  privateForget: () => invoke<PrivateStatus>("private_forget"),
   privateRecover: (recoveryKey: string, newPassword: string) =>
     invoke<PrivateStatus>("private_recover", { recoveryKey, newPassword }),
   privateChangePassword: (old: string, next: string) => invoke<void>("private_change_password", { old, new: next }),

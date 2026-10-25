@@ -140,7 +140,13 @@ function Workspace({
   const [documentId, setDocumentId] = useState<number | null>(null);
   const [taxonomy, setTaxonomy] = useState<Taxonomy>({ draft: false, schemes: [] });
   const [badges, setBadges] = useState({ proposals: 0, crawling: false });
-  const [privateStatus, setPrivateStatus] = useState<PrivateStatus>({ exists: false, name: null, unlocked: false });
+  const [privateStatus, setPrivateStatus] = useState<PrivateStatus>({
+    exists: false,
+    name: null,
+    unlocked: false,
+    remembered: false,
+    rememberAvailable: false,
+  });
   // where to go once the private account is open, and whether it stays open outside its screens
   const [unlockFor, setUnlockFor] = useState<Screen | null>(null);
   const [rememberPrivate, setRememberPrivate] = useState(false);
@@ -177,7 +183,7 @@ function Workspace({
 
   const isPrivate = (s: Screen) => s.startsWith("private-");
   /** Moves to a screen; the private screens need the open account, and leaving them closes it
-   * unless the user chose to stay signed in. */
+   * unless the user chose to stay signed in (until ATENA closes, or permanently). */
   const go = (next: Screen, search?: SearchStart) => {
     if (isPrivate(next) && !privateStatus.unlocked) {
       if (!privateStatus.exists) {
@@ -187,7 +193,7 @@ function Workspace({
       }
       return;
     }
-    if (!isPrivate(next) && isPrivate(screen) && privateStatus.unlocked && !rememberPrivate) {
+    if (!isPrivate(next) && isPrivate(screen) && privateStatus.unlocked && !rememberPrivate && !privateStatus.remembered) {
       api.privateLock().then(setPrivateStatus, () => undefined);
     }
     if (search) setSearchStart({ ...search });
