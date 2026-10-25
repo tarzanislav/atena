@@ -87,7 +87,11 @@
           "Russian",
           "SimpChinese"
         ],
-        "displayLanguageSelector": true
+        "displayLanguageSelector": true,
+        "customLanguageFiles": {
+          "Slovak": "nsis/Slovak.nsh",
+          "Czech": "nsis/Czech.nsh"
+        }
       }
     }
   }
