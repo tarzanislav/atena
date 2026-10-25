@@ -1,5 +1,6 @@
-//! ATENA storage: the PostgreSQL schema and every query. ATENA keeps no original files – only
-//! texts, where the legality principle allows, and fingerprints (see [`hash`]).
+//! ATENA storage: the PostgreSQL schema and every query. ATENA keeps texts, where the legality
+//! principle allows, and fingerprints (see [`hash`]); original files only in its archive of
+//! official and openly licensed documents (table `version_file`).
 //!
 //! The rest of ATENA never writes SQL; it calls [`Store`]. The schema is in `migrations/`
 //! and is applied with [`Store::migrate`]. Scheduling is built on host leases: a worker leases a
@@ -22,8 +23,9 @@ use std::time::Duration;
 use sqlx::postgres::{PgConnectOptions, PgPool, PgPoolOptions};
 
 pub use documents::{
-    Capture, Classifiable, CurrentDocument, DocumentLink, Label, LabelDecision, LabelSuggestion,
-    LinkKind, NewVersion, Rights, SavedVersion, VersionSummary,
+    ArchiveRights, ArchivedFile, Capture, Classifiable, CurrentDocument, DocumentLink, Label,
+    LabelDecision, LabelSuggestion, LinkKind, NewFile, NewVersion, Rights, SavedVersion,
+    VersionSummary,
 };
 pub use erasure::ErasureReport;
 /// The fingerprint of a byte string.

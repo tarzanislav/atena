@@ -394,10 +394,11 @@ impl Permission {
 /// Decides what ATENA may do. `tdm_reserved`: the publisher reserved text and data mining for this
 /// document.
 ///
-/// The public part keeps no original files, whatever the licence (the author's decision of
-/// 24 Oct 2026): a file may carry harmful content or personal data that cannot be removed from it
-/// reliably. The cleaned text and a fingerprint of the original are kept; the original stays with
-/// its publisher. A user's copy for their own use is another matter: it is fetched on their click,
+/// Original files are kept only in the archive of what anyone may copy and show
+/// (`show_full_text`), after the danger check and when no personal data was found in the text (the
+/// author's decisions of 24 and 25 Oct 2026; `atena_ingest::pipeline::archivable`): a file may carry
+/// harmful content or personal data that cannot be removed from it reliably. Otherwise the cleaned
+/// text and a fingerprint of the original are kept; the original stays with its publisher. A user's copy for their own use is another matter: it is fetched on their click,
 /// checked for active content and kept encrypted in their private part (`atena-vault::library`).
 pub fn permission(source: SourceFacts<'_>, tdm_reserved: bool) -> Permission {
     let here = profile(OPERATOR_COUNTRY).expect("the operator's country has a profile");

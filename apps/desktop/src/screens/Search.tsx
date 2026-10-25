@@ -12,7 +12,7 @@ import { useI18n } from "../i18n";
 import { Icon } from "../icons";
 
 /** Facet namespaces offered for narrowing, in this order. */
-const FACETS = ["section", "trust", "school-type", "resource-type", "topic", "country", "authority", "language", "source"];
+const FACETS = ["section", "trust", "archive", "school-type", "resource-type", "topic", "country", "authority", "language", "source"];
 
 /** The filter of official sources, offered as a switch next to the search box. */
 const OFFICIAL = "trust/official";
@@ -104,6 +104,7 @@ export function SearchScreen({ start }: { start: SearchStart }) {
     if (namespace === "language") return languageOf(i18n, value);
     if (namespace === "source") return sourceNames.get(value) ?? value;
     if (namespace === "trust") return i18n.t(`trust-${value}`);
+    if (namespace === "archive") return i18n.t(`archive-facet-${value}`);
     return conceptLabel(`${namespace}/${value}`);
   };
   const facetText = (f: Facet) => valueText(f.namespace, f.value);

@@ -1,6 +1,6 @@
 //! Dangerous and disguised files are refused before anything is read from them (pillar 3).
 //!
-//! ATENA keeps no original files, but it reads them, and a source that serves programs or
+//! ATENA reads original files (and archives a few of them), and a source that serves programs or
 //! documents with active content is not drawn on: such a file is refused as a whole and nothing
 //! of it is kept. Refused are:
 //! * programs and scripts, whatever the server calls them (Windows, Linux and macOS executables,

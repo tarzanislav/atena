@@ -82,7 +82,7 @@ a žiadny zdroj nemá viac ako 100 000 adries.
   vloženými súbormi, multimédiami alebo formulármi XFA – aj zapísanými priamo vo vnorenom slovníku
   alebo poli; dokumenty Word s makrami, ActiveX, objektmi OLE
   alebo vzdialenými šablónami; dokumenty OpenDocument s makrami alebo skriptmi. Z takého súboru sa nič
-  neuloží a jeho adresa sa už neskúša. Pôvodné súbory sa neukladajú vôbec ([DATABAZA.md](DATABAZA.md)).
+  neuloží a jeho adresa sa už neskúša. Pôvodné súbory sa uchovávajú len v archíve ([DATABAZA.md](DATABAZA.md)).
 * **Spracovanie v samostatnom, obmedzenom procese** (`atena_extract::Parser`). Stránky a dokumenty
   spracúva podriadený proces, ktorý smie použiť najviac 768 MB pamäte a 60 sekúnd. Zákerný súbor
   (dekompresná bomba, pasca na parser) tak môže ukončiť len tento proces. Taký dokument sa považuje za

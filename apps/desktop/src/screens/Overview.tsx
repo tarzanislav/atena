@@ -5,7 +5,7 @@ import { ErrorNotice } from "../components/ErrorNotice";
 import { HitItem } from "../components/HitItem";
 import { ScopeSwitch, scopeFilters } from "../components/Scope";
 import { useApp } from "../context";
-import { dateTime, number, today } from "../format";
+import { dateTime, fileSize, number, today } from "../format";
 import { useI18n } from "../i18n";
 import { Icon } from "../icons";
 import { HIDDEN_SUBSECTIONS, SECTION_COLOURS, SECTION_TILES } from "../sections";
@@ -111,6 +111,16 @@ export function OverviewScreen() {
               {i18n.t("overview-new-in-scope", { new: tally.new, days })}
             </span>
           </span>
+          {overview.archivedFiles + overview.gone > 0 && (
+            <button className="button link" onClick={() => navigate("search", { filters: ["archive/removed"] })}>
+              <Icon name="archive" size={16} />
+              {i18n.t("overview-archive", {
+                files: overview.archivedFiles,
+                size: fileSize(i18n, overview.archivedBytes),
+                gone: overview.gone,
+              })}
+            </button>
+          )}
           <span className="muted">
             {i18n.t("overview-sources-line", { crawled: overview.sourcesCrawled, sources: overview.sources })}
             {" · "}

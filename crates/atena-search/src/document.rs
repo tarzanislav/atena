@@ -18,7 +18,9 @@ use atena_store::IndexRow;
 use jiff::Timestamp;
 
 use crate::analysis::group_of;
-use crate::schema::{AUTHORITY, COUNTRY, LANGUAGE, REGION, SOURCE, TRUST};
+use crate::schema::{
+    ARCHIVE, ARCHIVE_REMOVED, AUTHORITY, COUNTRY, LANGUAGE, REGION, SOURCE, TRUST,
+};
 
 /// A document as the index takes it.
 #[derive(Debug, Clone, PartialEq)]
@@ -73,9 +75,12 @@ pub fn authority_weight(authority: &str) -> f64 {
     }
 }
 
-/// The document as the index may take it, or `None` when it must not be found at all.
+/// The document as the index may take it, or `None` when it must not be found at all. A document
+/// the publisher removed from the web stays findable from ATENA's archive only where its whole text
+/// may be shown (official texts, open licences); it carries the facet `archive/removed`.
 pub fn searchable(row: &IndexRow) -> Option<SearchDocument> {
-    if row.status != "active" || !row.source_enabled || row.noindex {
+    let gone = row.status == "gone";
+    if (row.status != "active" && !gone) || !row.source_enabled || row.noindex {
         return None;
     }
     let licence = Licence::parse(&row.licence);
@@ -101,6 +106,10 @@ pub fn searchable(row: &IndexRow) -> Option<SearchDocument> {
         })
         .filter(|t| !t.is_empty());
     let has_text = text.is_some();
+    let full_text = has_text && allowed.show_full_text && !row.noarchive;
+    if gone && !full_text {
+        return None;
+    }
     let mut facets: BTreeSet<(String, String)> = row
         .labels
         .iter()
@@ -116,6 +125,9 @@ pub fn searchable(row: &IndexRow) -> Option<SearchDocument> {
     facets.insert((TRUST.into(), trust_of(&row.authority).into()));
     if let Some(language) = &row.language {
         facets.insert((LANGUAGE.into(), language.clone()));
+    }
+    if gone {
+        facets.insert((ARCHIVE.into(), ARCHIVE_REMOVED.into()));
     }
     Some(SearchDocument {
         id: row.document_id,
@@ -134,7 +146,7 @@ pub fn searchable(row: &IndexRow) -> Option<SearchDocument> {
             .unwrap_or(row.last_changed_at),
         added: row.first_seen_at,
         snippets: has_text && allowed.show_full_text && !row.nosnippet,
-        full_text: has_text && allowed.show_full_text && !row.noarchive,
+        full_text,
         text,
         facets,
         group: group_of(row.language.as_deref()),
@@ -170,6 +182,7 @@ pub(crate) mod tests {
             noindex: false,
             noarchive: false,
             nosnippet: false,
+            gone_at: None,
             labels: vec![("topic".into(), "legislation".into())],
         }
     }
@@ -222,7 +235,18 @@ pub(crate) mod tests {
     #[test]
     fn some_documents_are_never_found() {
         assert!(searchable(&row("official", "forbidden")).is_none());
+        // a removed document stays only where ATENA may show its whole text: from the archive
         let mut gone = row("official", "allowed");
+        gone.status = "gone".into();
+        let kept = searchable(&gone).unwrap();
+        assert!(kept.full_text);
+        assert!(
+            kept.facets
+                .contains(&(ARCHIVE.into(), ARCHIVE_REMOVED.into()))
+        );
+        gone.noarchive = true;
+        assert!(searchable(&gone).is_none());
+        let mut gone = row("copyrighted", "allowed");
         gone.status = "gone".into();
         assert!(searchable(&gone).is_none());
         let mut disabled = row("official", "allowed");

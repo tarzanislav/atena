@@ -29,6 +29,13 @@ export function number(i18n: Translator, n: number) {
   return new Intl.NumberFormat(i18n.intl).format(n);
 }
 
+/** The size of a file: kB or MB in the interface language. */
+export function fileSize(i18n: Translator, bytes: number) {
+  const mb = bytes / (1024 * 1024);
+  const format = new Intl.NumberFormat(i18n.intl, { maximumFractionDigits: 1 });
+  return mb >= 1 ? `${format.format(mb)} MB` : `${format.format(Math.max(1, Math.round(bytes / 1024)))} kB`;
+}
+
 /** The name of a language code (`sk` → „slovenčina“) in the interface language. */
 export function languageOf(i18n: Translator, code: string | null) {
   if (!code) return "";

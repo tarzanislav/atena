@@ -65,12 +65,16 @@ async fn serve(round: Arc<AtomicUsize>) -> Server {
 }
 
 async fn run_once(store: &Store, server: &Server) -> RunStats {
+    run_with(store, server, PipelineConfig::default()).await
+}
+
+async fn run_with(store: &Store, server: &Server, pipeline: PipelineConfig) -> RunStats {
     let fetcher = Fetcher::new(test_config(server)).unwrap();
     let pipeline = Arc::new(Pipeline::new(
         store.clone(),
         Arc::new(fetcher),
         Arc::new(Taxonomy::bundled().unwrap()),
-        PipelineConfig::default(),
+        pipeline,
     ));
     let config = WorkerConfig {
         worker_id: "test-worker".into(),
@@ -421,5 +425,173 @@ async fn official_sources_crawled_site_wide_follow_links_level_by_level() {
     assert_eq!(of("/4-sk/tretia/"), Some((false, 0)));
     assert_eq!(of("/5-sk/stvrta/"), None);
     assert_eq!(of("/kontakty/zamestnanci/"), None);
+    db.drop().await;
+}
+
+/// A one-page PDF with `text` in Helvetica.
+fn pdf(text: &str) -> Vec<u8> {
+    let content = format!("BT /F1 12 Tf 72 720 Td ({text}) Tj ET");
+    let objects = [
+        "<< /Type /Catalog /Pages 2 0 R >>".to_string(),
+        "<< /Type /Pages /Kids [3 0 R] /Count 1 >>".into(),
+        "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R \
+         /Resources << /Font << /F1 5 0 R >> >> >>"
+            .into(),
+        format!(
+            "<< /Length {} >>\nstream\n{content}\nendstream",
+            content.len()
+        ),
+        "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>".into(),
+    ];
+    let mut out = b"%PDF-1.4\n".to_vec();
+    let mut offsets = Vec::new();
+    for (i, body) in objects.iter().enumerate() {
+        offsets.push(out.len());
+        out.extend(format!("{} 0 obj\n{body}\nendobj\n", i + 1).as_bytes());
+    }
+    let xref = out.len();
+    out.extend(format!("xref\n0 {}\n0000000000 65535 f \n", objects.len() + 1).as_bytes());
+    for offset in offsets {
+        out.extend(format!("{offset:010} 00000 n \n").as_bytes());
+    }
+    out.extend(
+        format!(
+            "trailer\n<< /Size {} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n",
+            objects.len() + 1
+        )
+        .as_bytes(),
+    );
+    out
+}
+
+/// Every address is checked again now.
+async fn due_again(store: &Store) {
+    for sql in [
+        "UPDATE endpoint SET next_fetch_at = now() - interval '1 s'",
+        "UPDATE host SET next_due_at = now() - interval '1 s'",
+    ] {
+        sqlx::query(sql).execute(store.pool()).await.unwrap();
+    }
+}
+
+fn register_source(server: &Server, id: &str, path: &str, licence: &str) -> RegisterSource {
+    RegisterSource {
+        source: SourceRecord {
+            id: id.into(),
+            name: format!("Zdroj {id}"),
+            url: server.url(path).to_string(),
+            country: "SK".into(),
+            languages: vec!["sk".into()],
+            authority: "A1".into(),
+            priority: "P0".into(),
+            connector: "html".into(),
+            interval_s: 86_400,
+            licence: licence.into(),
+            terms: "allowed".into(),
+            enabled: true,
+            site_wide: false,
+        },
+        endpoints: vec![NewEndpoint {
+            url: server.url(path).to_string(),
+            host: "127.0.0.1".into(),
+            kind: EndpointKind::Page,
+            origin: Origin::Register,
+            follow_links: true,
+            depth: 0,
+            interval_s: 86_400,
+        }],
+    }
+}
+
+#[tokio::test]
+async fn original_files_of_official_documents_are_archived_and_outlive_the_web() {
+    let Some(db) = TestDb::new().await else {
+        return;
+    };
+    let store = &db.store;
+    let removed = Arc::new(AtomicUsize::new(0));
+    let gone = Arc::clone(&removed);
+    let index = "<html lang=\"sk\"><body><main><h1>Predpisy</h1><p>Zbierka predpisov pre školy \
+                 a školské zariadenia v Slovenskej republike.</p>\
+                 <a href=\"zakon.pdf\">zákon</a> <a href=\"oznam.pdf\">oznam</a> \
+                 <a href=\"vyklad.html\">výklad</a></main></body></html>";
+    let server = Server::start(move |req| match req.path.as_str() {
+        "/predpisy/" | "/metodiky/" => reply(200, index),
+        "/predpisy/zakon.pdf" if gone.load(Ordering::SeqCst) == 0 => reply(
+            200,
+            pdf("Zakon o vychove a vzdelavani a o zmene a doplneni niektorych zakonov"),
+        )
+        .header("content-type", "application/pdf"),
+        "/metodiky/zakon.pdf" => reply(200, pdf("Metodika hodnotenia ziakov v zakladnej skole"))
+            .header("content-type", "application/pdf"),
+        "/predpisy/oznam.pdf" | "/metodiky/oznam.pdf" => reply(
+            200,
+            pdf("Kontakt na referenta: referent@ministerstvo.example.sk"),
+        )
+        .header("content-type", "application/pdf"),
+        "/predpisy/vyklad.html" | "/metodiky/vyklad.html" => reply(
+            200,
+            "<html><body><main><p>Výklad zákona pre riaditeľov škôl a školských zariadení \
+             o povinnej školskej dochádzke.</p></main></body></html>",
+        ),
+        _ => reply(404, "not found"),
+    })
+    .await;
+    store
+        .sync_register(&[
+            register_source(&server, "T10", "/predpisy/", "official"),
+            register_source(&server, "T11", "/metodiky/", "copyrighted"),
+        ])
+        .await
+        .unwrap();
+    let files = |sql: &'static str| count(store, sql);
+
+    // first without the archive: no files at all
+    let stats = run_with(
+        store,
+        &server,
+        PipelineConfig {
+            archive_files: false,
+            ..PipelineConfig::default()
+        },
+    )
+    .await;
+    assert_eq!(stats.store_errors, 0, "{stats:?}");
+    assert_eq!(files("SELECT count(*) FROM version_file").await, 0);
+    let law = document_id(store, "/predpisy/zakon.pdf").await;
+    assert!(store.archived_file(law).await.unwrap().is_none());
+    // the PDF with an e-mail address was read (and the address removed from its text)
+    let notice = document_id(store, "/predpisy/oznam.pdf").await;
+
+    // with it: the unchanged official PDF gets its file, nothing else does – not a copyrighted
+    // PDF, not a PDF with personal data, not a web page
+    due_again(store).await;
+    let stats = run_once(store, &server).await;
+    assert_eq!(stats.store_errors, 0, "{stats:?}");
+    assert_eq!(files("SELECT count(*) FROM version_file").await, 1);
+    let archived = store.archived_file(law).await.unwrap().unwrap();
+    assert_eq!(archived.media_type, "application/pdf");
+    let (_, content) = store.archived_content(law).await.unwrap().unwrap();
+    assert!(content.starts_with(b"%PDF"));
+    assert_eq!(archived.byte_size, content.len() as i64);
+    assert_eq!(archived.raw_hash, atena_store::hash(&content));
+    assert_eq!(store.archive_rights().await.unwrap().len(), 1);
+    assert!(store.archived_file(notice).await.unwrap().is_none());
+
+    // the publisher removes it: the document is gone, the archive keeps the file
+    removed.store(1, Ordering::SeqCst);
+    due_again(store).await;
+    run_once(store, &server).await;
+    let row = store.search_rows(&[law]).await.unwrap().remove(0);
+    assert_eq!(row.status, "gone");
+    assert!(row.gone_at.is_some());
+    assert!(store.archived_file(law).await.unwrap().is_some());
+    let overview = store.overview().await.unwrap();
+    assert_eq!((overview.archived_files, overview.gone), (1, 1));
+    assert_eq!(overview.archived_bytes, content.len() as i64);
+
+    // files whose rights changed are deleted
+    assert_eq!(store.delete_files(&[law]).await.unwrap(), 1);
+    assert!(store.archived_file(law).await.unwrap().is_none());
     db.drop().await;
 }

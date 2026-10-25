@@ -49,16 +49,29 @@ uloží ako ďalšia verzia, a to v jednej transakcii spolu s odkazmi a novými 
   dodržia: kópia pri `noarchive` slúži len na zistenie zmien a nikdy sa nezobrazí, dokument s `noindex`
   sa nikdy nenájde a pri `nosnippet` sa neukáže ukážka textu ([VYHLADAVANIE.md](VYHLADAVANIE.md)).
 
-## Žiadne pôvodné súbory
-Autor projektu 24. 10. 2026 rozhodol, že ATENA **neukladá žiadne pôvodné súbory** – ani webové
-stránky, ani PDF, ani kancelárske dokumenty. Súbor môže niesť škodlivý obsah alebo osobné údaje, ktoré
-sa z neho nedajú spoľahlivo odstrániť.
-- Každá verzia uchová upravený text (tam, kde to zásada zákonnosti dovoľuje).
-- Uchová aj odtlačok BLAKE3 pôvodných bajtov (`raw_hash`), ktorý dokazuje, čo vydavateľ zverejnil.
-- Originál zostáva u vydavateľa, vzdialený jedno kliknutie.
+## Pôvodné súbory: len archív
+Každá verzia uchová upravený text (tam, kde to zásada zákonnosti dovoľuje) a odtlačok BLAKE3
+pôvodných bajtov (`raw_hash`), ktorý dokazuje, čo vydavateľ zverejnil.
 
-Migrácia 0007 odstránila niekdajšie úložisko súborov. Súbory, ktoré v priečinku `./atena-files`
-zanechali staršie verzie, sa môžu zmazať.
+Autor projektu 24. 10. 2026 rozhodol, že ATENA neukladá pôvodné súbory (migrácia 0007): súbor môže
+niesť škodlivý obsah alebo osobné údaje, ktoré sa z neho nedajú spoľahlivo odstrániť. 25. 10. 2026
+otvoril jednu výnimku, **archív** (migrácia 0009, tabuľka `version_file`), aby dokumenty ostali
+dostupné aj po tom, čo ich vydavateľ odstráni. Súbor sa uloží s verziou, len keď platí všetko
+(`atena_ingest::pipeline::archivable`):
+- dokument smie každý kopírovať a zobrazovať – úradný text voľný podľa oboch práv alebo otvorená
+  licencia (`show_full_text` zásady zákonnosti) – a vydavateľ nepožiadal o neukladanie kópií
+  (`noarchive`) ani si nevyhradil vyťažovanie;
+- ide o PDF, DOCX alebo ODT – webové stránky si uchovajú len text;
+- prešiel kontrolou nebezpečných súborov (programy a aktívny obsah sa sem nikdy nedostanú);
+- v jeho texte sa nenašli osobné údaje (e-maily, telefónne čísla, rodné čísla) – súbor sa od nich
+  nedá vyčistiť tak ako text.
+
+`document.gone_at` zaznamená, kedy vydavateľ dokument prestal zverejňovať (HTTP 404/410). Odstránený
+dokument sa dá ďalej nájsť a zobraziť z archívu len tam, kde sa smie zobraziť celý text; má fazetu
+vyhľadávania `archive/removed`. Súbory sa zmažú spolu s verziou alebo dokumentom (výmaz), keď
+neskoršie stiahnutie text vyhradí a pri každom spustení aplikácie, keď register zmenil licenciu alebo
+podmienky zdroja tak, že sa už uchovávať nesmú. Archiváciu vypína nastavenie „Uchovávať pôvodné
+súbory…“. Súbory v priečinku `./atena-files` zo starších verzií sa môžu zmazať.
 
 ## Migrácie
 Súbory `crates/atena-store/migrations/NNNN_nazov.sql` sú vložené priamo do programu. Spúšťa ich príkaz

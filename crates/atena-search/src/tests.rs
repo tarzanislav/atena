@@ -481,3 +481,51 @@ fn the_overview_counts_new_and_all_documents_per_section() {
     assert_eq!(count(&abroad.languages, "en"), 1);
     assert!(i.tally(&t, "nonsense", &[], day(0)).is_err());
 }
+
+#[test]
+fn removed_documents_are_found_in_the_archive() {
+    let mut removed = doc(
+        1,
+        "sk",
+        "Starý zákon",
+        "Zákon o školských zariadeniach bol zrušený.",
+    );
+    removed.status = "gone".into();
+    let mut removed_copyrighted = IndexRow {
+        licence: "copyrighted".into(),
+        ..doc(
+            2,
+            "sk",
+            "Starý článok",
+            "Zákon o školských zariadeniach v praxi.",
+        )
+    };
+    removed_copyrighted.status = "gone".into();
+    let live = doc(
+        3,
+        "sk",
+        "Nový zákon",
+        "Zákon o školských zariadeniach platí od septembra.",
+    );
+    let index = index(&[removed, removed_copyrighted, live]);
+    let found = search(&index, "zákon", &[]);
+    let ids: Vec<(i64, bool)> = found.hits.iter().map(|h| (h.document_id, h.gone)).collect();
+    assert_eq!(found.total, 2, "{ids:?}");
+    assert!(ids.contains(&(1, true)) && ids.contains(&(3, false)));
+    // the archive is a filter, and its facet is not shown as a label
+    let archived = search(&index, "", &["archive/removed"]);
+    assert_eq!(
+        archived
+            .hits
+            .iter()
+            .map(|h| h.document_id)
+            .collect::<Vec<_>>(),
+        [1]
+    );
+    assert!(
+        archived.hits[0]
+            .labels
+            .iter()
+            .all(|l| !l.starts_with("archive/"))
+    );
+}

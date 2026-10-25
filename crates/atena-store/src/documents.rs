@@ -85,6 +85,50 @@ pub struct NewVersion {
     pub modified_at: Option<Timestamp>,
     /// Canonical URL declared by the page.
     pub canonical_url: Option<String>,
+    /// The original file to archive with the version (official and openly licensed PDF and office
+    /// documents only – the pipeline decides).
+    pub file: Option<NewFile>,
+}
+
+/// An original file to archive.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NewFile {
+    /// Media type of the recognised format.
+    pub media_type: String,
+    /// The bytes as the publisher served them.
+    pub content: Vec<u8>,
+}
+
+/// An archived original file.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ArchivedFile {
+    /// The version it belongs to.
+    pub version_id: i64,
+    /// Media type.
+    pub media_type: String,
+    /// Size in bytes.
+    pub byte_size: i64,
+    /// BLAKE3 of the bytes.
+    pub raw_hash: Hash,
+    /// When it was archived.
+    pub stored_at: Timestamp,
+}
+
+/// What decides whether an archived file may still be kept and shown.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ArchiveRights {
+    /// Document ID.
+    pub document_id: i64,
+    /// Country of the source.
+    pub country: String,
+    /// Licence of the source.
+    pub licence: String,
+    /// Terms of the source.
+    pub terms: String,
+    /// The publisher reserved text and data mining.
+    pub tdm_reserved: bool,
+    /// The publisher asked for no stored copies.
+    pub noarchive: bool,
 }
 
 /// What a link of a document points to.
@@ -194,6 +238,10 @@ pub struct CurrentDocument {
     pub status: String,
     /// Text and data mining was reserved at the latest capture.
     pub tdm_reserved: bool,
+    /// The current version.
+    pub version_id: Option<i64>,
+    /// The current version has an archived file.
+    pub has_file: bool,
 }
 
 /// A version in a document's history.
@@ -257,11 +305,43 @@ async fn forget_content(tx: &mut Transaction<'_, Postgres>, document_id: i64) ->
         .bind(document_id)
         .execute(&mut **tx)
         .await?;
+    sqlx::query(
+        "DELETE FROM version_file WHERE version_id IN
+             (SELECT id FROM document_version WHERE document_id = $1)",
+    )
+    .bind(document_id)
+    .execute(&mut **tx)
+    .await?;
     sqlx::query("DELETE FROM document_label WHERE document_id = $1 AND origin = 'auto' AND status = 'suggested'")
         .bind(document_id)
         .execute(&mut **tx)
         .await?;
     Ok(())
+}
+
+/// Archives the original file of a version (once; a second one is ignored).
+async fn insert_file(
+    tx: &mut Transaction<'_, Postgres>,
+    version_id: i64,
+    file: &NewFile,
+) -> Result<bool> {
+    let size = i32::try_from(file.content.len()).unwrap_or(i32::MAX);
+    if file.content.is_empty() || size == i32::MAX {
+        return Ok(false);
+    }
+    let inserted = sqlx::query(
+        "INSERT INTO version_file (version_id, media_type, byte_size, raw_hash, content)
+         VALUES ($1, $2, $3, $4, $5) ON CONFLICT (version_id) DO NOTHING",
+    )
+    .bind(version_id)
+    .bind(&file.media_type)
+    .bind(size)
+    .bind(&crate::hash::hash(&file.content)[..])
+    .bind(&file.content)
+    .execute(&mut **tx)
+    .await?
+    .rows_affected();
+    Ok(inserted == 1)
 }
 
 /// New suggestions replace the old ones; confirmed and rejected labels stay as decided.
@@ -390,7 +470,8 @@ impl Store {
     /// The document of an endpoint, if it has one.
     pub async fn current_document(&self, endpoint_id: i64) -> Result<Option<CurrentDocument>> {
         let row = sqlx::query(
-            "SELECT d.id, d.version_count, d.last_raw_hash, d.last_fingerprint, d.status, d.tdm_reserved, v.body
+            "SELECT d.id, d.version_count, d.last_raw_hash, d.last_fingerprint, d.status, d.tdm_reserved, v.body,
+                    v.id AS version_id, EXISTS (SELECT 1 FROM version_file f WHERE f.version_id = v.id) AS has_file
              FROM document d LEFT JOIN document_version v ON v.id = d.current_version_id
              WHERE d.endpoint_id = $1",
         )
@@ -406,6 +487,8 @@ impl Store {
                 body: r.try_get("body")?,
                 status: r.try_get("status")?,
                 tdm_reserved: r.try_get("tdm_reserved")?,
+                version_id: r.try_get("version_id")?,
+                has_file: r.try_get("has_file")?,
             })
         })
         .transpose()
@@ -417,7 +500,7 @@ impl Store {
         let r = &capture.rights;
         let row = sqlx::query(
             "UPDATE document d SET
-                 url = $2, last_seen_at = $3, last_raw_hash = $4, last_fingerprint = $5, status = 'active',
+                 url = $2, last_seen_at = $3, last_raw_hash = $4, last_fingerprint = $5, status = 'active', gone_at = NULL,
                  tdm_reserved = $6, tdm_policy = $7, noindex = $8, noarchive = $9, nosnippet = $10, notranslate = $11
              FROM document old
              WHERE d.endpoint_id = $1 AND old.id = d.id
@@ -462,7 +545,7 @@ impl Store {
                                    tdm_reserved, tdm_policy, noindex, noarchive, nosnippet, notranslate)
              VALUES ($1, $2, $3, $4, $5, $5, $5, $6, $7, $8, $9, $10, $11)
              ON CONFLICT (endpoint_id) DO UPDATE SET
-                 url = EXCLUDED.url, format = EXCLUDED.format, status = 'active',
+                 url = EXCLUDED.url, format = EXCLUDED.format, status = 'active', gone_at = NULL,
                  last_seen_at = EXCLUDED.last_seen_at, last_changed_at = EXCLUDED.last_changed_at,
                  tdm_reserved = EXCLUDED.tdm_reserved, tdm_policy = EXCLUDED.tdm_policy,
                  noindex = EXCLUDED.noindex, noarchive = EXCLUDED.noarchive,
@@ -545,6 +628,10 @@ impl Store {
         .execute(&mut *tx)
         .await?;
 
+        if let Some(file) = version.file.as_ref().filter(|_| !r.tdm_reserved) {
+            insert_file(&mut tx, version_id, file).await?;
+        }
+
         if !r.tdm_reserved {
             sqlx::query("DELETE FROM document_link WHERE document_id = $1")
                 .bind(document_id)
@@ -581,7 +668,7 @@ impl Store {
     /// Records that the endpoint's document was confirmed unchanged by the server (`304`).
     pub async fn mark_seen(&self, endpoint_id: i64) -> Result<()> {
         sqlx::query(
-            "UPDATE document SET last_seen_at = now(), status = 'active' WHERE endpoint_id = $1",
+            "UPDATE document SET last_seen_at = now(), status = 'active', gone_at = NULL WHERE endpoint_id = $1",
         )
         .bind(endpoint_id)
         .execute(&self.pool)
@@ -589,9 +676,99 @@ impl Store {
         Ok(())
     }
 
+    /// Archives the original file with the document's current version when it has none yet (a
+    /// document captured before files were archived). Returns whether it was stored.
+    pub async fn attach_file(&self, document_id: i64, file: &NewFile) -> Result<bool> {
+        let mut tx = self.pool.begin().await?;
+        let version: Option<i64> = sqlx::query_scalar(
+            "SELECT current_version_id FROM document WHERE id = $1 AND NOT tdm_reserved",
+        )
+        .bind(document_id)
+        .fetch_optional(&mut *tx)
+        .await?
+        .flatten();
+        let stored = match version {
+            Some(version_id) => insert_file(&mut tx, version_id, file).await?,
+            None => false,
+        };
+        tx.commit().await?;
+        Ok(stored)
+    }
+
+    /// The newest archived file of a document, without its bytes.
+    pub async fn archived_file(&self, document_id: i64) -> Result<Option<ArchivedFile>> {
+        let row = sqlx::query(
+            "SELECT f.version_id, f.media_type, f.byte_size, f.raw_hash, f.stored_at
+             FROM version_file f JOIN document_version v ON v.id = f.version_id
+             WHERE v.document_id = $1 ORDER BY v.version_no DESC LIMIT 1",
+        )
+        .bind(document_id)
+        .fetch_optional(&self.pool)
+        .await?;
+        row.map(|r| archived_from(&r)).transpose()
+    }
+
+    /// The newest archived file of a document with its bytes.
+    pub async fn archived_content(
+        &self,
+        document_id: i64,
+    ) -> Result<Option<(ArchivedFile, Vec<u8>)>> {
+        let row = sqlx::query(
+            "SELECT f.version_id, f.media_type, f.byte_size, f.raw_hash, f.stored_at, f.content
+             FROM version_file f JOIN document_version v ON v.id = f.version_id
+             WHERE v.document_id = $1 ORDER BY v.version_no DESC LIMIT 1",
+        )
+        .bind(document_id)
+        .fetch_optional(&self.pool)
+        .await?;
+        row.map(|r| Ok((archived_from(&r)?, r.try_get("content")?)))
+            .transpose()
+    }
+
+    /// The rights of every document with archived files, to check them again after the register
+    /// changed.
+    pub async fn archive_rights(&self) -> Result<Vec<ArchiveRights>> {
+        let rows = sqlx::query(
+            "SELECT DISTINCT d.id, s.country, s.licence, s.terms, d.tdm_reserved, d.noarchive
+             FROM version_file f
+             JOIN document_version v ON v.id = f.version_id
+             JOIN document d ON d.id = v.document_id
+             JOIN source s ON s.id = d.source_id
+             ORDER BY d.id",
+        )
+        .fetch_all(&self.pool)
+        .await?;
+        rows.iter()
+            .map(|r| {
+                Ok(ArchiveRights {
+                    document_id: r.try_get("id")?,
+                    country: r.try_get("country")?,
+                    licence: r.try_get("licence")?,
+                    terms: r.try_get("terms")?,
+                    tdm_reserved: r.try_get("tdm_reserved")?,
+                    noarchive: r.try_get("noarchive")?,
+                })
+            })
+            .collect()
+    }
+
+    /// Deletes the archived files of documents; returns how many files were deleted.
+    pub async fn delete_files(&self, document_ids: &[i64]) -> Result<u64> {
+        Ok(sqlx::query(
+            "DELETE FROM version_file WHERE version_id IN
+                 (SELECT id FROM document_version WHERE document_id = ANY($1))",
+        )
+        .bind(document_ids)
+        .execute(&self.pool)
+        .await?
+        .rows_affected())
+    }
+
     /// Marks the endpoint's document as no longer available (HTTP 404/410); its history stays.
     pub async fn mark_gone(&self, endpoint_id: i64) -> Result<()> {
-        sqlx::query("UPDATE document SET status = 'gone' WHERE endpoint_id = $1")
+        sqlx::query(
+            "UPDATE document SET status = 'gone', gone_at = COALESCE(gone_at, now()) WHERE endpoint_id = $1",
+        )
             .bind(endpoint_id)
             .execute(&self.pool)
             .await?;
@@ -689,4 +866,15 @@ impl Store {
                 .flatten(),
         )
     }
+}
+
+fn archived_from(r: &sqlx::postgres::PgRow) -> Result<ArchivedFile> {
+    Ok(ArchivedFile {
+        version_id: r.try_get("version_id")?,
+        media_type: r.try_get("media_type")?,
+        byte_size: i64::from(r.try_get::<i32, _>("byte_size")?),
+        raw_hash: hash_from(r.try_get("raw_hash")?)?
+            .ok_or_else(|| StoreError::Invalid("archived file without hash".into()))?,
+        stored_at: r.try_get::<jiff_sqlx::Timestamp, _>("stored_at")?.to_jiff(),
+    })
 }

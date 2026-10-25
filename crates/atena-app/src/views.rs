@@ -76,6 +76,12 @@ pub struct OverviewView {
     pub waiting_to_share: i64,
     /// The crawler is running.
     pub crawling: bool,
+    /// Original files in the archive.
+    pub archived_files: i64,
+    /// Their size in bytes.
+    pub archived_bytes: i64,
+    /// Documents the publishers removed from the web.
+    pub gone: i64,
 }
 
 /// The state of an imported source, as a code.
@@ -570,6 +576,8 @@ pub struct HitView {
     pub snippet: Option<Vec<Segment>>,
     /// The whole text may be shown.
     pub full_text: bool,
+    /// The publisher removed it from the web; ATENA's archive keeps it.
+    pub gone: bool,
 }
 
 impl From<Hit> for HitView {
@@ -590,6 +598,7 @@ impl From<Hit> for HitView {
             published: h.published,
             labels: h.labels,
             full_text: h.full_text,
+            gone: h.gone,
         }
     }
 }
@@ -658,6 +667,10 @@ pub struct DocumentView {
     pub labels: Vec<String>,
     /// The text, only where it may be shown in full.
     pub text: Option<String>,
+    /// When the publisher removed it from the web (ATENA's archive keeps it).
+    pub gone_at: Option<Timestamp>,
+    /// The original file in ATENA's archive (official texts and open licences only).
+    pub archived_file: Option<ArchivedFileView>,
     /// The versions, newest first.
     pub versions: Vec<VersionView>,
 }
@@ -1095,4 +1108,30 @@ pub struct PrivateReadView {
     /// Its text: the kept copy, or the text of the public part for a reference (`None` when the
     /// public part no longer has it).
     pub text: Option<String>,
+    /// For a reference: the original file in ATENA's public archive.
+    pub archived_file: Option<ArchivedFileView>,
+    /// For a reference: when the publisher removed the document from the web.
+    pub gone_at: Option<Timestamp>,
+}
+
+/// An original file in ATENA's archive.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchivedFileView {
+    /// Media type.
+    pub media_type: String,
+    /// Size in bytes.
+    pub byte_size: i64,
+    /// When it was archived.
+    pub stored_at: Timestamp,
+}
+
+impl From<atena_store::ArchivedFile> for ArchivedFileView {
+    fn from(f: atena_store::ArchivedFile) -> Self {
+        Self {
+            media_type: f.media_type,
+            byte_size: f.byte_size,
+            stored_at: f.stored_at,
+        }
+    }
 }

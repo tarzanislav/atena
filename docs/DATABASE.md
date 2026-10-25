@@ -2,7 +2,7 @@
 
 *Slovenčina: [sk/DATABAZA.md](sk/DATABAZA.md)*
 
-ATENA keeps everything in **PostgreSQL** (15 or newer) and **no original files** (see below). The
+ATENA keeps everything in **PostgreSQL** (15 or newer); original files only in its archive (see below). The
 database is the source of truth; search indexes are derived from it. All SQL lives in
 `crates/atena-store`; other crates call its `Store` API.
 
@@ -47,13 +47,30 @@ was not kept).
   interface respect them (a `noarchive` copy is kept for change detection but never shown; a `noindex`
   document is never found, a `nosnippet` one never shows a snippet – see [SEARCH.md](SEARCH.md)).
 
-## No original files
-The author decided on 24 Oct 2026 that ATENA keeps **no original files** – no web pages, PDFs or
-office documents: a file may carry harmful content or personal data that cannot be removed from it
-reliably. Every version keeps the cleaned text (where the legality principle allows) and the BLAKE3
-hash of the original bytes (`raw_hash`), which proves what the publisher served; the original itself
-stays with its publisher, one click away. Migration 0007 removed the former file store; files left
-by earlier versions in `./atena-files` may be deleted.
+## Original files: only the archive
+Every version keeps the cleaned text (where the legality principle allows) and the BLAKE3 hash of
+the original bytes (`raw_hash`), which proves what the publisher served.
+
+On 24 Oct 2026 the author decided that ATENA keeps no original files (migration 0007): a file may
+carry harmful content or personal data that cannot be removed from it reliably. On 25 Oct 2026 the
+author opened one exception, **the archive** (migration 0009, table `version_file`), so that
+documents stay available after the publisher removes them. A file is archived with its version only
+when all of these hold (`atena_ingest::pipeline::archivable`):
+- anyone may copy and show the document – an official text free of copyright under both laws, or an
+  open licence (`show_full_text` of the legality principle) – and the publisher did not ask for no
+  stored copies (`noarchive`) or reserve text and data mining;
+- it is a PDF, DOCX or ODT – web pages keep their text only;
+- the reader's danger check let it through (programs and active content never get here);
+- no personal data was found in its text (e-mail addresses, telephone numbers, birth numbers): a
+  file cannot be cleaned of them as the text is.
+
+`document.gone_at` records when the publisher stopped serving a document (HTTP 404/410). A removed
+document stays findable and shown from the archive only where its whole text may be shown; it carries
+the search facet `archive/removed`. Files are deleted with their version or document (an erasure),
+when a later capture reserves the text, and at every start of the desktop app when the register
+changed the source's licence or terms so that they may no longer be kept. The setting
+"Keep the original files…" switches archiving off. Files left in `./atena-files` by versions before
+0.2 may be deleted.
 
 ## Size
 Version texts are compressed by PostgreSQL (LZ4 where the server supports it). For 2 million documents

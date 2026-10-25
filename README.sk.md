@@ -29,7 +29,7 @@ Zásady nižšie a pravidlá zapísané v jadre (`atena-core`) tieto piliere uv�
 | `crates/atena-core/` | úprava textu, taxonómia, návrhy zaradenia, rozpoznanie zmien |
 | `crates/atena-crawl/` | slušný a bezpečný zberač: robots.txt (RFC 9309), ochrana vnútornej siete, tempo, TDMRep, RSS/Atom, sitemapy – [docs/sk/ZBERAC.md](docs/sk/ZBERAC.md) |
 | `crates/atena-extract/` | hlavný text bez menu a pätičky, metadáta a jazyk z HTML (aj staré kódovania), PDF, DOCX a ODT |
-| `crates/atena-store/` | databáza PostgreSQL, plánovanie kontrol; žiadne pôvodné súbory – [docs/sk/DATABAZA.md](docs/sk/DATABAZA.md) |
+| `crates/atena-store/` | databáza PostgreSQL, plánovanie kontrol; pôvodné súbory len v archíve – [docs/sk/DATABAZA.md](docs/sk/DATABAZA.md) |
 | `crates/atena-assess/` | automatické právne vyhodnotenie: riadky vstupu → licencia, podmienky a doklady – [docs/sk/HODNOTENIE.md](docs/sk/HODNOTENIE.md) |
 | `crates/atena-search/` | viacjazyčné fulltextové vyhľadávanie (Tantivy) v tom, čo dovoľuje zásada zákonnosti: vlastné stemmery pre slovenčinu, češtinu a poľštinu, pojmy naprieč jazykmi – [docs/sk/VYHLADAVANIE.md](docs/sk/VYHLADAVANIE.md) |
 | `crates/atena-ingest/` | program zberača: register → sťahovanie → spracovanie → verzie → zaradenie → index vyhľadávania; import a zdieľané návrhy – [docs/sk/SPUSTENIE.md](docs/sk/SPUSTENIE.md), [docs/sk/IMPORT-A-ZDIELANIE.md](docs/sk/IMPORT-A-ZDIELANIE.md) |

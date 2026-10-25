@@ -50,7 +50,10 @@ Zaradenie, ktoré redaktor zamietol, sa nepočíta.
 
 ## Filtre
 `os/pojem`, `country/SK`, `authority/A1`, `language/sk`, `source/SK01`, `region/sk|abroad`,
-`trust/official|expert|other`.
+`trust/official|expert|other`, `archive/removed`.
+- **Odstránené z webu** (`archive/removed`, formát indexu 3): dokument, ktorý vydavateľ odstránil
+  (HTTP 404/410), sa dá ďalej nájsť v archíve ATENY len tam, kde sa smie zobraziť celý text (úradné
+  texty, otvorené licencie, bez `noarchive`); každý iný odstránený dokument z indexu zmizne.
 - Hodnoty tej istej osi sú alternatívy.
 - Rôzne osi musia platiť všetky.
 - Výsledok spočíta hodnoty každej osi medzi nájdenými dokumentmi (fazety).

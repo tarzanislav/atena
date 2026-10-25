@@ -68,6 +68,8 @@ pub struct IndexRow {
     pub noarchive: bool,
     /// No snippet may be shown.
     pub nosnippet: bool,
+    /// When the publisher stopped serving it (`status` is `gone`).
+    pub gone_at: Option<Timestamp>,
     /// Labels that are not rejected: `(scheme, concept)`.
     pub labels: Vec<(String, String)>,
 }
@@ -131,7 +133,7 @@ impl Store {
             "SELECT d.id, d.source_id, s.name AS source_name, s.enabled, s.country, s.authority, s.licence,
                     s.terms, d.url, d.format, d.status, d.title, v.description, v.body, d.language,
                     d.published_at, d.modified_at, d.last_changed_at, d.first_seen_at, d.tdm_reserved, d.noindex,
-                    d.noarchive, d.nosnippet,
+                    d.noarchive, d.nosnippet, d.gone_at,
                     COALESCE((SELECT array_agg(l.scheme || '/' || l.concept ORDER BY l.scheme, l.concept)
                               FROM document_label l
                               WHERE l.document_id = d.id AND l.status <> 'rejected'), '{}') AS labels
@@ -179,6 +181,9 @@ impl Store {
                     noindex: r.try_get("noindex")?,
                     noarchive: r.try_get("noarchive")?,
                     nosnippet: r.try_get("nosnippet")?,
+                    gone_at: r
+                        .try_get::<Option<jiff_sqlx::Timestamp>, _>("gone_at")?
+                        .map(|t| t.to_jiff()),
                     labels: labels
                         .into_iter()
                         .filter_map(|l| {

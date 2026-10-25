@@ -2,15 +2,16 @@
 //! `atena_store::testing`); skipped without one. Nothing here goes to the network.
 
 use std::path::PathBuf;
-
-use atena_app::views::SearchQuery;
 use std::time::Duration;
 
+use atena_app::views::SearchQuery;
 use atena_app::{App, Choice, Keychain, PrivateFetch, Settings};
 use atena_crawl::testing::{Server, reply, test_config};
 use atena_extract::Parser;
 use atena_store::testing::TestDb;
-use atena_store::{Capture, EndpointKind, NewEndpoint, NewVersion, Origin, Rights, Store, hash};
+use atena_store::{
+    Capture, EndpointKind, NewEndpoint, NewFile, NewVersion, Origin, Rights, Store, hash,
+};
 
 fn folder(name: &str) -> PathBuf {
     let folder = std::env::temp_dir().join(format!("atena-app-{name}-{}", std::process::id()));
@@ -437,6 +438,18 @@ async fn document(
     body: Option<&str>,
     noarchive: bool,
 ) -> i64 {
+    archived_document(store, source, url, body, noarchive, None).await
+}
+
+/// [`document`] with an original file in the archive.
+async fn archived_document(
+    store: &Store,
+    source: &str,
+    url: &str,
+    body: Option<&str>,
+    noarchive: bool,
+    file: Option<Vec<u8>>,
+) -> i64 {
     let host = url::Url::parse(url)
         .unwrap()
         .host_str()
@@ -484,6 +497,10 @@ async fn document(
                 title: Some(format!("Dokument {source}")),
                 body: body.map(str::to_string),
                 language: Some("sk".into()),
+                file: file.map(|content| NewFile {
+                    media_type: "application/pdf".into(),
+                    content,
+                }),
                 ..NewVersion::default()
             },
             &[],
@@ -646,5 +663,88 @@ async fn documents_are_saved_for_the_user_alone() {
     assert_eq!(app.private_library().await.unwrap().len(), 1);
     app.close().await;
     std::fs::remove_dir_all(&folder).unwrap();
+    db.drop().await;
+}
+
+#[tokio::test]
+async fn the_archive_keeps_official_documents_after_they_leave_the_web() {
+    let Some(db) = TestDb::new().await else {
+        return;
+    };
+    let home = folder("archive");
+    let app = App::open_with_keychain(db.store.clone(), &home, None)
+        .await
+        .unwrap();
+    let s = &db.store;
+    let law = archived_document(
+        s,
+        "SK03",
+        "https://www.example.sk/zakon.pdf",
+        Some("Zákon o výchove a vzdelávaní."),
+        false,
+        Some(pdf("Zakon o vychove a vzdelavani", false)),
+    )
+    .await;
+    let article = document(
+        s,
+        "SK36",
+        "https://www.example.sk/clanok",
+        Some("Článok."),
+        false,
+    )
+    .await;
+
+    let card = app.document(law).await.unwrap().unwrap();
+    let file = card.archived_file.unwrap();
+    assert_eq!(file.media_type, "application/pdf");
+    assert!(card.gone_at.is_none());
+    let opened = app.open_archived_file(law).await.unwrap();
+    assert!(std::fs::read(&opened).unwrap().starts_with(b"%PDF"));
+    assert_eq!(
+        app.open_archived_file(article).await.unwrap_err().code,
+        "not-found"
+    );
+
+    // the publishers remove both: the official text stays in the archive, the article does not
+    sqlx::query("UPDATE document SET status = 'gone', gone_at = now()")
+        .execute(s.pool())
+        .await
+        .unwrap();
+    let card = app.document(law).await.unwrap().unwrap();
+    assert!(card.gone_at.is_some() && card.archived_file.is_some() && card.text.is_some());
+    assert!(app.document(article).await.unwrap().is_none());
+    let overview = app.overview().await.unwrap();
+    assert_eq!((overview.archived_files, overview.gone), (1, 2));
+
+    // the private part refers to it, with the archive's file – no second copy
+    app.private_create("Eva".into(), "moje dlhé heslo".into())
+        .await
+        .unwrap();
+    let saved = app.private_save(law).await.unwrap().item.unwrap();
+    assert_eq!(saved.kind, "reference");
+    let read = app.private_read(saved.id).await.unwrap();
+    assert!(read.archived_file.is_some() && read.gone_at.is_some());
+    assert_eq!(
+        app.private_save(article).await.unwrap().reason,
+        Some("gone")
+    );
+
+    // a publisher who later asks for no stored copies: the file goes at the next start
+    sqlx::query("UPDATE document SET noarchive = true WHERE id = $1")
+        .bind(law)
+        .execute(s.pool())
+        .await
+        .unwrap();
+    let second = folder("archive-again");
+    let again = App::open_with_keychain(db.store.clone(), &second, None)
+        .await
+        .unwrap();
+    assert!(s.archived_file(law).await.unwrap().is_none());
+    assert!(again.document(law).await.unwrap().is_none());
+    app.close().await;
+    assert!(!opened.exists());
+    again.close().await;
+    std::fs::remove_dir_all(&home).unwrap();
+    std::fs::remove_dir_all(&second).unwrap();
     db.drop().await;
 }

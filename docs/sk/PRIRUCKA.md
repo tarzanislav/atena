@@ -59,6 +59,23 @@ Prepínač navrchu Prehľadu aj Hľadania určuje, ktoré údaje vidíte:
 Voľba sa pamätá. Čísla pri kategóriách znamenajú **nové / všetky** – nové sú dokumenty, ktoré ATENA
 našla za posledných 7 dní.
 
+### Archív ATENY: dokumenty, ktoré z webu zmiznú
+
+Weby často mažú staré stránky a prílohy. ATENA preto pri dokumentoch, ktoré **smie každý kopírovať
+a zobrazovať** (úradné texty, napríklad zákony a vyhlášky, a dokumenty s otvorenou licenciou),
+uchováva okrem textu aj **pôvodný súbor** (PDF, Word, OpenDocument).
+
+- Súbor sa uloží len **po kontrole nebezpečného obsahu** a len vtedy, keď sa v texte **nenašli osobné
+  údaje** (e-maily, telefónne čísla, rodné čísla). Webové stránky si ATENA uchová len ako text.
+- Keď vydavateľ dokument z webu odstráni, ATENA ho ďalej zobrazí s označením **Odstránené z webu**
+  a dátumom; zdroj a licencia ostávajú uvedené. Na karte dokumentu je tlačidlo **Otvoriť pôvodný
+  súbor z archívu**.
+- Všetky odstránené dokumenty nájdete v Hľadaní cez filter **Archív ATENY → Odstránené z webu**
+  alebo kliknutím na riadok **Archív** v Prehľade.
+- Dokumenty chránené autorským právom sa do archívu neukladajú; po odstránení z webu z ATENY zmiznú
+  (pre seba si ich môžete uložiť v súkromnej časti).
+- Archív zaberá miesto na disku. Vypnete ho v **Nastaveniach → Zber → Uchovávať pôvodné súbory…**.
+
 ### Nástroje a slovníky
 
 Niektoré užitočné weby ATENA nezbiera, lebo ich obsah sa hľadá cez ich vlastné vyhľadávanie alebo
@@ -150,7 +167,8 @@ v zozname** – to sa ešte raz spýta. Ukladá sa po jednom dokumente; priebeh 
 a môžete ho **zastaviť**. Medzitým môžete pracovať ďalej.
 
 - **Úradné a voľne licencované dokumenty** (napríklad zákony) sa neukladajú druhýkrát: uloží sa
-  **odkaz** na verejnú časť ATENY, ktorá ich aj tak uchováva.
+  **odkaz** na verejnú časť ATENY, ktorá ich aj tak uchováva – v jej archíve aj s pôvodným súborom
+  a aj po tom, čo ich vydavateľ z webu odstráni.
 - **Ostatné dokumenty** sa uložia ako **kópia pre vlastnú potrebu**: ATENA ich v tej chvíli
   stiahne z webu vydavateľa a uloží **zašifrované** – text a pri PDF a dokumentoch Word/OpenDocument
   aj súbor.
@@ -191,11 +209,12 @@ Všetky údaje ATENY sú v priečinku
 
 | Priečinok alebo súbor | Obsah |
 |---|---|
-| `postgres` | databáza: zdroje, dokumenty, verzie, návrhy |
+| `postgres` | databáza: zdroje, dokumenty, verzie, návrhy a archív pôvodných súborov |
 | `index` | index vyhľadávania (dá sa kedykoľvek postaviť nanovo) |
 | `settings.json` | vaše nastavenia |
 | `private` | súkromné konto (`account.json` – bez hesla a bez kľúča v čitateľnej podobe), pri trvalom prihlásení `remember.json` a zašifrovaná knižnica uložených dokumentov (`library`) |
 | `private-open` | súkromný súbor otvorený na prezeranie (dešifrovaný); zmaže sa pri zamknutí alebo zatvorení ATENY |
+| `archive-open` | pôvodný súbor z archívu otvorený na prezeranie; zmaže sa pri zatvorení alebo ďalšom spustení ATENY |
 | `logs` | záznamy o behu aplikácie – pri probléme ich priložte k hláseniu |
 
 Licencie všetkých súčastí sú v priečinku inštalácie v podpriečinku `notices`.

@@ -36,7 +36,7 @@ prototyp-v0.1/        Python prototype – executable specification and test sce
 
 ## Database size estimate (2 million documents)
 About 85 GB of data and indexes (vectors are the largest part; binary quantisation shrinks them to a few GB);
-no original files are kept. A global deployment with 20 million documents is
+original files only for the archive of official and openly licensed documents. A global deployment with 20 million documents is
 roughly ten times that – still a single PostgreSQL server with partitioning and replicas.
 
 ## Benchmark

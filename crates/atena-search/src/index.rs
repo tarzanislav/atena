@@ -21,7 +21,7 @@ use crate::{Result, SearchError};
 /// Name of the marker file.
 const MARKER: &str = "atena-search.format";
 /// Format of the index; raised whenever fields or analyzers change, which requires a rebuild.
-const FORMAT: &str = "2";
+const FORMAT: &str = "3";
 /// Memory for the writer, shared by its threads (each needs at least 15 MB).
 const WRITER_MEMORY: usize = 64 * 1024 * 1024;
 /// Most writer threads.

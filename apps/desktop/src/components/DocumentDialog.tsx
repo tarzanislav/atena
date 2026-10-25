@@ -1,13 +1,55 @@
 import { useEffect, useState } from "react";
 
-import { api, type DocumentCard } from "../api";
+import { api, type ArchivedFile, type DocumentCard } from "../api";
 import { useApp } from "../context";
-import { date, dateTime, languageOf } from "../format";
+import { date, dateTime, fileSize, languageOf } from "../format";
 import { useI18n } from "../i18n";
 import { Icon } from "../icons";
 import { Authority, LabelTag, Trust } from "./Badges";
 import { Dialog } from "./Dialog";
 import { ErrorNotice } from "./ErrorNotice";
+
+/** What ATENA's archive keeps of a document: its original file, and whether the publisher removed
+ * it from the web. */
+export function ArchiveNote({
+  goneAt,
+  file,
+  licence,
+  onOpen,
+}: {
+  goneAt: string | null;
+  file: ArchivedFile | null;
+  licence: string;
+  onOpen: () => void;
+}) {
+  const i18n = useI18n();
+  return (
+    <div className={goneAt ? "card archive-card gone" : "card archive-card"}>
+      <div className="row" style={{ gap: 8, alignItems: "flex-start", flexWrap: "nowrap" }}>
+        <Icon name={goneAt ? "warning" : "archive"} size={18} />
+        <div className="item-body">
+          {goneAt && <strong>{i18n.t("archive-gone", { date: date(i18n, goneAt) })}</strong>}
+          <span className="small">
+            {i18n.t(goneAt ? "archive-gone-text" : "archive-text", { licence: i18n.label("licence", licence) })}
+          </span>
+          {file && (
+            <span className="small muted">
+              {i18n.t("archive-file", { date: date(i18n, file.storedAt), size: fileSize(i18n, file.byteSize) })}
+            </span>
+          )}
+        </div>
+      </div>
+      {file && (
+        <div>
+          <button className="button" onClick={onOpen}>
+            <Icon name="documentText" size={16} />
+            {i18n.t("archive-open")}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 /** The card of a document: where it comes from, its versions and, where allowed, its text. */
 export function DocumentDialog({ id, onClose }: { id: number; onClose: () => void }) {
@@ -54,6 +96,14 @@ export function DocumentDialog({ id, onClose }: { id: number; onClose: () => voi
               {card.url}
             </span>
           </div>
+          {(card.goneAt || card.archivedFile) && (
+            <ArchiveNote
+              goneAt={card.goneAt}
+              file={card.archivedFile}
+              licence={card.licence}
+              onOpen={() => void api.openArchivedFile(card.id).catch(setError)}
+            />
+          )}
           {card.labels.length > 0 && (
             <div className="row" style={{ gap: 6 }}>
               {card.labels

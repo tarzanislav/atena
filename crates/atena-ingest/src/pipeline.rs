@@ -14,8 +14,8 @@ use atena_core::{ChangeKind, Licence, Taxonomy, Terms, compare, suggest};
 use atena_crawl::{FetchError, Fetched, Fetcher, Page, Validators, parse_feed, parse_sitemap};
 use atena_extract::{Document, ExtractError, Format, LanguageSource, Parser, video_url};
 use atena_store::{
-    Capture, Check, DocumentLink, Endpoint, EndpointKind, LabelSuggestion, NewEndpoint, NewVersion,
-    Origin, Rights, Store, StoreError, hash, parse_hex,
+    Capture, Check, CurrentDocument, DocumentLink, Endpoint, EndpointKind, LabelSuggestion,
+    NewEndpoint, NewFile, NewVersion, Origin, Rights, Store, StoreError, hash, parse_hex,
 };
 use url::Url;
 
@@ -39,6 +39,9 @@ pub struct PipelineConfig {
     /// How documents are parsed. The default parses in this process (tests, tools); the crawler
     /// program parses in a limited child process (`Parser::isolated`).
     pub parser: Parser,
+    /// Archive the original files of official and openly licensed PDF and office documents (see
+    /// [`archivable`]; default on – the author's decision of 25 Oct 2026).
+    pub archive_files: bool,
 }
 
 impl Default for PipelineConfig {
@@ -51,8 +54,27 @@ impl Default for PipelineConfig {
             parser: Parser::InProcess {
                 time_limit: Duration::from_secs(60),
             },
+            archive_files: true,
         }
     }
+}
+
+/// Whether the original file of a document goes to the archive: only what anyone may copy and
+/// show (official texts free of copyright under both laws, open licences), not withheld by the
+/// publisher (`noarchive`), only PDF and office documents – their reader refuses programs and
+/// active content before this is asked – and only when no personal data was found in the text (a
+/// file cannot be cleaned of it as the text is).
+pub fn archivable(
+    permission: &Permission,
+    rights: &Rights,
+    format: Format,
+    redacted: usize,
+) -> bool {
+    permission.show_full_text
+        && !rights.noarchive
+        && !rights.tdm_reserved
+        && redacted == 0
+        && matches!(format, Format::Pdf | Format::Docx | Format::Odt)
 }
 
 /// What a check did, as recorded in the check log.
@@ -438,6 +460,21 @@ impl Pipeline {
         ))
     }
 
+    /// Archives the file of an unchanged document whose current version has none yet (captured
+    /// before files were archived).
+    async fn archive_unchanged(
+        &self,
+        current: Option<&CurrentDocument>,
+        file: Option<&NewFile>,
+    ) -> Result<(), StoreError> {
+        if let (Some(current), Some(file)) = (current, file)
+            && !current.has_file
+        {
+            self.store.attach_file(current.id, file).await?;
+        }
+        Ok(())
+    }
+
     async fn page(&self, ep: &Endpoint, page: &Page) -> Result<Processed, StoreError> {
         let doc = match self
             .config
@@ -494,6 +531,12 @@ impl Pipeline {
         // the legality principle decides what may be kept (and later shown)
         let permission = permitted(ep, rights.tdm_reserved);
         let keep_text = permission.store_text;
+        let file = (self.config.archive_files
+            && archivable(&permission, &rights, doc.format, redacted))
+        .then(|| NewFile {
+            media_type: doc.format.media_type().to_string(),
+            content: page.body.to_vec(),
+        });
         let fingerprint = parse_hex(&atena_core::text::fingerprint(&doc.text))
             .expect("fingerprints are 64 hex digits");
         let capture = Capture {
@@ -513,6 +556,8 @@ impl Pipeline {
             .is_some_and(|c| c.last_fingerprint == Some(fingerprint))
         {
             self.store.touch_document(&capture).await?;
+            self.archive_unchanged(current.as_ref(), file.as_ref())
+                .await?;
             return Ok(Processed::ok("unchanged", None));
         }
         let (change_kind, added, removed, numbers_changed) = match (&current, keep_text) {
@@ -526,6 +571,8 @@ impl Pipeline {
                     ChangeKind::Unchanged => {
                         // equal after normalisation although the fingerprint differs: not a new version
                         self.store.touch_document(&capture).await?;
+                        self.archive_unchanged(current.as_ref(), file.as_ref())
+                            .await?;
                         return Ok(Processed::ok("unchanged", None));
                     }
                 };
@@ -599,6 +646,7 @@ impl Pipeline {
             published_at: doc.published,
             modified_at: doc.modified,
             canonical_url: doc.canonical.as_ref().map(Url::to_string),
+            file,
         };
         let saved = self
             .store
