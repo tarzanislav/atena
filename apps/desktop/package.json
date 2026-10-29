@@ -1,7 +1,7 @@
 {
   "name": "atena-desktop",
   "private": true,
-  "version": "0.2.4",
+  "version": "0.2.5",
   "type": "module",
   "license": "Apache-2.0",
   "description": "The interface of the ATENA desktop app",
